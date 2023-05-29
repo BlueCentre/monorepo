@@ -1,7 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
-    name = "echo",
+    name = "echo_lib",
     srcs = ["echo.py"],
     # visibility = ["//projects/python-flask:__pkg__"],
     visibility = ["//visibility:public"],
@@ -11,6 +11,7 @@ py_test(
     name = "echo_test",
     srcs = ["tests/echo_test.py"],
     deps = [
-        "//libs/echo",
+        # "//libs/echo",
+        "//libs/echo:echo_lib",
     ],
 )

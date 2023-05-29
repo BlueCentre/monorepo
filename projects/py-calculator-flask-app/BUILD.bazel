@@ -6,11 +6,11 @@ load("@rules_python//python:defs.bzl", "py_library")
 # install_deps()
 
 py_library(
-    name = "app_lib",
+    name = "py_calculator_flask_app_lib",
     srcs = ["src/app.py"],
     deps = [
         requirement("Flask"),
-        "//libs/calculator:calculator",
+        "//libs/calculator",
     ],
 )
 
@@ -18,7 +18,7 @@ py_binary(
     name = "app",
     srcs = ["src/app.py"],
     main = "app.py",
-    deps = [":app_lib"],
+    deps = [":py_calculator_flask_app_lib"],
 )
 
 # py_image(
