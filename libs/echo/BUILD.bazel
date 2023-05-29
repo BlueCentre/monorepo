@@ -1,5 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_library")
 
+# BUG: Figure out why I cannot use src/echo.py
 py_library(
     name = "echo_lib",
     srcs = ["echo.py"],
@@ -11,7 +12,8 @@ py_test(
     name = "echo_test",
     srcs = ["tests/echo_test.py"],
     deps = [
-        # "//libs/echo",
         "//libs/echo:echo_lib",
+        # "//libs/echo",
+        # ":echo_lib",
     ],
 )
