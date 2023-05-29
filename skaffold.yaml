@@ -1,0 +1,27 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: my-app:latest
+    bazel:
+      target: //my-app:image
+  - image: my-other-app:latest
+    bazel:
+      target: //my-other-app:image
+deploy:
+  kustomize:
+    configs:
+    - kustomization.yaml
+profiles:
+- name: development
+  helm:
+    chart: my-app
+    version: 0.1.0
+    values:
+      ENVIRONMENT: development
+- name: production
+  helm:
+    chart: my-app
+    version: 0.1.0
+    values:
+      ENVIRONMENT: production
