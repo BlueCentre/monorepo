@@ -1,0 +1,121 @@
+# https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
+# https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd#gke-application-load-balancer
+# https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#gke
+
+crds:
+  keep: false
+
+global:
+  domain: ${domain}
+
+configs:
+  params:
+    server.insecure: true
+  rbac:
+    policy.default: role:readonly
+    policy.csv: |
+      p, role:org-admin, applications, *, */*, allow
+      p, role:org-admin, clusters, get, *, allow
+      p, role:org-admin, repositories, *, *, allow
+      p, role:org-admin, logs, get, *, allow
+      p, role:org-admin, exec, create, */*, allow
+      g, james.nguyen@example.com, role:org-admin
+      # g, your-github-org:your-team, role:org-admin
+    scopes: '[groups, email]'
+  cm:
+    dex.config: |
+      connectors:
+        - type: oidc
+          id: google
+          name: Google
+          config:
+            issuer: https://accounts.google.com
+            clientID: ${iapClientID}
+            clientSecret: ${iapClientSecret}
+  # secret:
+  #   argocdServerAdminPassword: "abcdef" # real password is here
+  # repositories:
+  #   - url: git@github.com:myorganization/myrepo.git
+  #     name: myrepo
+  #     type: git
+  #     sshPrivateKey: abcdef # real private key is here
+
+extraObjects:
+  # - apiVersion: v1
+  #   kind: Secret
+  #   metadata:
+  #     name: argocd-iap-oauth-client
+  #     namespace: argocd
+  #     labels:
+  #       #This label is required to access secret values when OAuth configurations
+  #       app.kubernetes.io/part-of: argocd 
+  #   type: Opaque
+  #   stringData:
+  #     client_id: ${iapClientID}
+  #     client_secret: ${iapClientSecret}
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-iap-oauth-client #argocd-external-secret
+      namespace: argocd
+      labels:
+        #This label is required to access secret values when OAuth configurations
+        app.kubernetes.io/part-of: argocd 
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: external-secret-cluster-lab-secrets
+      target:
+        name: argocd-iap-oauth-client #argocd-external-secret
+        creationPolicy: Owner
+        template:
+          metadata:
+            labels:
+              service: external-dns
+            annotations:
+              reloader.stakater.com/match: "true"
+      data:
+        - secretKey: client_id
+          remoteRef:
+            key: ARGOCD_IAP_CLIENT_ID
+        - secretKey: client_secret
+          remoteRef:
+            key: ARGOCD_IAP_CLIENT_SECRET
+
+server:
+  service:
+    # type: {serviceType}
+    annotations:
+      # external-dns.alpha.kubernetes.io/hostname: ${hostname}
+      # external-dns.alpha.kubernetes.io/sync-enabled: true
+      # cloud.google.com/backend-config: '{"default": "argocd-backend-config"}' #Backend Annotation
+      cloud.google.com/backend-config: '{"ports": {"http":"argocd-server"}}'
+      cloud.google.com/neg: '{"ingress": true}' #To use Network Endpoint Groups
+  ingress:
+    enabled: true
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: ${hostname}
+      external-dns.alpha.kubernetes.io/sync-enabled: true
+    controller: gke
+    gke:
+      # https://console.cloud.google.com/kubernetes/objectKind/cloud.google.com/backendconfigs?apiVersion=v1&kind=BACKEND_CONFIG&project=prj-lab-james-nguyen&supportedpurview=project
+      backendConfig:
+        healthCheck:
+          checkIntervalSec: 30
+          timeoutSec: 5
+          healthyThreshold: 1
+          unhealthyThreshold: 2
+          type: HTTP
+          requestPath: /healthz
+          port: 8080
+        iap:
+          enabled: true
+          # https://cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration#enable_with_google_managed_oauth_client
+          oauthclientCredentials:
+            secretName: argocd-iap-oauth-client #argocd-secret # argocd-iap-oauth-client|argocd-external-secret?
+      frontendConfig:
+        redirectToHttps:
+          enabled: true 
+      managedCertificate:
+        enabled: true

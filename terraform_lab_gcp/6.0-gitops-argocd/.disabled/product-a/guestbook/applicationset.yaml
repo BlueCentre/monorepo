@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guestbook
+spec:
+  generators:
+  - clusters: {}
+      # selector:
+      #   matchLabels:
+      #     cluster-type: minion
+  # - list:
+  #     elements:
+  #     # - cluster: example-infrastructure-primary
+  #     - cluster: in-cluster
+  #       url: https://kubernetes.default.svc
+  template:
+    metadata:
+      name: 'guestbook'
+      labels:
+        app: 'guestbook'
+        client: 'demo'
+    spec:
+      project: applications-project
+      # source:
+      #   repoURL: git@github.com:ipv1337/terraform-lab-project.git 
+      #   path: 6.1-gitops-artifact-registry/charts/guestbook
+      #   targetRevision: HEAD
+      #   helm:
+      #     version: v3
+      #     valueFiles:
+      #     - 'values.yaml'
+      source:
+        repoURL: https://github.com/argoproj/argocd-example-apps
+        path: guestbook
+        targetRevision: HEAD
+      destination:
+        # server: https://kubernetes.default.svc
+        server: {{ .server }}
+        namespace: guestbook
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

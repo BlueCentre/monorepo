@@ -1,0 +1,17 @@
+config:
+  dev-local-infrastructure:region: "us-central1"
+  dev-local-infrastructure:cert_manager_enabled: "true"
+  dev-local-infrastructure:external_secrets_enabled: "true"
+  dev-local-infrastructure:external_dns_enabled: "true"
+  dev-local-infrastructure:opentelemetry_enabled: "true"
+  dev-local-infrastructure:datadog_enabled: "false"
+  dev-local-infrastructure:telepresence_enabled: "false"
+  dev-local-infrastructure:istio_enabled: "true"
+  dev-local-infrastructure:argocd_enabled: "false"
+  dev-local-infrastructure:teardown: "false"
+  dev-local-infrastructure:kubernetes_context: "colima"
+  kubernetes:context: colima
+  monitoring:namespace: monitoring
+  database:namespace: database
+  ingress:namespace: ingress-nginx
+encryptionsalt: v1:2q/j9oCTjH0=:v1:1kTegG+X9Ve/oI2C:/krGKWcHvieQjXhYbuEjybzZfh+sjQ==

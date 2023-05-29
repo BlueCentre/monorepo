@@ -1,0 +1,30 @@
+# See:
+# - https://github.com/GoogleContainerTools/container-structure-test#metadata-test
+# - https://github.com/GoogleContainerTools/container-structure-test#command-tests
+# - https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
+schemaVersion: 2.0.0
+metadataTest:
+  envVars:
+    - key: "JAVA_VERSION"
+      value: "17.0.6"
+  entrypoint: ["/usr/bin/java","-jar"]
+  cmd: ["app.jar"]
+  workdir: "/"
+  # exposedPorts: ["8080"]
+commandTests:
+  # - name: "java installation"
+  #   command: "java"
+  #   args: ["-version"]
+  #   expectedOutput: ["OpenJDK Runtime Environment"]
+  # - name: container_test
+  #   command: java
+  #   args: ['-jar', 'app.jar']
+  #   expectedOutput: ['Sending message to server']
+fileExistenceTests:
+- name: 'app.jar'
+  path: '/app.jar'
+  shouldExist: true
+  #permissions: '-r-xr-xr-x'
+  # uid: 1000
+  # gid: 1000
+  # isExecutableBy: 'group'

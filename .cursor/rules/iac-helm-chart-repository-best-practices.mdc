@@ -1,0 +1,76 @@
+---
+description: Working with helm charts used in infrastructure as code
+globs: 
+  - terraform_dev_local/helm_*.tf
+  - pulumi_dev_local/pkg/applications/*.go
+alwaysApply: false
+---
+# Helm Chart Repository Best Practices for IaC
+
+## Overview
+
+This rule provides guidance on Helm chart repository handling when implementing infrastructure components with both Terraform and Pulumi in our monorepo.
+
+## Helm Chart Repository URL Consistency
+
+When implementing the same component across Terraform and Pulumi:
+
+1. **Always use consistent repository URLs**:
+   - Prefer the HTTPS format (`https://charts.bitnami.com/bitnami`) over OCI format (`oci://registry-1.docker.io/bitnamicharts`)
+   - Pulumi has limited support for OCI-based Helm repositories and often fails with repository errors
+   - Terraform supports both formats, but use the format that works in both tools for consistency
+
+2. **Repository URL reference table**:
+   | Provider | HTTPS URL | OCI URL |
+   |----------|-----------|---------|
+   | Bitnami | https://charts.bitnami.com/bitnami | oci://registry-1.docker.io/bitnamicharts |
+   | Jetstack | https://charts.jetstack.io | N/A |
+   | OpenTelemetry | https://open-telemetry.github.io/opentelemetry-helm-charts | N/A |
+   | Istio | https://istio-release.storage.googleapis.com/charts | N/A |
+
+3. **Repository transition knowledge**:
+   - Many chart providers (like Bitnami) are transitioning to OCI-format repositories
+   - Chart providers may maintain both formats for backward compatibility
+   - Always verify repository URL compatibility with both Terraform and Pulumi
+
+## Implementation Pattern
+
+### Terraform Implementation:
+```hcl
+resource "helm_release" "component" {
+  count            = var.component_enabled ? 1 : 0
+  name             = "component"
+  repository       = "https://charts.example.com/repo"  # Use HTTPS format for compatibility
+  chart            = "component"
+  version          = "1.0.0"
+  # ... other configuration
+}
+```
+
+### Pulumi Implementation:
+```go
+return resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+    Name:            "component",
+    ChartName:       "component",
+    Version:         cfg.GetString("component_version", "1.0.0"),
+    RepositoryURL:   "https://charts.example.com/repo",  // Use HTTPS format for compatibility
+    Namespace:       "component",
+    // ... other configuration
+})
+```
+
+## Testing Best Practices
+
+1. **Always test repository URLs** with both Terraform and Pulumi before implementing a new component
+2. **Validate chart availability** in the repository using explicit version references
+3. **Test minimally functional components** before adding complex configurations
+4. If a repository URL fails in one tool but works in another, use the format that works in both
+
+## Troubleshooting
+
+When encountering repository errors:
+1. Verify the repository URL exists and is accessible
+2. Check if the chart provider supports both HTTPS and OCI formats
+3. Test with the alternative format if one format fails
+4. Ensure the chart version is available in the repository
+5. For Bitnami charts, always prefer the HTTPS format due to compatibility issues

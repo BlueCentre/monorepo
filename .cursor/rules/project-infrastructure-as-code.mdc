@@ -1,0 +1,52 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Infrastructure as code workflow guidance
+
+- Never create or use custom scripts and commands unless they already exist, or explicitly told otherwise
+- Always execute the workflow relevant to either terraform or pulumi where change is made
+- Maintain feature parity in terms of helm charts, helm values, and the state if enabled or disabled
+- Terraform apply is never in broken state
+- Pulumi up is never in broken state
+- Do not use basel or skaffold since they are not suitable for infrastructure as code workflows
+- When developing new components, always destroy and recreate to fully validate completeness
+
+# Terraform Workflow & Command Reference
+
+- To initialize and pull down terraform modules and providers: terraform init
+- To verify a terraform plan: terraform plan
+- To apply terraform deployment: terraform apply -auto-approve
+- To destroy terraform deployment: terrafor destroy -auto-approve
+
+# Terraform Implementation Standards
+
+When implementing or modifying Terraform components:
+- Follow the guidelines in [Terraform Infrastructure Implementation](mdc:.cursor/rules/terraform-infrastructure-implementation.mdc)
+- Use standardized resource naming conventions
+- Implement proper variable definitions in variables.tf
+- Externalize Helm values in template files
+- Follow standard resource structure and module organization
+- Document all components in COMPONENTS.md
+
+# Pulumi Workflow & Command Reference
+
+- To verify a pulumi plan: pulumi preview
+- To apply pulumi deployment: pulumi up -y
+- To destroy pulumi deployment: pulumi down -y
+
+# Pulumi Implementation Standards
+
+When implementing or modifying Pulumi components:
+- Follow the guidelines in [Pulumi Infrastructure Implementation](mdc:.cursor/rules/pulumi-infrastructure-implementation.mdc)
+- Always use the utils package for configuration management
+- Always use the resources package for resource creation
+- Store static configuration in YAML files and only override dynamic values in code
+- Follow the standard component structure and naming conventions
+- Document all components in COMPONENTS.md
+
+# Troubleshooting Pulumi Workflows
+
+- Use the default password "pulumi-dev-passphrase" running pulumi non-interactive

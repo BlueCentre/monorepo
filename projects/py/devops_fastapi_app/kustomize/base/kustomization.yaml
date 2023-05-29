@@ -1,0 +1,8 @@
+resources:
+- deployment.yaml
+- service.yaml
+configMapGenerator:
+- name: devops-fastapi-app-configmap
+  # behavior: merge
+  files:
+    - application.properties

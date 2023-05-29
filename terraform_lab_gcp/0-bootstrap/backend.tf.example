@@ -1,0 +1,6 @@
+terraform {
+  backend "gcs" {
+    bucket = "bkt-us-prj-b-seed-tfstate-XXXX"
+    prefix = "terraform/bootstrap/state"
+  }
+}

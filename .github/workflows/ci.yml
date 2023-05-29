@@ -1,0 +1,108 @@
+# Copyright 2023 The BlueCentre Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: CI
+
+# NOTE: Pushing to a feature branch already builds & test
+# on: [push, pull_request]
+on:
+  pull_request:
+    branches:
+      - master
+      - release/*
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    # virtual environments: https://github.com/actions/virtual-environments
+    runs-on: ubuntu-20.04
+    steps:
+      # https://github.com/bazel-contrib/setup-bazel
+      # Install & configure Bazel
+      - uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          # Avoid downloading Bazel every time.
+          bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
+          repository-cache: true
+      # Caches and restores the bazelisk download directory, the bazel build directory.
+      - name: Cache bazel
+        uses: actions/cache@v4.2.3
+        with:
+          path: |
+            ~/.cache/bazelisk
+            ~/.cache/bazel
+          key: ${{ runner.os }}-bazel-cache
+      # Checks-out your repository under $GITHUB_WORKSPACE, which is the CWD for
+      # the rest of the steps
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # BB: https://bluecentre.buildbuddy.io/settings/org/api-keys
+      # GH: https://github.com/BlueCentre/monorepo/settings/secrets/actions
+      # See: https://www.buildbuddy.io/docs/rbe-github-actions
+      # Use remote build (BuildBuddy)
+      - name: Build the code
+        run: |
+          bazel build \
+          --config=ci \
+          --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
+          //...
+      # See: 
+      # - https://www.buildbuddy.io/docs/rbe-github-actions
+      # - https://www.buildbuddy.io/docs/rbe-microvms/
+      # Use remote build (BuildBuddy) + microVM for docker testing support used in BUILDs
+      - name: Run the test
+        run: |
+          bazel test \
+          --config=ci \
+          --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
+          //...
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+            -Dsonar.organization=vitruvian-software-llc
+            -Dsonar.projectKey=vitruvian-software-llc_monorepo
+            -Dsonar.sources=./projects
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.verbose=true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
+# name: CI
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   ci:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: bazelbuild/setup-bazelisk@v1
+#       - run: bazel build //...
+#       - run: bazel test //...

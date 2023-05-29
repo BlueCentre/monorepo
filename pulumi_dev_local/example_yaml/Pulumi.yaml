@@ -1,0 +1,3 @@
+name: dev-local-infrastructure
+runtime: yaml
+description: Local development infrastructure managed with Pulumi (YAML runtime) 

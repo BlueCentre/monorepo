@@ -1,0 +1,25 @@
+# Cert Manager Helm values
+# installCRDs: false  # We'll use CRD management through the Helm chart's built-in mechanism
+crds:
+  enabled: true
+  keep: true
+
+global:
+  leaderElection:
+    namespace: cert-manager
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Extra options for development environment
+# startupapicheck:
+#   enabled: false  # Disable in dev environment to speed up startup
+
+# prometheus:
+#   enabled: false  # We'll use our own monitoring stack

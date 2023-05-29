@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Collaboration Workflow Rule
+
+## Purpose
+
+This rule defines a preferred interaction pattern for working with AI assistants within this project, particularly for tasks involving significant code changes, refactoring, or multi-step processes.
+
+## Workflow Pattern: Plan, Align, Execute
+
+1.  **Propose a Plan**: Before undertaking significant changes or multi-step tasks, the AI assistant should first analyze the request and propose a clear, step-by-step plan of action.
+2.  **Seek Alignment**: The assistant should explicitly present the plan to the user and ask for confirmation or feedback before proceeding. This ensures mutual understanding and allows for adjustments.
+3.  **Execute Step-by-Step**: Once the user agrees with the plan, the assistant should execute the steps sequentially, ideally confirming completion or reporting issues after each major step.
+
+## When to Apply
+
+Apply this pattern for:
+
+*   Refactoring multiple files or complex code sections.
+*   Implementing new features requiring changes across different parts of the codebase.
+*   Performing sequences of operations (e.g., creating multiple files, updating documentation, then deleting old files).
+*   Any task where the approach might have multiple valid options or requires clarification.
+
+## Goal
+
+The goal is to improve collaboration efficiency, reduce misunderstandings, and ensure the AI's actions align with the user's intent before significant work is performed.

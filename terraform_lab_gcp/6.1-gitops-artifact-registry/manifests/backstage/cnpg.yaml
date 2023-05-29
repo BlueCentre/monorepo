@@ -1,0 +1,61 @@
+# kubectl apply -f - << EOF
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: backstage
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: app-secret
+#   namespace: backstage
+# type: kubernetes.io/basic-auth
+# data:
+#   username: YXBw
+#   password: cGFzc3dvcmQ=
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: external-app-secret
+  namespace: backstage
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: external-secret-cluster-lab-secrets
+  target:
+    name: app-secret
+    creationPolicy: Owner
+    template:
+      metadata:
+        labels:
+          service: backstage
+        annotations:
+          reloader.stakater.com/match: "true"
+  data:
+  - secretKey: username
+    remoteRef:
+      key: BACKSTAGE_USERNAME
+  - secretKey: password
+    remoteRef:
+      key: BACKSTAGE_PASSWORD
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: backstage
+  namespace: backstage
+spec:
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      secret:
+        name: app-secret
+      postInitSQL:
+        - ALTER ROLE app CREATEDB
+# EOF

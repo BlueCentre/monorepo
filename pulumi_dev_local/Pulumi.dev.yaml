@@ -1,0 +1,43 @@
+config:
+  dev-local-infrastructure:kubernetes_context: "colima"
+  dev-local-infrastructure:region: "us-central1"
+
+  dev-local-infrastructure:cert_manager_enabled: "true"
+  dev-local-infrastructure:external_secrets_enabled: "true"
+  dev-local-infrastructure:external_dns_enabled: "false"
+  dev-local-infrastructure:monitoring_enabled: "false"
+  dev-local-infrastructure:opentelemetry_enabled: "true"
+  dev-local-infrastructure:datadog_enabled: "false"
+  dev-local-infrastructure:istio_enabled: "true"
+  dev-local-infrastructure:redis_enabled: "true"
+  dev-local-infrastructure:cnpg_enabled: "true"
+  dev-local-infrastructure:mongodb_enabled: "false"
+  dev-local-infrastructure:argocd_enabled: "false"
+  dev-local-infrastructure:telepresence_enabled: "false"
+
+  dev-local-infrastructure:cert_manager_version: "v1.17.0"
+  dev-local-infrastructure:external_secrets_version: "0.14.4"
+  dev-local-infrastructure:external_dns_version: "1.15.0"
+  dev-local-infrastructure:opentelemetry_version: "0.79.0"
+  dev-local-infrastructure:datadog_version: "3.74.1"
+  dev-local-infrastructure:istio_version: "1.23.3"
+  dev-local-infrastructure:redis_version: "18.19.1"
+  dev-local-infrastructure:cnpg_version: "0.23.2"
+  dev-local-infrastructure:cnpg_operator_version: "0.23.2"
+  dev-local-infrastructure:cnpg_cluster_version: "0.2.1"
+  dev-local-infrastructure:mongodb_operator_version: "0.12.0"
+  dev-local-infrastructure:mongodb_replicaset_version: "4.4.19"
+
+  dev-local-infrastructure:cloudflare_api_token: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
+  dev-local-infrastructure:datadog_api_key: "REPLACE_WITH_DATADOG_API_KEY"
+  dev-local-infrastructure:datadog_app_key: "REPLACE_WITH_DATADOG_APP_KEY"
+  dev-local-infrastructure:redis_password: "REPLACE_WITH_REDIS_PASSWORD"
+  dev-local-infrastructure:cnpg_app_db_name: app
+  dev-local-infrastructure:cnpg_app_db_user: app_user
+  dev-local-infrastructure:cnpg_app_db_password: "REPLACE_WITH_CNPG_APP_DB_PASSWORD"
+  dev-local-infrastructure:mongodb_password: "REPLACE_WITH_MONGODB_PASSWORD"
+
+  monitoring:namespace: monitoring
+  database:namespace: database
+  ingress:namespace: ingress-nginx
+encryptionsalt: v1:2q/j9oCTjH0=:v1:1kTegG+X9Ve/oI2C:/krGKWcHvieQjXhYbuEjybzZfh+sjQ==

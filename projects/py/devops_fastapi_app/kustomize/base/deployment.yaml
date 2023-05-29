@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-fastapi-app
+  labels:
+    app: devops-fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: devops-fastapi-app
+    spec:
+      containers:
+      - name: devops-fastapi-app
+        image: bazel/devops-fastapi-app
+        ports:
+        - containerPort: 5000
+          name: http

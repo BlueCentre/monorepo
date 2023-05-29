@@ -1,0 +1,72 @@
+# See:
+# - https://blog.aspect.dev/bazelrc-flags
+# - https://docs.aspect.build/guides/bazelrc
+# - https://bazel.build/reference/command-line-reference
+
+# .bazelrc - Monorepo configuration for Bazel
+
+# ====================
+# Global configurations
+# ====================
+
+# See: https://app.buildbuddy.io/docs/setup
+# Buildbuddy support for remote builds
+try-import %workspace%/.buildbuddy/remote.bazelrc
+
+# Update bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
+# Import Aspect bazelrc presets - update to use bazel8.bazelrc if available
+# If not available, you'll need to create or download this file
+try-import %workspace%/.aspect/bazelrc/bazel8.bazelrc
+# Fallback to bazel7 if bazel8 isn't available
+try-import %workspace%/.aspect/bazelrc/bazel7.bazelrc
+# Fallback to bazel6 if neither is available
+try-import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+try-import %workspace%/.aspect/bazelrc/convenience.bazelrc
+try-import %workspace%/.aspect/bazelrc/correctness.bazelrc
+try-import %workspace%/.aspect/bazelrc/debug.bazelrc
+try-import %workspace%/.aspect/bazelrc/java.bazelrc
+try-import %workspace%/.aspect/bazelrc/javascript.bazelrc
+try-import %workspace%/.aspect/bazelrc/docker.bazelrc
+try-import %workspace%/.aspect/bazelrc/performance.bazelrc
+
+# ====================
+# Named configurations
+# ====================
+
+# Configuration for running all tests including template app tests
+# Usage: bazel test //... --config=with-template-tests
+#build:with-template-tests --test_tag_filters=
+
+# Configuration for CI that will run reliable template app tests and ignore failures on others
+# Usage: bazel test //... --config=ci
+#build:ci --test_tag_filters=-template_app_test
+build:ci --build_tests_only
+build:ci --flaky_test_attempts=3
+
+# Configuration for development that ensures tests run quickly
+# Usage: bazel test //... --config=dev
+#build:dev --test_tag_filters=-template_app_test,-benchmark,-contract
+build:dev --build_tests_only
+build:dev --test_output=errors
+
+# Configuration for progressive testing (includes independent tests that should work)
+# Usage: bazel test //... --config=progressive
+build:progressive --test_tag_filters=-benchmark,-contract
+build:progressive --build_tests_only
+build:progressive --test_output=errors
+
+# ====================
+# Common options
+# ====================
+
+# Show detailed test output by default
+test --test_output=errors
+
+# Always output colors
+common --color=yes
+
+# Cache performance improvements
+build --remote_cache_compression
+
+# https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
+try-import %workspace%/.bazelrc.user

@@ -1,0 +1,117 @@
+---
+description: 
+globs: projects/template/template_fastapi_app/**,projects/**/*fastapi*/**
+alwaysApply: false
+---
+
+# Template FastAPI Application
+# Rules for AI assistance in Cursor
+
+## Project Structure
+This is a modern FastAPI application template with PostgreSQL, Google Cloud Pub/Sub, and more.
+
+The project follows a modular structure:
+- `app/`: Main application package
+  - `api/`: API endpoints
+  - `core/`: Core modules (config, security)
+  - `crud/`: CRUD operations
+  - `db/`: Database modules
+  - `models/`: SQLAlchemy models
+  - `pubsub/`: Pub/Sub modules
+  - `schemas/`: Pydantic schemas
+- `migrations/`: Alembic migrations
+- `tests/`: Tests
+- `kubernetes/`: Kubernetes deployment files
+
+## General Guidelines
+- Follow PEP 8 style guidelines
+- Use type hints for all function parameters and return values
+- Document all functions, classes, and modules with docstrings
+- Use dependency injection for database sessions and authentication
+- Implement proper error handling and validation
+- Write unit tests for all functionality
+
+## Implementation Details
+- FastAPI is used for the API framework
+- SQLAlchemy is used for ORM
+- Alembic is used for database migrations
+- Pydantic is used for data validation
+- JWT is used for authentication
+- Google Cloud Pub/Sub is used for asynchronous messaging
+- OpenTelemetry is used for observability
+- Docker is used for containerization
+- Kubernetes is used for deployment
+
+## Code Generation Guidelines
+- When generating API endpoints, follow the pattern in `app/api/v1/endpoints/`
+- When generating models, follow the pattern in `app/models/`
+- When generating schemas, follow the pattern in `app/schemas/`
+- When generating CRUD operations, follow the pattern in `app/crud/`
+- When generating tests, follow the pattern in `tests/`
+
+## OpenTelemetry Guidelines
+- The application is instrumented with OpenTelemetry for tracing, metrics, and logging
+- All FastAPI requests, SQLAlchemy operations, and logging are automatically instrumented
+- Traces are exported to Jaeger, which is included in the docker-compose.yml and Kubernetes configuration
+- Custom spans can be added using the OpenTelemetry API
+- Configuration settings for OpenTelemetry are in the `.env` file
+- The `app/core/telemetry.py` module handles the setup of OpenTelemetry
+- Environment variables for OpenTelemetry:
+  - `ENABLE_TELEMETRY`: Enable/disable OpenTelemetry (default: true)
+  - `OTLP_EXPORTER_ENDPOINT`: Endpoint for the OTLP exporter (default: http://jaeger:4317)
+  - `OTLP_SERVICE_NAME`: Name of the service for OpenTelemetry
+
+## Best Practices
+- Use async/await for I/O-bound operations
+- Use dependency injection for database sessions and authentication
+- Use Pydantic for request and response validation
+- Use SQLAlchemy for database operations
+- Use JWT for authentication
+- Use Google Cloud Pub/Sub for asynchronous messaging
+- Use OpenTelemetry for tracing and metrics
+- Use Docker for containerization
+- Use Kubernetes for deployment
+
+## Database Configuration
+- PostgreSQL is used as the database
+- SQLAlchemy is used as the ORM
+- Alembic is used for database migrations
+- Migration files are located at: app/db/migrations/alembic/versions/
+- New migrations should follow a linear sequence with proper dependencies
+- All migrations must include both upgrade() and downgrade() methods
+- For password hashing in migrations, always use bcrypt
+
+## Build and Deployment
+- Docker image is built using the project's Dockerfile
+- Kubernetes manifests define the application deployment
+- Database migrations are applied through a Kubernetes job defined in kubernetes/db/migrations.yaml
+- API server configuration is in kubernetes/app/deployment.yaml
+- Database configuration is in kubernetes/db/postgres.yaml
+- Health check endpoint is defined at /health
+
+## Istio Service Mesh Integration
+- Istio is used for service mesh capabilities including rate limiting
+- EnvoyFilters are used to configure rate limiting
+- Rate limiting configuration is in kubernetes/istio/rate-limiting.yaml
+- Gateway and VirtualService resources define the ingress configuration
+- Service mesh features are applied using the servicemesh profile in skaffold.yaml
+
+## Workflow Commands
+- Build the application: skaffold build -m template-fastapi-app
+- Deploy the application: skaffold run -m template-fastapi-app
+- Apply rate limiting: skaffold exec apply-rate-limiting -m servicemesh
+- Verify deployment: skaffold verify -m template-fastapi-app
+- Development mode: skaffold dev -m template-fastapi-app
+
+## Common Issues and Solutions
+- For database migration errors with multiple heads, ensure migrations have proper linear dependencies
+- If migration scripts aren't found, check the path in the migrations.yaml job
+- When the health check endpoint fails, ensure the FastAPI app is actually running with the correct command
+- For image pull errors in Kubernetes, ensure the image is correctly built and available
+- Always ensure bcrypt is included in requirements.txt when using password hashing in migrations
+
+## Testing Practices
+- Health checks are configured at /health endpoint
+- Rate limiting can be tested with repeated requests to rate-limited endpoints
+- Database seeds can be verified by querying the database directly
+- Always validate both API functionality and service mesh features

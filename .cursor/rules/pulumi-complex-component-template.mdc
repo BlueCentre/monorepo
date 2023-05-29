@@ -1,0 +1,180 @@
+---
+name: pulumi-complex-component-template.mdc
+description: Template and guidelines for complex Pulumi components involving multiple Helm charts, dependencies, conditional logic, and raw YAML manifests, based on the Istio example.
+globs: 
+  - pulumi_dev_local/pkg/applications/*.go
+alwaysApply: false
+---
+# Pulumi Complex Component Implementation Template
+
+This rule provides a template and guidelines for implementing complex Pulumi components in Go, particularly those that involve:
+
+*   Deploying multiple related Helm charts.
+*   Managing explicit dependencies between resources within the component.
+*   Using conditional logic based on configuration flags.
+*   Deploying raw Kubernetes YAML manifests (e.g., for CRDs or specific configurations).
+*   Handling potential dependencies on other components deployed in the stack.
+*   Implementing CRD cleanup strategies.
+
+This template is based on the patterns observed in the `pulumi_dev_local/pkg/applications/istio.go` component.
+
+## Guidelines
+
+1.  **Configuration:** Use `utils.NewConfig(ctx)` and helper methods (`GetString`, `GetBool`, `GetNamespace`) for retrieving configuration values.
+2.  **Resource Deployment:** Use the `resources` package helpers (`resources.DeployHelmChart`, `resources.CreateK8sManifest`).
+3.  **Structure:** Break down the component deployment into logical steps or sub-components (e.g., base chart, core chart, addon chart).
+4.  **Intra-Component Dependencies:** Explicitly define dependencies between resources *within* the component using `pulumi.DependsOn([]pulumi.Resource{...})`. Ensure resources are created in the correct order.
+5.  **Conditional Logic:** Use configuration flags and `if` statements to conditionally deploy resources or apply configurations (e.g., `if dependentFeatureEnabled { ... }`).
+6.  **Inter-Component Dependencies:** Acknowledge dependencies on *other* components (e.g., Istio needing Redis for rate limits). Handle these primarily through configuration passed into the dependent component or via service discovery within the cluster. Conditional logic within the component (Guideline 5) is key here.
+7.  **Error Handling:** Check for errors (`if err != nil { return err }`) after each significant Pulumi resource creation call. Declare `var err error` early in the function.
+8.  **CRD Cleanup:** If the component installs CRDs that need specific cleanup logic, use the `CleanupCRDs` and `CRDsToCleanup` options in `resources.DeployHelmChart` or implement custom cleanup logic if necessary.
+9.  **Exports:** Export relevant outputs (like namespaces, service endpoints) using `ctx.Export()`.
+
+## Generalized Code Template
+
+```go
+package applications
+
+import (
+    "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes"
+    "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+
+    "github.com/james/monorepo/pulumi_dev_local/pkg/resources" // Adjust import path as needed
+    "github.com/james/monorepo/pulumi_dev_local/pkg/utils"    // Adjust import path as needed
+)
+
+// Deploy{ComponentName} deploys the {ComponentName} and its related resources
+func Deploy{ComponentName}(ctx *pulumi.Context, provider *kubernetes.Provider) error {
+    // --- Configuration ---
+    conf := utils.NewConfig(ctx)
+    version := conf.GetString("{component_name}_version", "{default_version}")
+    namespace := conf.GetNamespace("{component_name}_namespace", "{default_namespace}") // Use GetNamespace helper
+    dependentFeatureEnabled := conf.GetBool("{dependent_feature_flag}", false) // e.g., redis_enabled
+
+    var err error // Declare error variable early
+
+    // --- Optional: Define CRDs for Cleanup (if applicable) ---
+    componentCRDs := []string{
+        // List CRDs managed by this component if cleanup is needed
+        // "resource.group.io",
+    }
+
+    // --- Sub-Component 1: Base Helm Chart (Example) ---
+    // Deploy the foundational chart, potentially creating the namespace and installing CRDs
+    subComponent1, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+        Name:            "{component_name}-base",
+        Namespace:       namespace,
+        ChartName:       "{base_chart_name}",
+        RepositoryURL:   "{base_chart_repo}",
+        Version:         version,
+        CreateNamespace: true, // Create namespace with the first chart
+        ValuesFile:      "{component_name}-base", // Optional values file relative to values/ dir
+        Wait:            true,
+        Timeout:         600,
+        CleanupCRDs:     true, // Enable cleanup if CRDs are installed here
+        CRDsToCleanup:   componentCRDs, // Pass CRD list if CleanupCRDs is true
+    })
+    if err != nil {
+        ctx.Log.Error("Failed to deploy {component_name}-base chart", &pulumi.LogArgs{Resource: subComponent1})
+        return err
+    }
+
+    // --- Sub-Component 2: Controller/Core Helm Chart (Example) ---
+    // Deploy the main logic/controller chart, depending on the base
+    subComponent2, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+        Name:            "{component_name}-core",
+        Namespace:       namespace,
+        ChartName:       "{core_chart_name}",
+        RepositoryURL:   "{core_chart_repo}",
+        Version:         version,
+        CreateNamespace: false, // Namespace already created
+        Values: map[string]interface{}{ // Example inline values
+            "setting": "value",
+        },
+        Wait:        true,
+        Timeout:     600,
+    }, pulumi.DependsOn([]pulumi.Resource{subComponent1})) // Explicit dependency on base chart
+    if err != nil {
+        ctx.Log.Error("Failed to deploy {component_name}-core chart", &pulumi.LogArgs{Resource: subComponent2})
+        return err
+    }
+
+    // --- Sub-Component 3: Additional Helm Chart (Example) ---
+    // Deploy an optional or supporting chart, depending on base and/or core
+    subComponent3, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+         Name:            "{component_name}-addon",
+         Namespace:       namespace,
+         ChartName:       "{addon_chart_name}",
+         RepositoryURL:   "{addon_chart_repo}",
+         Version:         version, // Could be a different version variable
+         CreateNamespace: false,
+         Wait:            true,
+         Timeout:         600,
+    }, pulumi.DependsOn([]pulumi.Resource{subComponent1, subComponent2})) // Multiple dependencies
+    if err != nil {
+         ctx.Log.Error("Failed to deploy {component_name}-addon chart", &pulumi.LogArgs{Resource: subComponent3})
+         return err
+    }
+
+    // --- Conditional Raw YAML Manifests (Example based on Istio/Redis) ---
+    // Deploy additional resources (like CRs) only if a specific feature is enabled
+    if dependentFeatureEnabled {
+        ctx.Log.Info("{dependent_feature_flag} is enabled, deploying related manifests", nil)
+
+        // Raw Manifest 1: Example Custom Resource
+        manifest1, err := resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+            Name: "{component_name}-dependent-feature-1",
+            YAML: `apiVersion: networking.k8s.io/v1alpha1 # Fictional API
+kind: CustomResource1
+metadata:
+name: feature-config-1
+namespace: ` + namespace + `
+spec:
+# ... configuration referencing dependent service, e.g.:
+# targetService: {dependent_component_service}.{dependent_component_namespace}.svc.cluster.local
+`,
+        }, pulumi.DependsOn([]pulumi.Resource{subComponent3})) // Depends on relevant chart/resource
+        if err != nil {
+            ctx.Log.Error("Failed to deploy {component_name}-dependent-feature-1 manifest", &pulumi.LogArgs{Resource: manifest1})
+            return err
+        }
+
+        // Raw Manifest 2: Another Example
+        manifest2, err := resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+             Name: "{component_name}-dependent-feature-2",
+             YAML: `apiVersion: networking.k8s.io/v1alpha1 # Fictional API
+kind: CustomResource2
+metadata:
+name: feature-config-2
+namespace: ` + namespace + `
+# ... spec ...
+`,
+        }, pulumi.DependsOn([]pulumi.Resource{subComponent3})) // Depends on relevant chart/resource
+        if err != nil {
+             ctx.Log.Error("Failed to deploy {component_name}-dependent-feature-2 manifest", &pulumi.LogArgs{Resource: manifest2})
+             return err
+        }
+    }
+
+    // --- Exports (Optional) ---
+    // Export outputs that might be useful for other components or for the user
+    ctx.Export("{ComponentName}Namespace", pulumi.String(namespace))
+    // Example: Exporting a service endpoint if applicable
+    // ctx.Export("{ComponentName}ServiceEndpoint", service.Status.LoadBalancer().Ingress().Index(pulumi.Int(0)).Ip())
+
+    ctx.Log.Info("{ComponentName} deployment completed successfully", nil)
+    return nil // Indicate success
+}
+
+```
+
+## How to Use
+
+When implementing a new Pulumi component that exhibits complexity similar to Istio (multiple charts, internal dependencies, conditional logic, raw manifests):
+
+1.  Review this template and the guidelines.
+2.  Copy the structure from the generalized code template into your new component file (e.g., `pulumi_dev_local/pkg/applications/new_complex_component.go`).
+3.  Replace placeholders like `{ComponentName}`, `{component_name}`, `{base_chart_name}`, `{dependent_feature_flag}`, etc., with values specific to your new component.
+4.  Adapt the number and dependencies of sub-components (Helm charts, manifests) as needed.
+5.  Implement the specific logic and configuration for your component.
+6.  Ensure `pulumi.DependsOn` is used correctly to reflect the actual deployment dependencies.

@@ -1,0 +1,1 @@
+lab-examples/gke_autopilot_private.tf

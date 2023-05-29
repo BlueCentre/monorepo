@@ -1,0 +1,24 @@
+# See:
+# - https://github.com/GoogleContainerTools/container-structure-test#command-tests
+# - https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
+schemaVersion: 2.0.0
+metadataTest:
+  entrypoint: ['/opt/projects/py/devops_fastapi_app/run_bin']
+  # exposedPorts: ["5000"]
+commandTests:
+  # check that the python binary is in the correct location
+  - name: "python installation"
+    command: "which"
+    args: ["python"]
+    expectedOutput: ["/usr/local/bin/python\n"]
+  # - name: run
+  #   command: /opt/projects/devops_fastapi_app/run_bin
+  #   expectedOutput: ['I am alive']
+fileExistenceTests:
+- name: 'run_bin'
+  path: '/opt/projects/py/devops_fastapi_app/run_bin'
+  shouldExist: true
+  #permissions: '-r-xr-xr-x'
+  # uid: 1000
+  # gid: 1000
+  # isExecutableBy: 'group'

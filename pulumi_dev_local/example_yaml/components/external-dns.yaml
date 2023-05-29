@@ -1,0 +1,69 @@
+name: external-dns
+runtime: yaml
+description: External DNS for Kubernetes
+
+resources:
+  # External DNS Helm Chart
+  externalDns:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: external-dns
+      version: "1.15.0"
+      repositoryOpts:
+        repo: https://kubernetes-sigs.github.io/external-dns/
+      name: external-dns
+      namespace: external-dns
+      createNamespace: true
+      wait: false
+      values:
+        provider: cloudflare
+        env:
+          - name: CF_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: cf-secret
+                key: cloudflare-api-key
+        txtOwnerId: bluecentre-dev
+        policy: sync
+        interval: 30m
+        triggerLoopOnEvent: true
+        annotationFilter: "external-dns.alpha.kubernetes.io/sync-enabled in (true)"
+        sources:
+          - istio-gateway
+
+  # External Secret for Cloudflare API token
+  externalDnsSecret:
+    type: kubernetes:yaml:ConfigGroup
+    properties:
+      yaml: |
+        apiVersion: external-secrets.io/v1beta1
+        kind: ExternalSecret
+        metadata:
+          name: cf-external-secret
+          namespace: external-dns
+        spec:
+          refreshInterval: 1h
+          secretStoreRef:
+            kind: ClusterSecretStore
+            name: external-secret-cluster-fake-secrets
+          target:
+            name: cf-secret
+            creationPolicy: Owner
+            template:
+              metadata:
+                labels:
+                  service: external-dns
+                annotations:
+                  reloader.stakater.com/match: "true"
+          data:
+            - secretKey: cloudflare-api-key
+              remoteRef:
+                key: CLOUDFLARE_API_TOKEN
+                version: v1
+    options:
+      dependsOn:
+        - ${resources.externalDns}
+
+outputs:
+  status:
+    value: "External DNS is installed and configured." 

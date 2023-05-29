@@ -1,0 +1,39 @@
+# See https://bazel.build/concepts/build-files
+
+package(default_visibility = ["//visibility:public"])
+
+# load("@pip_deps//:requirements.bzl", "requirement")
+# load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
+# load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+# load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+# load("//bazel/fixes:py_image_layer.bzl", "py_image_layer")
+# load("@container_structure_test//:defs.bzl", "container_structure_test")
+
+
+py_library(
+    name = "fastapi_lib",
+    srcs = glob([
+        "app/*.py",
+    ]),
+    deps = [
+        # requirement("fastapi"),
+        # requirement("asyncpg"),
+        # "//libs/devops:devops_lib"
+    ],
+)
+
+# py_test(
+#     name = "fastapi_test",
+#     srcs = glob(["tests/*.py"]),
+#     timeout = "short",
+#     deps = [
+#         requirement("requests"),
+#         requirement("httpx"),
+#         requirement("fastapi"),
+#         ":fastapi_lib",
+#         ":run_bin",
+#     ],
+# )
+
+# TODO: Should we build a conatiner layer?

@@ -1,0 +1,32 @@
+# TODO: https://blog.aspect.dev/many-python-versions-one-bazel-build
+
+# See https://github.com/bazelbuild/rules_python/tree/main/examples/multi_python_versions
+
+# Python requirements configuration for Bazel 8.x
+# See: https://github.com/bazelbuild/rules_python/blob/main/docs/pip.md
+
+# Simple test file for verifying requirements
+exports_files(["requirements.in"])
+
+# Add a requirements target for pip dependencies
+filegroup(
+    name = "requirements",
+    srcs = ["requirements_lock_3_11.txt"],
+    visibility = ["//visibility:public"],
+)
+
+# For backward compatibility, create symlinks to the locked requirements files
+genrule(
+    name = "copy_requirements_locks",
+    srcs = ["requirements_lock_3_11.txt"],
+    outs = [
+        "requirements_lock_3_10.txt",
+        "requirements_lock_3_9.txt",
+        "requirements_lock_3_8.txt",
+    ],
+    cmd = """
+        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_10.txt)
+        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_9.txt)
+        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_8.txt)
+    """,
+)

@@ -1,0 +1,41 @@
+# Configuration for the CloudNativePG cluster
+# See https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/values.yaml
+
+mode: standalone
+
+cluster:
+  instances: 1
+  storage:
+    size: 1Gi
+
+  # -- When this option is enabled, the operator will use the SuperuserSecret to update the postgres user password.
+  # If the secret is not present, the operator will automatically create one.
+  # When this option is disabled, the operator will ignore the SuperuserSecret content, delete it when automatically created,
+  # and then blank the password of the postgres user by setting it to NULL.
+  enableSuperuserAccess: true
+  superuserSecret: ""
+
+  monitoring:
+    # -- Whether to enable monitoring
+    enabled: false
+    podMonitor:
+      # -- Whether to enable the PodMonitor
+      enabled: true
+
+  # -- BootstrapInitDB is the configuration of the bootstrap process when initdb is used.
+  # See: https://cloudnative-pg.io/documentation/current/bootstrap/
+  # See: https://cloudnative-pg.io/documentation/current/cloudnative-pg.v1/#postgresql-cnpg-io-v1-bootstrapinitdb
+  initdb:
+    database: "${cnpg_app_db_name}"
+    owner: "${cnpg_app_db_user}" # Defaults to the database name
+    secret:
+      name: "${cnpg_secret_name}" # Name of the secret containing the initial credentials for the owner of the user database. If empty a new secret will be created from scratch
+    # options: []
+    # encoding: UTF8
+    # postInitSQL:
+    #   - CREATE EXTENSION IF NOT EXISTS vector;
+    # postInitApplicationSQL: []
+    # postInitTemplateSQL: []
+
+backups:
+  enabled: false

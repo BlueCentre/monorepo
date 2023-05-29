@@ -1,0 +1,34 @@
+# Gateway definition (missing from your configuration)
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: template-fastapi-gateway
+  namespace: template-fastapi-app
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "api-james.ipv1337.dev"  # or specific hosts if desired
+
+# Updated VirtualService (needs 'gateways' field)
+# apiVersion: networking.istio.io/v1alpha3
+# kind: VirtualService
+# metadata:
+#   name: template-fastapi-app
+#   namespace: template-fastapi-app
+# spec:
+#   hosts:
+#   - "template-fastapi-app.template-fastapi-app.svc.cluster.local"
+#   - "template-fastapi-app"
+#   gateways:
+#   - template-fastapi-gateway  # Reference to the Gateway
+#   http:
+#   # rest of your http rules...

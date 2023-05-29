@@ -1,0 +1,164 @@
+# Uncomment if you need to use secrets from Secret Manager
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/secret_manager_secret_version_access
+# data "google_secret_manager_secret_version_access" "example_iap_client_id" {
+#   count   = var.example_enabled ? 1 : 0
+#   project = var.project_id
+#   secret  = upper("example_iap_client_id")
+#   # version = "latest" # Uncomment for specific version
+# }
+
+# Uncomment if you need to use secrets from Secret Manager
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/secret_manager_secret_version_access
+# data "google_secret_manager_secret_version_access" "example_iap_client_secret" {
+#   count   = var.example_enabled ? 1 : 0
+#   project = var.project_id
+#   secret  = upper("example_iap_client_secret")
+#   # version = "latest" # Uncomment for specific version
+# }
+
+# Uncomment if you want to use Workload Identity
+# https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev
+# https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+# https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/workload-identity
+# module "example_workload_identity" {
+#   for_each = var.example_enabled ? toset([
+#     "example-service-account-1",
+#     "example-service-account-2",
+#   ]) : []
+#   source              = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
+#   version             = "31.1.0"
+#   name                = each.value
+#   namespace           = "example"
+#   cluster_name        = data.terraform_remote_state.google_container_cluster.outputs.gke_cluster_name
+#   location            = var.region
+#   project_id          = var.project_id
+#   use_existing_gcp_sa = true
+#   use_existing_k8s_sa = true
+#   # If annotation is disabled (via annotate_k8s_sa = false), the existing Kubernetes service account
+#   # must already bear the "iam.gke.io/gcp-service-account" annotation.
+#   annotate_k8s_sa = true
+#   # https://cloud.google.com/secret-manager/docs/access-control
+#   # https://cloud.google.com/iam/docs/roles-overview
+#   roles = [
+#     "roles/secretmanager.secretAccessor",
+#     "roles/iam.serviceAccountTokenCreator",
+#     "roles/container.clusterViewer",
+#     # "roles/iam.serviceAccounts.getAccessToken", # Not supported for this resource
+#   ]
+#   # depends_on = [helm_release.example]
+# }
+
+
+# https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
+resource "helm_release" "example" {
+  count            = var.example_enabled ? 1 : 0
+  name             = "example"
+  chart            = "example"
+  version          = "7.4.5"
+  repository       = "https://argoproj.github.io/argo-helm"
+  description      = "Terraform driven Helm release of Example Helm chart"
+  namespace        = "example"
+  create_namespace = true
+  wait             = false
+
+  # https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
+
+  # https://developer.hashicorp.com/terraform/language/functions/templatefile
+  values = [
+    templatefile(
+      "${path.module}/helm_values/example_values.yaml.tpl",
+      {
+        # https://console.cloud.google.com/apis/credentials/oauthclient/681831149067-9qif0l6nn4etv66fv73dgndquinnasvk.apps.googleusercontent.com?project=prj-lab-james-nguyen&supportedpurview=project
+        domain          = "example-dev.lab.example.io",
+        hostname        = "example-dev.lab.example.io",
+        iapClientID     = data.google_secret_manager_secret_version_access.example_iap_client_id[count.index].secret_data,
+        iapClientSecret = data.google_secret_manager_secret_version_access.example_iap_client_secret[count.index].secret_data,
+      }
+    )
+  ]
+
+  # values = [
+  #   file("${path.module}/helm_values/argocd_install_values.yaml")
+  # ]
+
+  # set {
+  #   name  = "global.domain"
+  #   value = "argocd.lab.example.io"
+  # }
+
+  # set {
+  #   name  = "server.insecure"
+  #   value = "true"
+  # }
+
+  # set {
+  #   name  = "server.service.annotations.external-dns.alpha.kubernetes.io/hostname"
+  #   value = "argocd.lab.example.io"
+  # }
+
+  # set {
+  #   name  = "server.service.annotations.external-dns.alpha.kubernetes.io/sync-enabled"
+  #   value = "true"
+  # }
+
+  # set {
+  #   name  = "server.service.type"
+  #   value = "LoadBalancer"
+  # }
+
+  # An option for setting values that I generally use
+  # values = [jsonencode({
+  #   someKey = "someValue"
+  # })]
+
+  # set_sensitive {
+  #   name  = "someOtherKey"
+  #   value = "someOtherValue"
+  # }
+
+  # depends_on = [kubectl_manifest.patch_external_dns_secret]
+}
+
+# resource "helm_release" "argocd_image_updater" {
+#   count      = var.argocd_enabled ? 1 : 0
+#   repository = "https://argoproj.github.io/argo-helm"
+#   chart      = "argo-cd-image-updater"
+#   version    = "7.3.11"
+#   name       = "argocd-image-updater"
+# }
+
+# Uncomment if you need to patch CRDs after Helm release
+# resource "kubectl_manifest" "patch_example_bootstrap" {
+#   count      = var.example_enabled ? 1 : 0
+#   yaml_body  = <<EOF
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: argocd-bootstrap
+#   namespace: argocd
+#   labels:
+#     # This label is required to access secret values when OAuth configurations
+#     app.kubernetes.io/part-of: argocd 
+# spec:
+#   project: default
+#   source:
+#     repoURL: 'git@github.com:ipv1337/terraform-lab-project.git'
+#     path: 6.0-gitops-argocd
+#     targetRevision: HEAD
+#   destination:
+#     server: 'https://kubernetes.default.svc'
+#     namespace: argocd
+#   syncPolicy: {}
+#   EOF
+#   depends_on = [helm_release.example]
+# }
+
+
+# https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd#gke-application-load-balancer
+# https://medium.com/@tharukam/configuring-argo-cd-on-gke-with-ingress-iap-and-google-oauth-for-rbac-a746fd009b78
+# https://blog.saintmalik.me/argocd-on-kubernetes-cluster/
+# https://piotrminkowski.com/2022/06/28/manage-kubernetes-cluster-with-terraform-and-argo-cd/
+# https://piotrminkowski.com/2024/06/28/backstage-on-kubernetes/
+
+# BUGS:
+# - depends_on does not work so apply twice is needed

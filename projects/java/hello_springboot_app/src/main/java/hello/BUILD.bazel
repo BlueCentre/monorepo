@@ -1,0 +1,41 @@
+# See: 
+# - https://bazel.build/reference/be/java
+# - https://github.com/bazelbuild/rules_java/blob/master/java/defs.bzl
+# - https://github.com/salesforce/rules_spring/tree/main/examples/helloworld
+
+# load("@rules_spring//springboot:springboot.bzl", "springboot")
+
+# dependencies from other packages in the workspace
+lib_deps = [
+    # "//libs/java/helloworld/libs/lib2",
+    # "//projects/java/hello_springboot/examples/helloworld/libs/lib1",
+]
+
+# create our deps list for Spring Boot
+springboot_deps = [
+    # All springboot dependencies are commented out
+]
+
+java_library(
+    name = "lib",
+    srcs = glob(["*.java"]),
+    # visibility = ["//projects/java/hello_springboot_app/src/test:__subpackages__"],
+    visibility = ["//visibility:public"],
+    deps = lib_deps,
+)
+
+# Build the app as a Spring Boot executable jar
+# springboot(
+#     name = "app",
+#     boot_app_class = "hello.Application",
+#     java_library = ":lib",
+#     visibility = ["//visibility:public"],
+# )
+
+# Use a regular java_binary instead
+java_binary(
+    name = "app",
+    main_class = "hello.Application",
+    runtime_deps = [":lib"],
+    visibility = ["//visibility:public"],
+)

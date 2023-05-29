@@ -1,0 +1,44 @@
+# https://github.com/DataDog/helm-charts/blob/main/charts/datadog/values.yaml
+
+# Configuration for the Datadog agent
+# See https://github.com/DataDog/helm-charts/blob/main/charts/datadog/values.yaml for reference
+
+# Target system for the agent
+targetSystem: "linux"
+
+# Datadog API and APP key configuration
+datadog:
+  apiKeyExistingSecret: datadog
+  appKeyExistingSecret: datadog
+  collectEvents: false
+  # Tags for all metrics, logs, and traces
+  tags:
+    - tenant:monorepo
+    - owner:ipv1337
+    - env:dev
+  # Log collection configuration
+  logs:
+    enabled: true
+    containerCollectAll: true
+    autoMultiLineDetection: true
+  # APM configuration
+  apm:
+    portEnabled: true
+
+# Cluster Agent configuration
+clusterAgent:
+  enabled: true
+  admissionController:
+    enabled: true
+
+# Agent resource configuration
+agents:
+  containers:
+    agent:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi

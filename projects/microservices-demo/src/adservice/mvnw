@@ -1,0 +1,44 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven wrapper script similar to the Gradle wrapper
+# ----------------------------------------------------------------------------
+
+# Define defaults
+MAVEN_VERSION="3.9.6"
+MAVEN_URL="https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+MAVEN_DIR="$HOME/.m2/wrapper/dists/apache-maven-${MAVEN_VERSION}"
+MAVEN_JAR="$MAVEN_DIR/apache-maven-${MAVEN_VERSION}/bin/mvn"
+
+# Make sure the Maven directory exists
+mkdir -p "$MAVEN_DIR"
+
+# Download Maven if it doesn't exist
+if [ ! -f "$MAVEN_JAR" ]; then
+  echo "Downloading Maven $MAVEN_VERSION..."
+  
+  # Create a temporary file for the download
+  TEMP_FILE=$(mktemp)
+  
+  # Download Maven
+  if command -v curl > /dev/null 2>&1; then
+    curl -s -o "$TEMP_FILE" "$MAVEN_URL"
+  elif command -v wget > /dev/null 2>&1; then
+    wget -q -O "$TEMP_FILE" "$MAVEN_URL"
+  else
+    echo "Error: Neither curl nor wget found. Please install one of them."
+    exit 1
+  fi
+  
+  # Extract Maven
+  mkdir -p "$MAVEN_DIR"
+  tar -xzf "$TEMP_FILE" -C "$MAVEN_DIR"
+  rm "$TEMP_FILE"
+  
+  # Rename the directory to match our expected path
+  find "$MAVEN_DIR" -type d -name "apache-maven-${MAVEN_VERSION}" -exec mv {} "$MAVEN_DIR/apache-maven-${MAVEN_VERSION}" \;
+  
+  echo "Maven $MAVEN_VERSION has been installed to $MAVEN_DIR"
+fi
+
+# Execute Maven with the given arguments
+exec "$MAVEN_DIR/apache-maven-${MAVEN_VERSION}/bin/mvn" "$@" 

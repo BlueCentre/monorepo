@@ -1,0 +1,185 @@
+---
+description: Guidance for implementing Terraform components
+globs: terraform_dev_local/**
+alwaysApply: false
+---
+// Terraform Infrastructure Implementation
+// Guidelines and best practices for implementing Terraform infrastructure components
+
+# Terraform Infrastructure Implementation Best Practices
+
+## Component Development Guidelines
+
+When implementing new Terraform components or modifying existing ones, follow these consistent patterns:
+
+1. **Use standardized resource naming**:
+   - Use `helm_release.<component_name>` for Helm chart deployments
+   - Include descriptive comments with references to Helm chart documentation
+   - Always include a conditional `count` based on an enable flag
+
+2. **Use compatible Helm chart repositories**:
+   - Prefer HTTPS URLs (e.g., `https://charts.bitnami.com/bitnami`) for maximum compatibility with Pulumi
+   - Only use OCI URLs (`oci://registry-1.docker.io/bitnamicharts`) if verified to work with both tools
+   - Check `.cursor/rules/iac-helm-chart-repository-best-practices.mdc` for specific repository URLs
+   - Test repository access with a minimal chart deployment before adding complex configurations
+
+3. **Implement proper variable definitions**:
+   - Define all component variables in `variables.tf`
+   - Include appropriate descriptions, types, and default values
+   - Use `sensitive = true` for secrets and credentials
+   - Use standardized naming convention: `<component_name>_<property>`
+
+4. **Externalize Helm values in template files**:
+   - Store Helm values in `helm_values/<component_name>_values.yaml.tpl`
+   - Use the `templatefile()` function to inject variables
+   - Only use inline `set {}` blocks for dynamic values or credentials
+   - Include references to original Helm chart documentation
+
+5. **Follow standard resource structure**:
+   - Enable/disable components using a boolean variable
+   - Set appropriate timeouts and wait conditions
+   - Use consistent indentation and formatting
+   - Group related resources together in the same file
+
+6. **Use standard module organization**:
+   - Name files according to purpose: `helm_<component_name>.tf`
+   - Keep provider configuration in `providers.tf`
+   - Define common variables in `variables.tf`
+   - Use outputs for sharing values between components
+
+## Example Implementation Pattern
+
+Below is a standard pattern for implementing a Helm chart deployment:
+
+```hcl
+# Reference to Helm chart documentation
+# https://github.com/example/charts/tree/main/example
+# https://artifacthub.io/packages/helm/example/example
+resource "helm_release" "example" {
+  count            = var.example_enabled ? 1 : 0
+  name             = "example"
+  repository       = "https://charts.example.com/repo"
+  chart            = "example"
+  version          = var.example_version
+  description      = "Terraform-driven Helm release of Example chart"
+  namespace        = var.example_namespace
+  create_namespace = true
+  wait             = true
+  timeout          = 600
+
+  values = [
+    templatefile(
+      "${path.module}/helm_values/example_values.yaml.tpl",
+      {
+        namespace = var.example_namespace
+      }
+    )
+  ]
+
+  # Dynamic or sensitive values should use set blocks
+  set {
+    name  = "auth.password"
+    value = var.example_password
+  }
+
+  # Resource-specific configurations
+  set {
+    name  = "persistence.enabled"
+    value = "true"
+  }
+  
+  # Add additional configurations as needed
+}
+```
+
+In `variables.tf`:
+
+```hcl
+variable "example_enabled" {
+  description = "Enable the Example component"
+  type        = bool
+  default     = false
+}
+
+variable "example_version" {
+  description = "Version of the Example Helm chart to deploy"
+  type        = string
+  default     = "1.0.0"
+}
+
+variable "example_namespace" {
+  description = "Kubernetes namespace for the Example deployment"
+  type        = string
+  default     = "example"
+}
+
+variable "example_password" {
+  description = "Password for Example authentication"
+  type        = string
+  default     = "example-password"
+  sensitive   = true
+}
+```
+
+In `helm_values/example_values.yaml.tpl`:
+
+```yaml
+# Example Helm Chart Values
+# https://github.com/example/charts/blob/main/example/values.yaml
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Custom labels for all resources
+commonLabels:
+  app.kubernetes.io/part-of: "platform-infrastructure"
+  app.kubernetes.io/managed-by: "terraform"
+
+# Static configurations go here
+persistence:
+  enabled: true
+  size: 8Gi
+
+# Dynamic values from variables
+namespace: ${namespace}
+```
+
+## Adding a New Component
+
+When adding a new Terraform component:
+
+1. **Create the implementation file**: `helm_<component_name>.tf`
+2. **Define variables**: Add required variables to `variables.tf`
+3. **Create values template**: Add a template in `helm_values/<component_name>_values.yaml.tpl`
+4. **Add to terraform.auto.tfvars**: Set initial values in terraform.auto.tfvars
+5. **Document the component**: Add details to COMPONENTS.md
+
+## Refactoring Existing Components
+
+When refactoring existing components to follow these guidelines:
+
+1. Extract inline values to a Helm values template file
+2. Move all variables to `variables.tf` with proper documentation
+3. Update the resource to use the template file
+4. Only keep dynamic values as `set {}` blocks
+5. Test the refactored component with `terraform plan` before applying changes
+
+## Best Practices for Terraform
+
+1. **Use clear, descriptive variable names** that indicate the component and purpose
+2. **Include useful defaults** for most variables
+3. **Document variables thoroughly** with descriptions that explain their purpose and impact
+4. **Keep the implementation modular** with one component per file
+5. **Use conditional logic with count** to enable/disable components
+6. **Externalize Helm values** to improve readability and maintainability
+7. **Use consistent formatting** (run `terraform fmt` before committing)
+8. **Validate configurations** with `terraform validate` before applying
+9. **Keep secret values in variables** marked as sensitive
+
+## Documentation
+
+Always refer to these detailed documentation resources:
+- [Terraform Best Practices](mdc:terraform_dev_local/README.md)
+- [Helm Chart Integration](mdc:terraform_dev_local/helm_reference.tf.example)
+- [Component Documentation](mdc:terraform_dev_local/COMPONENTS.md)

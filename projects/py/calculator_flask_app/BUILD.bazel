@@ -1,0 +1,41 @@
+# load("@pip_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library")
+# load("@pip_deps//:requirements.bzl", "requirement")
+# load("@io_bazel_rules_docker//python3:image.bzl", py_image = "py3_image")
+# load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+# install_deps()
+
+py_library(
+    name = "app_lib",
+    srcs = ["app/app.py"],
+    deps = [
+        # requirement("flask"),
+        # requirement("pytest"),
+        # requirement("pytest-cov"),
+        "//libs/py/calculator:calculator_lib",
+    ],
+)
+
+py_binary(
+    name = "app_bin",
+    srcs = ["app/app.py"],
+    main = "app.py",
+    deps = [":app_lib"],
+)
+
+# py_image(
+#     name = "python_web_image",
+#     srcs = ["python_web.py"],
+#     main = "python_web.py",
+#     deps = [":python_web_lib"],
+# )
+
+# container_push(
+#     name = "publish",
+#     format = "Docker",
+#     image = ":python_web_image",
+#     registry = "registry.hub.docker.com",
+#     repository = "krisfoster96/monorepo-python-web",
+#     tag = "1",
+# )

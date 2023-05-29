@@ -1,0 +1,313 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-primary
+  namespace: argocd
+  labels:
+    environment: platform-project
+spec:
+  project: platform
+  revisionHistoryLimit: 3
+  source:
+    repoURL: https://github.com/argoproj/argo-helm.git
+    targetRevision: 'argo-cd-7.4.5'
+    path: charts/argo-cd
+    helm:
+      version: v3
+      values: |
+        global:
+          additionalLabels:
+            app: argo-cd
+
+        controller:
+          serviceAccount:
+            annotations:
+              iam.gke.io/gcp-service-account: argo-cd-server@example-infrastructure.iam.gserviceaccount.com
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          extraArgs:
+            - --repo-server-timeout-seconds
+            - "500"
+          nodeSelector:
+            app: argocd
+          replicas: 3
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              selector:
+                release: prometheus
+          env: 
+          - name: "ARGOCD_CONTROLLER_REPLICAS"
+            value: "3"
+          - name: ARGOCD_CONTROLLER_SHARD
+            value: "-1"
+           
+
+        dex:
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          volumes:
+            # - emptyDir: {}
+            #   name: static-files
+            # - emptyDir: {}
+            #   name: dexconfig
+            - name: google-json
+              secret:
+                defaultMode: 420
+                secretName: argocd-google-groups-json
+          volumeMounts:
+            # - mountPath: /tmp
+            #   name: dexconfig
+            - mountPath: /tmp/oidc
+              name: google-json
+              readOnly: true
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              selector:
+                release: prometheus
+
+        redis-ha:
+          enabled: true
+          replicas: 2
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          exporter:
+            enabled: false
+          redis:
+            resources:
+              limits:
+                cpu: 2
+                memory: 1Gi
+              requests:
+                cpu: 0.5
+                memory: 128Mi
+          haproxy:
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
+
+        server:
+          serviceAccount:
+            annotations:
+              iam.gke.io/gcp-service-account: argo-cd-server@example-infrastructure.iam.gserviceaccount.com
+          autoscaling:
+            enabled: true
+            minReplicas: 4
+            maxReplicas: 8
+          extraArgs:
+            - --insecure
+            - --enable-gzip
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          ingress:
+            ingressClassName: kong
+            enabled: true
+            hostname: argocd.example.com
+            path: /
+            pathType: Prefix
+            extraTls:
+              - secretName: kongtls22
+                hosts:
+                  - argocd.example.com
+            https: true
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              selector:
+                release: prometheus
+
+        repoServer:
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              selector:
+                release: prometheus
+          env: 
+          - name: "ARGOCD_EXEC_TIMEOUT"
+            value: "300s"
+          - name: "ARGOCD_GIT_ATTEMPTS_COUNT"
+            value: "10"
+          
+        applicationSet:
+          enabled: true
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 2
+              memory: 1028Mi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          # extraEnvFrom:
+          # - secretRef:
+          #     name: argocd-secret
+          ingress:
+            ingressClassName: kong
+            enabled: true
+            annotations:
+              external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+              external-dns.alpha.kubernetes.io/sync-enabled: true
+            hostname: argocd-applicationset.example.com
+            path: /api/webhook
+            pathType: Prefix
+            extraTls:
+              - secretName: kongtls22
+                hosts:
+                  - argocd-applicationset.example.com
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              selector:
+                release: prometheus
+
+        notifications:
+          enabled: false
+          tolerations:
+            - key: "argocd"
+              operator: "Equal"
+              value: "true"
+          nodeSelector:
+            app: argocd
+          argocdUrl: "argocd.example.com"
+          resources:
+            limits:
+              cpu: 1
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+        configs:
+          repositories: 
+            datadog-helm-repo:
+              url: https://helm.datadoghq.com
+              name: datadog-helm
+              type: helm
+            prometheus-helm-repo:
+              url: https://prometheus-community.github.io/helm-charts
+              name: prometheus-helm
+              type: helm
+          cm:
+            help.chatUrl: "https://example.slack.com/archives/C04S8DSM69H"
+            help.chatText: "Need help?"
+            admin.enabled: "false"
+            url: "https://argocd.example.com"
+            dex.config: |
+              connectors:
+              - config:
+                  redirectURI: https://argocd.example.com/api/dex/callback
+                  clientID: $argocd-dex-config-secret:dex.google.clientID
+                  clientSecret: $argocd-dex-config-secret:dex.google.clientSecret
+                  serviceAccountFilePath: /tmp/oidc/googleAuth.json
+                  adminEmail: spinnaker-admin@example.com
+                type: google
+                id: google
+                name: Google
+            configManagementPlugins: |
+              - name: kustomized-helm
+                init:
+                  command: ["/bin/sh", "-c"]
+                  args: ["helm dependency build"]
+                generate:
+                  command: [sh, -c]
+                  args: ["helm template --release-name release-name . > all.yaml && kustomize build"]
+            resource.exclusions: |
+              - apiGroups:
+                - policy
+                kinds:
+                - PodSecurityPolicy
+                clusters:
+                - "*"
+            timeout.reconciliation: 600s
+          params:
+            controller.repo.server.timeout.seconds: 180
+            reposerver.parallelism.limit: "50"
+            controller.kubectl.parallelism.limit: "100"
+            controller.sharding.alghorithm: "round-robin"
+            controller.operation.processors: "25"
+            controller.status.processors: "50"
+          rbac:
+            policy.default: role:readonly
+            policy.csv: |
+              g, gcp-do@example.com, role:admin
+              g, gcp-se@example.com, role:se-role
+              p, role:se-role, applications, sync, *, allow
+              p, role:se-role, applications, delete, *, allow
+
+
+  destination:
+    # server: https://kubernetes.default.svc
+    server: {{ .server }}
+    namespace: argocd
+  syncPolicy: {}
+    # automated:
+    #   prune: false
+    # syncOptions:
+    #   - CreateNamespace=true
