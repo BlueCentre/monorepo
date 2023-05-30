@@ -1,4 +1,5 @@
 #build --@io_bazel_rules_docker//transitions:enable=no
+build --workspace_status_command "tools/workspace_status.sh"
 
 # https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
 try-import %workspace%/user.bazelrc
