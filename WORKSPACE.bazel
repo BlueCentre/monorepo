@@ -72,7 +72,7 @@ multi_pip_parse(
     # extra_pip_args = [
     #     "--extra-index-url", "https://pip.corp.flyrlabs.com/repo"
     # ],
-    download_only = True,
+    #download_only = True,
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")

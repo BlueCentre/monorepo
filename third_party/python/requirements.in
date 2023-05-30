@@ -16,4 +16,4 @@ pylint
 black
 pytest-pylint
 pytest-black
-#pytest-mypy
+pytest-mypy

@@ -1,10 +1,10 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("//tools/pytest:defs.bzl", "pytest_test")
 
 py_library(
     name = "webapp",
-    srcs = ["src/main.py"],
+    srcs = ["main.py"],
     # srcs_version = "PY3",
     deps = [requirement("fastapi")],
 )
@@ -13,23 +13,23 @@ py_library(
 # `bazel run //webapp:run -- --reload`
 py_binary(
     name = "run",
-    srcs = ["src/run.py"],
+    srcs = ["run.py"],
     # python_version = "PY3",
     # srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":webapp",
         requirement("uvicorn"),
+        ":webapp",
     ],
 )
 
 pytest_test(
     name = "test",
-    srcs = glob(["src/*.py"]),
+    srcs = glob(["*.py"]),
     deps = [
-        ":run",
-        ":webapp",
         requirement("requests"),
         requirement("fastapi"),
+        ":webapp",
+        ":run",
     ],
 )
