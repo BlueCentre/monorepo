@@ -1,3 +1,19 @@
 websockets
+
+# 
 flask
+
+# list externals dependencies available for every python packages
 fastapi
+uvicorn
+
+#test
+requests
+pytest
+
+#tools
+pylint
+black
+pytest-pylint
+pytest-black
+#pytest-mypy

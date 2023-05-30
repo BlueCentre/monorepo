@@ -20,8 +20,8 @@ def pytest_test(name, srcs, deps = [], args = [], data = [], **kwargs):
             "--pylint-rcfile=$(location //tools/pytest:.pylintrc)",
             # "--mypy",
         ] + args + ["$(location :%s)" % x for x in srcs],
-        python_version = "PY3",
-        srcs_version = "PY3",
+        # python_version = "PY3",
+        # srcs_version = "PY3",
         deps = deps + [
             requirement("pytest"),
             requirement("pytest-black"),

@@ -1,0 +1,7 @@
+genrule(
+    name = "version",
+    outs = ["version.txt"],
+    # alternative: "sed -n 's/STABLE_BUILD_GIT_DESCRIBE //p' bazel-out/stable-status.txt"
+    cmd_bash = "grep -Po '^STABLE_BUILD_GIT_DESCRIBE\\s+\\K.*' bazel-out/stable-status.txt |tee $@",
+    stamp = True,
+)
