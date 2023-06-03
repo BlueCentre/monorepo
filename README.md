@@ -36,3 +36,12 @@ bazel query projects/python-app:app --output=build
 bazel run projects/python-flask:app
 bazel query projects/python-flask:*
 bazel query projects/python-flask:app --output=build
+
+## Queries
+
+bazel query --noimplicit_deps "deps(//libs/calculator:calculator)"
+bazel query --noimplicit_deps "deps(//libs/echo:echo_lib)"
+bazel query --noimplicit_deps "deps(//libs/echo:echo_test)"
+bazel query --noimplicit_deps "deps(//projects/py-calculator-cli-app:app)"
+bazel query --noimplicit_deps "deps(//projects/py-echo-fastapi-app:webapp)"
+
