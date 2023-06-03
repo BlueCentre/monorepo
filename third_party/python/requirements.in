@@ -10,10 +10,11 @@ uvicorn
 #test
 requests
 pytest
+httpx
 
 #tools
 pylint
 black
 pytest-pylint
 pytest-black
-#pytest-mypy
+pytest-mypy

@@ -8,16 +8,19 @@ genrule(
 genrule(
     name = "envinfo",
     srcs = [
-        "a.txt",
-        "b.txt",
+        "files/a.txt",
+        "files/b.txt",
     ],
     outs = ["envinfo.txt"],
     cmd_bash = """(
+        echo "-----ENV INFO----"
+        echo "ENV:"
         env
-        echo "-----"
-        pwd
-        ls -l
-        echo "-----"
+        echo "-----FILESYSTEM INFO----"
+        echo "PWD: `pwd`"
+        echo "Files:"
+        ls -laF
+        echo "-----DEBUG INFO----"
         echo "whoami     = $$(whoami)"
         echo "TARGET_CPU = $(TARGET_CPU)"
         echo "BINDIR     = $(BINDIR)"
@@ -25,7 +28,7 @@ genrule(
         echo "OUTS       = $(OUTS)"
         echo "SRCS       = $(SRCS)"
         echo "RULEDIR    = $(RULEDIR)"
-        echo "a.txt      = $(location :a.txt)"
-        echo "b.txt      = $(location :b.txt)"
+        echo "a.txt      = $(location :files/a.txt)"
+        echo "b.txt      = $(location :files/b.txt)"
         ) | tee $@""",
 )
