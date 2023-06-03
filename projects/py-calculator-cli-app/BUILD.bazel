@@ -7,7 +7,7 @@ py_library(
     name = "py_calculator_cli_app_lib",
     srcs = ["src/app.py"],
     deps = [
-        "//libs/calculator",
+        "//libs/calculator:calculator_lib",
     ],
 )
 
