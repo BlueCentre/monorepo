@@ -1,3 +1,5 @@
+# See https://bazel.build/concepts/build-files
+
 load("@rules_python//python:defs.bzl", "py_library")
 
 # BUG: Figure out why I cannot use src/echo.py

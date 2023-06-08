@@ -7,12 +7,13 @@ workspace(
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-http_archive(
-  name = "rules_python",
-  url = "https://github.com/bazelbuild/rules_python/releases/download/0.22.0/rules_python-0.22.0.tar.gz",
-  sha256 = "863ba0fa944319f7e3d695711427d9ad80ba92c6edd0b7c7443b84e904689539",
-  strip_prefix = "rules_python-0.22.0",
-)
+# Switched to bzlmod approach
+# http_archive(
+#   name = "rules_python",
+#   url = "https://github.com/bazelbuild/rules_python/releases/download/0.22.0/rules_python-0.22.0.tar.gz",
+#   sha256 = "863ba0fa944319f7e3d695711427d9ad80ba92c6edd0b7c7443b84e904689539",
+#   strip_prefix = "rules_python-0.22.0",
+# )
 
 # Future migration https://github.com/bazel-contrib/rules_oci
 # http_archive(
@@ -78,56 +79,3 @@ multi_pip_parse(
 load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
-
-
-
-### Docker Setup
-# load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
-
-# container_repositories()
-
-# load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-# container_deps()
-
-### Loading base docker images for different languages
-
-# load("@io_bazel_rules_docker//python3:image.bzl", _py_image_repos = "repositories")
-
-# _py_image_repos()
-
-# load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories")
-
-# _go_image_repos()
-
-# load("@io_bazel_rules_docker//nodejs:image.bzl", _nodejs_image_repos = "repositories")
-
-# _nodejs_image_repos()
-
-# load(
-#   "@io_bazel_rules_docker//container:container.bzl",
-#   "container_pull",
-# )
-
-# container_pull(
-#   name = "go_base_image",
-#   registry = "registry.hub.docker.com",
-#   repository = "library/golang",
-#   # 'tag' is also supported, but digest is encouraged for reproducibility.
-#   # tag = 1.18.8-alpine3.16
-#   digest = "sha256:6b494c932ee8c209631e27521ddbe364da56e7f1275998fbb182447d20103e46",
-# )
-
-# load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
-
-# dockerfile_image(
-#   name = "custom_go_web_dockerfile",
-#   dockerfile = "//projects/go_web:Dockerfile",
-# )
-
-
-
-# build:
-#   targets:
-#   - //my-app:image
-#   - //my-other-app:image

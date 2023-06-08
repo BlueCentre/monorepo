@@ -1,13 +1,36 @@
-#build --@io_bazel_rules_docker//transitions:enable=no
-build --workspace_status_command "tools/workspace_status.sh"
+# See:
+# - https://blog.aspect.dev/bazelrc-flags
+# - https://docs.aspect.build/guides/bazelrc
 
-# https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
-try-import %workspace%/user.bazelrc
+common --enable_bzlmod
 
-test --test_output=errors
+# #build --@io_bazel_rules_docker//transitions:enable=no
+# build --incompatible_strict_action_env
+# build --incompatible_default_to_explicit_init_py
+# build --remote_local_fallback
+# build --unconditional_warning="Bazel Monorepo!" --unconditional_warning="<0001f92f>, enjoy our fast builds!"
+# build:release --workspace_status_command "tools/workspace_status.sh"
+
+# test --test_output=errors
+# test --test_verbose_timeout_warnings
+# test --build_tests_only
 
 # Windows requires these for multi-python support:
 # build --enable_runfiles
 # startup --windows_enable_symlinks
 
+# Update bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
+# Import Aspect bazelrc presets
+import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+import %workspace%/.aspect/bazelrc/convenience.bazelrc
+import %workspace%/.aspect/bazelrc/correctness.bazelrc
+import %workspace%/.aspect/bazelrc/debug.bazelrc
+import %workspace%/.aspect/bazelrc/javascript.bazelrc
+import %workspace%/.aspect/bazelrc/performance.bazelrc
+
+### YOUR PROJECT SPECIFIC OPTIONS GO HERE ###
+
 coverage --java_runtime_version=remotejdk_11
+
+# https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
+try-import %workspace%/.bazelrc.user

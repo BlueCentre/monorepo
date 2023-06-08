@@ -1,4 +1,4 @@
 # git ignore patterns
 
 /bazel-*
-user.bazelrc
+.bazelrc.user
