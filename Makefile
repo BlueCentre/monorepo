@@ -66,5 +66,9 @@ test_oci_py_helloworld_v2:
 
 
 
+git_new:
+	git fetch --all
+	git checkout -b master origin/master
+
 git_push: test
 	git push origin `git rev-parse --abbrev-ref HEAD`
