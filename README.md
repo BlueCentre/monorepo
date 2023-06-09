@@ -27,6 +27,7 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [x] Setup basic Bazel builds and simple examples
 - [x] Setup automated Bazel build + test using Github Actions
 - [ ] Setup e2e Python example
+- [ ] Test multi-version python
 - [ ] Setup e2e Golang example
 - [ ] Setup e2e Springboot example
 - [ ] OCI container support
