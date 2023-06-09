@@ -4,6 +4,10 @@
 
 Unlike other examples and demos out in the wild, we have a loftier goals. If you don't see the following objectives being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience was while looking for best practices and more indepth examples that can be used as blueprints rather than a one time presentation.
 
+## Motivation
+
+[Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
+
 ## Goals
 
 1. Keep dependencies and their versions up to date, not only with dependabot, but also breaking changes and automated tests.
@@ -22,17 +26,22 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 
 - [x] Setup basic Bazel builds and simple examples
 - [x] Setup automated Bazel build + test using Github Actions
-- [x] Setup e2e Python example
+- [ ] Setup e2e Python example
 - [ ] Setup e2e Golang example
 - [ ] Setup e2e Springboot example
-- [ ] Research and setup Skaffold + Bazel for local development
-- [ ] Research build systems like Cloud Build, BuildBuddy, Harness.io, etc
-- [ ] Research testing best practice 
+- [ ] OCI container support
+- [ ] Research and setup container & kubernetes development with Skaffold
+- [ ] Research build systems like Cloud Build, Harness.io, etc
+- [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc
+- [ ] Research testing best practice
+- [ ] Document VSCode and PyCharm IDE development environment
 
 # Useful Commands
 
-bazel --version
-bazel clean
+bazel version
+bazel info [release]
+bazel help info-keys
+bazel clean --async
 
 ## General
 
