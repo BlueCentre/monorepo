@@ -35,9 +35,14 @@ bazel_dep(name = "platforms", version = "0.0.6")
 
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 
+# See:
+# - https://hub.docker.com/layers/library/python/3.10-bullseye/images/sha256-b48e216f7c4adcf24fecd7016f3b8ead76866a19571819f67f47c1ccaf899717?context=explore
+# - https://hub.docker.com/layers/library/python/3.11-bullseye/images/sha256-354903e205598c82f91ab025139923fcde8ab6e0cd3bb0f5b753aeaaecb71923?context=explore
+# - https://hub.docker.com/layers/library/python/3.11-slim-bullseye/images/sha256-7d28177da146154adb077f7d71e21fdb9a7696128a7353b7db4cbb40c6e2d0ac?context=explore
+# - https://hub.docker.com/_/python/tags
 oci.pull(
     name = "distroless_python",
-    digest = "sha256:b48e216f7c4adcf24fecd7016f3b8ead76866a19571819f67f47c1ccaf899717",
+    digest = "sha256:7d28177da146154adb077f7d71e21fdb9a7696128a7353b7db4cbb40c6e2d0ac",
     image = "python",
 )
 

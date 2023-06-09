@@ -37,6 +37,47 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [ ] Research testing best practice
 - [ ] Document VSCode and PyCharm IDE development environment
 
+## Directory Convention
+
+```
+monorepo/
+|-- README.md
+|-- Makefile
+|-- skaffold.yaml
+|-- WORKSPACE.bazel
+|-- MODULE.bazel
+|-- BUILD.bazel
+|-- bazel-*/**                    -> bazel local directories not checked in
+|-- fixes/**                      -> bazel temporary fixes
+|-- docs/**                       -> please contribute!
+|-- libs/                         -> common used libraries
+|   |-- BUILD.bazel
+|   |-- README.md
+|   |-- base/
+|   |-- calculator/
+|   |-- echo/
+|   `-- ...
+|-- projects/                     -> all projects created here
+|   |-- BUILD.bazel
+|   |-- README.md
+|   |-- bazel/
+|   |-- base_project/
+|   |-- py_calculator_cli_app/
+|   |-- py_calculator_flask_app/
+|   |-- py_echo_fastapi_app/
+|   |-- py_helloworld_cli_app/
+|   |-- py_helloworld_v2_cli_app/
+|   `-- ...
+|-- third_party/                  -> 3rd party dependencies
+|   |-- README.md
+|   |-- python/
+|   `-- ...
+`-- tools/                        -> bazel specific tooling
+    |-- README.md
+    |-- pytest
+    `-- workspace_status.sh
+```
+
 # Useful Commands
 
 bazel version
