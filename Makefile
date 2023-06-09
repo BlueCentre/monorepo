@@ -38,6 +38,13 @@ run_oci_py_helloworld:
 	docker load --input `bazel cquery --output=files //projects/py_helloworld_cli_app:tarball`
 	docker run --rm local/py_helloworld_cli_app:latest
 
+run_oci_py_helloworld_v2:
+	#bazel run //projects/py_helloworld_v2_cli_app:hello_world_bin
+	bazel build //projects/py_helloworld_v2_cli_app:tarball
+	docker load --input `bazel cquery --output=files //projects/py_helloworld_v2_cli_app:tarball`
+	docker run --rm local/py_helloworld_v2_cli_app:latest
+
+
 
 test_libs:
 	bazel test //libs/...
@@ -54,6 +61,10 @@ test_fastapi_echo:
 test_oci_py_helloworld:
 	bazel test //projects/py_helloworld_cli_app:test
 
+test_oci_py_helloworld_v2:
+	bazel test //projects/py_helloworld_v2_cli_app:test
 
-git_push:
+
+
+git_push: test
 	git push origin `git rev-parse --abbrev-ref HEAD`

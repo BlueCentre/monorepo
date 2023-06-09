@@ -32,6 +32,7 @@ py_binary(
 # pytest_test(
 #     name = "webapp_test",
 #     srcs = glob(["tests/*.py"]),
+#     timeout = "short",
 #     deps = [
 #         requirement("requests"),
 #         requirement("httpx"),
@@ -45,6 +46,7 @@ py_test(
     name = "webapp_test",
     # srcs = glob(["*.py"]),
     srcs = ["tests/webapp_test.py"],
+    timeout = "short",
     deps = [
         requirement("requests"),
         requirement("httpx"),

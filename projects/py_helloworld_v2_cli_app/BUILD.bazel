@@ -7,8 +7,8 @@ load("@container_structure_test//:defs.bzl", "container_structure_test")
 py_library(
     name = "hello_world_lib",
     srcs = [
-        "__init__.py",
-        "app.py",
+        "src/__init__.py",
+        "src/app.py",
     ],
     imports = [".."],
     visibility = ["//:__subpackages__"],
@@ -16,7 +16,7 @@ py_library(
 
 py_binary(
     name = "hello_world_bin",
-    srcs = ["__main__.py"],
+    srcs = ["src/__main__.py"],
     imports = [".."],
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
@@ -34,8 +34,7 @@ py_image_layer(
 oci_image(
     name = "image",
     base = "@distroless_python",
-    # entrypoint = ["/opt/hello_world/hello_world_bin"],
-    entrypoint = ["/opt/projects/py_helloworld_cli_app/hello_world_bin"],
+    entrypoint = ["/opt/projects/py_helloworld_v2_cli_app/hello_world_bin"],
     tars = [":hello_world_layer"],
 )
 
@@ -71,13 +70,15 @@ platform_transition_filegroup(
 oci_tarball(
     name = "tarball",
     image = ":image",
-    # repo_tags = ["gcr.io/oci_python_hello_world:latest"],
-    repo_tags = ["local/py_helloworld_cli_app:latest"],
+    repo_tags = ["local/py_helloworld_v2_cli_app:latest"],
 )
 
+# See:
+# - https://bazel.build/reference/be/common-definitions#common-attributes-tests
+# - 
 container_structure_test(
     name = "test",
-    configs = ["test.yaml"],
+    configs = ["tests/test.yaml"],
     image = ":image",
-    timeout = "short",
+    timeout = "short"
 )
