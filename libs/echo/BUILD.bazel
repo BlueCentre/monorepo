@@ -15,6 +15,7 @@ py_test(
     srcs = [
         "tests/echo_test.py",
     ],
+    timeout = "short",
     deps = [
         "//libs/echo:echo_lib",
     ],
