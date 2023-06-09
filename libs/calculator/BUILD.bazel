@@ -10,6 +10,7 @@ py_library(
 py_test(
     name = "calculator_test",
     srcs = ["calculator_test.py"],
+    timeout = "short",
     deps = [
         "//libs/calculator:calculator_lib",
     ],
