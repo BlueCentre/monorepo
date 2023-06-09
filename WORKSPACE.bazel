@@ -35,7 +35,7 @@ load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependen
 
 pip_install_dependencies()
 
-default_python_version = "3.10"
+default_python_version = "3.11"
 
 python_register_multi_toolchains(
     name = "python",
