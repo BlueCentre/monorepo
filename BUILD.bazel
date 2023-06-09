@@ -1,7 +1,10 @@
-genrule(
-    name = "version",
-    outs = ["version.txt"],
-    # alternative: "sed -n 's/STABLE_BUILD_GIT_DESCRIBE //p' bazel-out/stable-status.txt"
-    cmd_bash = "grep -Po '^STABLE_BUILD_GIT_DESCRIBE\\s+\\K.*' bazel-out/stable-status.txt |tee $@",
-    stamp = True,
-)
+# See https://bazel.build/concepts/build-files
+
+# Does not work in sandbox mode due to the non-hermetic approach
+# genrule(
+#     name = "version",
+#     outs = ["version.txt"],
+#     # alternative: "sed -n 's/STABLE_BUILD_GIT_DESCRIBE //p' bazel-out/stable-status.txt"
+#     cmd_bash = "grep -Po '^STABLE_BUILD_GIT_DESCRIBE\\s+\\K.*' bazel-out/stable-status.txt | tee $@",
+#     stamp = True,
+# )

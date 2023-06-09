@@ -1,0 +1,72 @@
+# See:
+# - https://bazel.build/external/overview#blzmod
+# - https://docs.aspect.build/rules/aspect_bazel_lib/
+# - https://github.com/aspect-build/bazel-examples/blob/main/oci_python_image/MODULE.bazel
+
+# module(name = "bzlmod_example")
+
+# From https://registry.bazel.build/
+bazel_dep(name = "aspect_bazel_lib", version = "1.31.2")
+bazel_dep(name = "aspect_rules_js", version = "1.26.0")
+bazel_dep(name = "aspect_rules_swc", version = "1.0.1")
+bazel_dep(name = "aspect_rules_ts", version = "1.4.0")
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
+bazel_dep(name = "container_structure_test", version = "1.15.0")
+bazel_dep(name = "rules_python", version = "0.21.0")
+bazel_dep(name = "rules_pkg", version = "0.9.1")
+bazel_dep(name = "rules_oci", version = "1.0.0")
+bazel_dep(name = "platforms", version = "0.0.6")
+
+################################################################################
+# rules_python
+################################################################################
+
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+python.toolchain(
+    name = "python3_11",
+    python_version = "3.11",
+)
+use_repo(python, "python3_11")
+use_repo(python, "python3_11_toolchains")
+
+register_toolchains(
+    "@python3_11_toolchains//:all",
+)
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+oci.pull(
+    name = "distroless_python",
+    digest = "sha256:b48e216f7c4adcf24fecd7016f3b8ead76866a19571819f67f47c1ccaf899717",
+    image = "python",
+)
+
+use_repo(oci, "distroless_python")
+
+################################################################################
+# rules_js
+################################################################################
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
+
+npm.npm_translate_lock(
+    name = "npm",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    npmrc = "//:.npmrc",
+)
+
+use_repo(npm, "npm")
+
+################################################################################
+# rules_ts
+################################################################################
+
+rules_ts_ext = use_extension(
+    "@aspect_rules_ts//ts:extensions.bzl",
+    "ext",
+    dev_dependency = True,
+)
+
+rules_ts_ext.deps()
+
+use_repo(rules_ts_ext, "npm_typescript")
