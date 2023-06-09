@@ -10,7 +10,7 @@ load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 
 py_library(
     name = "webapp",
-    srcs = ["src/main.py"],
+    srcs = ["src/webapp.py"],
     # srcs_version = "PY3",
     deps = [requirement("fastapi")],
 )
@@ -30,7 +30,7 @@ py_binary(
 )
 
 # pytest_test(
-#     name = "main_test",
+#     name = "webapp_test",
 #     srcs = glob(["tests/*.py"]),
 #     deps = [
 #         requirement("requests"),
@@ -42,9 +42,9 @@ py_binary(
 # )
 
 py_test(
-    name = "main_test",
+    name = "webapp_test",
     # srcs = glob(["*.py"]),
-    srcs = ["tests/main_test.py"],
+    srcs = ["tests/webapp_test.py"],
     deps = [
         requirement("requests"),
         requirement("httpx"),

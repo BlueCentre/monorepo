@@ -7,21 +7,6 @@ workspace(
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Switched to bzlmod approach
-# http_archive(
-#   name = "rules_python",
-#   url = "https://github.com/bazelbuild/rules_python/releases/download/0.22.0/rules_python-0.22.0.tar.gz",
-#   sha256 = "863ba0fa944319f7e3d695711427d9ad80ba92c6edd0b7c7443b84e904689539",
-#   strip_prefix = "rules_python-0.22.0",
-# )
-
-# Future migration https://github.com/bazel-contrib/rules_oci
-# http_archive(
-#   name = "io_bazel_rules_docker",
-#   sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
-#   urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
-# )
-
 
 
 ### Python Setup (https://github.com/bazelbuild/rules_python/blob/main/examples/pip_install/WORKSPACE)
@@ -35,6 +20,7 @@ load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependen
 
 pip_install_dependencies()
 
+# TODO: Currently needs to match with python version in MODULE.bazel
 default_python_version = "3.11"
 
 python_register_multi_toolchains(
