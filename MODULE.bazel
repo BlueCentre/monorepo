@@ -40,6 +40,7 @@ oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 # - https://hub.docker.com/layers/library/python/3.11-bullseye/images/sha256-354903e205598c82f91ab025139923fcde8ab6e0cd3bb0f5b753aeaaecb71923?context=explore
 # - https://hub.docker.com/layers/library/python/3.11-slim-bullseye/images/sha256-7d28177da146154adb077f7d71e21fdb9a7696128a7353b7db4cbb40c6e2d0ac?context=explore
 # - https://hub.docker.com/_/python/tags
+# - https://github.com/bazel-contrib/rules_oci/blob/main/oci/pull.bzl
 oci.pull(
     name = "distroless_python",
     digest = "sha256:7d28177da146154adb077f7d71e21fdb9a7696128a7353b7db4cbb40c6e2d0ac",
