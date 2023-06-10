@@ -1,3 +1,4 @@
+.PHONY: query
 query:
 	bazel query //...
 

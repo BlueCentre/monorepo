@@ -36,6 +36,7 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc
 - [ ] Research testing best practice
 - [ ] Document VSCode and PyCharm IDE development environment
+- [ ] Tooling for boilerplate project creation
 
 ## Directory Convention
 
@@ -126,3 +127,8 @@ bazel query --noimplicit_deps "deps(//libs/echo:echo_lib)"
 bazel query --noimplicit_deps "deps(//libs/echo:echo_test)"
 bazel query --noimplicit_deps "deps(//projects/py_calculator_cli_app:app)"
 bazel query --noimplicit_deps "deps(//projects/py_echo_fastapi_app:webapp)"
+
+## References
+
+- https://github.com/aspect-build/bazel-examples/tree/main
+- 
