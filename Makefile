@@ -73,3 +73,8 @@ git_new:
 
 git_push: test
 	git push origin `git rev-parse --abbrev-ref HEAD`
+
+# Must have git-extras installed or
+# See: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/How-to-use-the-git-log-graph-command
+git_show_tree:
+	git show-tree || git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset%n' --abbrev-commit --date=relative --branches

@@ -84,7 +84,7 @@ class PlatformOrganization:
         self.devops_factory = platform_factory
 
     def request_devops(self, name: str) -> DevOps:
-        """Creates and shows a pet using the abstract factory"""
+        """Creates and shows a devops using the abstract factory"""
 
         devops = self.devops_factory(name)
         print(f"Here is your awesome {devops}")
@@ -107,38 +107,38 @@ def random_platform(name: str) -> DevOps:
 
 
 # Show devops with various factories
-# def main() -> None:
-#     """
-#     # A Shop that sells only cats
-#     >>> cat_shop = PetShop(Cat)
-#     >>> pet = cat_shop.buy_pet("Lucy")
-#     Here is your lovely Cat<Lucy>
-#     >>> pet.speak()
-#     meow
+def main() -> None:
+    """
+    # A PlatformOrganization that staffs only infrastructure engineers
+    >>> infrastructureengineer_platformorganization = PlatformOrganization(InfrastructureEngineer)
+    >>> devops = infrastructureengineer_platformorganization.request_devops("Cloud")
+    Here is your lovely InfrastructureEngineer<Cloud>
+    >>> devops.speak()
+    cloud
 
-#     # A shop that sells random animals
-#     >>> shop = PetShop(random_animal)
-#     >>> for name in ["Max", "Jack", "Buddy"]:
-#     ...    pet = shop.buy_pet(name)
-#     ...    pet.speak()
-#     ...    print("=" * 20)
-#     Here is your lovely Cat<Max>
-#     meow
-#     ====================
-#     Here is your lovely Dog<Jack>
-#     woof
-#     ====================
-#     Here is your lovely Dog<Buddy>
-#     woof
-#     ====================
-#     """
+    # A PlatformOrganization that staffs random platform engineers
+    >>> platformorganization = PlatformOrganization(random_platform)
+    >>> for name in ["Cloud", "Data", "MachineLearning"]:
+    ...    devops = PlatformOrganization.request_platform(name)
+    ...    devops.speak()
+    ...    print("=" * 20)
+    Here is your lovely InfrastructureEngineer<Cloud>
+    meow
+    ====================
+    Here is your lovely DataEngineer<Data>
+    woof
+    ====================
+    Here is your lovely MachineLearningEngineer<MachineLearning>
+    woof
+    ====================
+    """
 
 
-# if __name__ == "__main__":
-#     # for deterministic doctest outputs
-#     random.seed(1234)
+if __name__ == "__main__":
+    # for deterministic doctest outputs
+    random.seed(1234)
 
-#     shop = PlatformOrganization(random_platform)
-#     import doctest
+    platform = PlatformOrganization(random_platform)
+    import doctest
 
-#     doctest.testmod()
+    doctest.testmod()
