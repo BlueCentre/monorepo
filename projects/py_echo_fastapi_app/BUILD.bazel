@@ -2,15 +2,15 @@
 
 load("@pip_deps//:requirements.bzl", "requirement")
 load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
-load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
-load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
+# load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
+# load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
+# load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 # load("//tools/pytest:defs.bzl", "pytest_test")
 
 py_library(
-    name = "webapp",
-    srcs = ["src/webapp.py"],
+    name = "web_app_lib",
+    srcs = ["app/web_app.py"],
     # srcs_version = "PY3",
     deps = [requirement("fastapi")],
 )
@@ -18,14 +18,14 @@ py_library(
 # to add additionals parameters place them after "--" in bazel call, like:
 # `bazel run //webapp:run -- --reload`
 py_binary(
-    name = "run",
-    srcs = ["src/run.py"],
+    name = "run_bin",
+    srcs = ["bin/run_bin.py"],
     # python_version = "PY3",
     # srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         requirement("uvicorn"),
-        ":webapp",
+        ":web_app_lib",
     ],
 )
 
@@ -43,15 +43,15 @@ py_binary(
 # )
 
 py_test(
-    name = "webapp_test",
-    # srcs = glob(["*.py"]),
-    srcs = ["tests/webapp_test.py"],
+    name = "web_app_test",
+    srcs = glob(["tests/*.py"]),
+    # srcs = ["tests/web_app_test.py"],
     timeout = "short",
     deps = [
         requirement("requests"),
         requirement("httpx"),
         requirement("fastapi"),
-        ":webapp",
-        ":run",
+        ":web_app_lib",
+        ":run_bin",
     ],
 )

@@ -5,7 +5,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 # BUG: Figure out why I cannot use src/echo.py
 py_library(
     name = "echo_lib",
-    srcs = ["src/echo.py"],
+    srcs = ["models/echo.py"],
     # visibility = ["//projects/python-flask:__pkg__"],
     visibility = ["//visibility:public"],
 )

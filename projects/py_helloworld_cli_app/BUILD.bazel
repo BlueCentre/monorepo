@@ -7,8 +7,8 @@ load("@container_structure_test//:defs.bzl", "container_structure_test")
 py_library(
     name = "hello_world_lib",
     srcs = [
-        "__init__.py",
-        "app.py",
+        "app/__init__.py",
+        "app/cli.py",
     ],
     imports = [".."],
     visibility = ["//:__subpackages__"],
@@ -16,7 +16,7 @@ py_library(
 
 py_binary(
     name = "hello_world_bin",
-    srcs = ["__main__.py"],
+    srcs = ["app/__main__.py"],
     imports = [".."],
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
@@ -76,8 +76,8 @@ oci_tarball(
 )
 
 container_structure_test(
-    name = "test",
-    configs = ["test.yaml"],
+    name = "container_test",
+    configs = ["tests/container_test.yaml"],
     image = ":image",
     timeout = "short",
 )

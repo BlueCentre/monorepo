@@ -17,9 +17,9 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from projects.py_echo_fastapi_app.src import run
+from projects.py_echo_fastapi_app.bin import run_bin
 
-client = TestClient(run)
+client = TestClient(run_bin)
 
 # TODO: Fix test!
 class TestRun(unittest.TestCase):
