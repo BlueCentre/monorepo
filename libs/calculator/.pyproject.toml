@@ -1,8 +1,0 @@
-[project]
-packages = [
-    { include = "flyr" }
-]
-
-[tools.pyright]
-reportMissingTypeArgument = true  # Report generic classes used without type arguments
-strictListInference = true  # Use union types when inferring types of lists elements, instead of Any

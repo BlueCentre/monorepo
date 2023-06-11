@@ -2,14 +2,14 @@ load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "calculator_lib",
-    srcs = ["calculator.py"],
+    srcs = ["models/calculator.py"],
     # visibility = ["//projects/python-flask:__pkg__"],
     visibility = ["//visibility:public"],
 )
 
 py_test(
     name = "calculator_test",
-    srcs = ["calculator_test.py"],
+    srcs = ["tests/calculator_test.py"],
     timeout = "short",
     deps = [
         "//libs/calculator:calculator_lib",
