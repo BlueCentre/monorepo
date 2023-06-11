@@ -1,6 +1,6 @@
 import unittest
 
-from libs.echo.src.echo import Echo
+from libs.echo.models.echo import Echo
 
 class TestEcho(unittest.TestCase):
   def test_message_with_argument(self):

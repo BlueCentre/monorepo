@@ -4,18 +4,18 @@ load("@rules_python//python:defs.bzl", "py_library")
 # load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 
 py_library(
-    name = "py_calculator_cli_app_lib",
-    srcs = ["src/app.py"],
+    name = "app_lib",
+    srcs = ["app/app.py"],
     deps = [
         "//libs/calculator:calculator_lib",
     ],
 )
 
 py_binary(
-    name = "app",
-    srcs = ["src/app.py"],
+    name = "app_bin",
+    srcs = ["app/app.py"],
     main = "app.py",
-    deps = [":py_calculator_cli_app_lib"],
+    deps = [":app_lib"],
 )
 
 # py_image(
