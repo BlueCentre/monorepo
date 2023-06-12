@@ -17,7 +17,10 @@ py_library(
     name = "web_app",
     srcs = ["app/web_app.py"],
     # srcs_version = "PY3",
-    deps = [requirement("fastapi")],
+    deps = [
+        requirement("fastapi"),
+        "//libs/devops:devops_lib"
+    ],
 )
 
 # to add additionals parameters place them after "--" in bazel call, like:
@@ -71,9 +74,9 @@ py_image_layer(
 # TODO: Use a custom base to include cross-cutting concerns
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
 oci_image(
-    name = "py_template_image",
+    name = "py_devops_image",
     base = "@distroless_python",
-    entrypoint = ["/opt/projects/py_template_fastapi_app/run_bin"],
+    entrypoint = ["/opt/projects/py_devops_fastapi_app/run_bin"],
     tars = [":web_app_layer"],
 )
 
@@ -95,21 +98,21 @@ platform(
 
 platform_transition_filegroup(
     name = "transitioned_image",
-    srcs = [":py_template_image"],
+    srcs = [":py_devops_image"],
     target_platform = select({
         "@platforms//cpu:arm64": ":aarch64_linux",
         "@platforms//cpu:x86_64": ":x86_64_linux",
     }),
 )
 
-# $ bazel build //projects/py_template_fastapi_app:tarball
-# $ docker load --input $(bazel cquery --output=files //projects/py_template_fastapi_app:tarball)
-# $ docker run --rm local/py_template_fastapi_app:latest
+# $ bazel build //projects/py_devops_fastapi_app:tarball
+# $ docker load --input $(bazel cquery --output=files //projects/py_devops_fastapi_app:tarball)
+# $ docker run --rm local/py_devops_fastapi_app:latest
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
 oci_tarball(
     name = "tarball",
-    image = ":py_template_image",
-    repo_tags = ["local/py_template_fastapi_app:latest"],
+    image = ":py_devops_image",
+    repo_tags = ["local/py_devops_fastapi_app:latest"],
 )
 
 # See:
@@ -118,6 +121,6 @@ oci_tarball(
 container_structure_test(
     name = "container_test",
     configs = ["tests/container_test.yaml"],
-    image = ":py_template_image",
+    image = ":py_devops_image",
     timeout = "short"
 )
