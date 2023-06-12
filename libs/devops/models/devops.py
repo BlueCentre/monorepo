@@ -26,52 +26,52 @@ class InfrastructureEngineer(DevOps):
         return f"InfrastructureEngineer<{self.name}>"
 
     def speak(self) -> None:
-        print("cloud")
+        print("How would you like your cloud today?")
 
 class DeveloperExperienceEngineer(DevOps):
     def __str__(self) -> str:
         return f"DeveloperExperienceEngineer<{self.name}>"
 
     def speak(self) -> None:
-        print("build")
+        print("How is your CI/CD today?")
 
 class DataEngineer(DevOps):
-    def speak(self) -> None:
-        print("data")
-
     def __str__(self) -> str:
         return f"DataEngineer<{self.name}>"
 
-class MachineLearningEngineer(DevOps):
     def speak(self) -> None:
-        print("unicorn")
+        print("How do you like your data today?")
 
+class MachineLearningEngineer(DevOps):
     def __str__(self) -> str:
         return f"MachineLearningEngineer<{self.name}>"
 
-class WebEngineer(DevOps):
     def speak(self) -> None:
-        print("feature")
+        print("How do you like them unicorn?")
 
+class WebEngineer(DevOps):
     def __str__(self) -> str:
         return f"WebEngineer<{self.name}>"
 
-class ReliabilityEngineer(DevOps):
     def speak(self) -> None:
-        print("scale")
+        print("What feature should be build today?")
 
+class ReliabilityEngineer(DevOps):
     def __str__(self) -> str:
         return f"ReliabilityEngineer<{self.name}>"
+
+    def speak(self) -> None:
+        print("scale")
 
 class PlatformEngineer(DevOps):
     """Fullstack Platform Engineer"""
 
+    def __str__(self) -> str:
+        return f"PlatformEngineer<{self.name}>"
+
     def speak(self) -> None:
         print("internal product")
         print("very rare")
-
-    def __str__(self) -> str:
-        return f"PlatformEngineer<{self.name}>"
 
 
 # Factory
