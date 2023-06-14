@@ -4,6 +4,11 @@
 
 Unlike other examples and demos out in the wild, we have a loftier goals. If you don't see the following objectives being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience was while looking for best practices and more indepth examples that can be used as blueprints rather than a one time presentation.
 
+## Quickstart
+
+1. Download bazelisk
+1. Download skaffold
+
 ## Motivation
 
 [Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)

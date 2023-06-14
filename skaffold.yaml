@@ -1,27 +1,13 @@
-apiVersion: skaffold/v1beta2
+apiVersion: skaffold/v4beta5
 kind: Config
-build:
-  artifacts:
-  - image: my-app:latest
-    bazel:
-      target: //my-app:image
-  - image: my-other-app:latest
-    bazel:
-      target: //my-other-app:image
-deploy:
-  kustomize:
-    configs:
-    - kustomization.yaml
-profiles:
-- name: development
-  helm:
-    chart: my-app
-    version: 0.1.0
-    values:
-      ENVIRONMENT: development
-- name: production
-  helm:
-    chart: my-app
-    version: 0.1.0
-    values:
-      ENVIRONMENT: production
+requires:
+# - path: ./leeroy-app
+# - path: ./leeroy-web
+- path: ./projects/go_devops_cli_app
+- path: ./projects/py_devops_fastapi_app
+
+
+
+# See:
+# - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/multi-config-microservices
+# - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/microservices

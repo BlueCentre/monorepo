@@ -1,0 +1,64 @@
+apiVersion: skaffold/v4beta5
+kind: Config
+metadata:
+  # skaffold build -m py-devops-fastapi-app-config
+  name: py-devops-fastapi-app-config
+build:
+  artifacts:
+  - image: py_devops_fastapi_app
+    # context: projects/py_devops_fastapi_app
+    context: .
+    bazel:
+      target: //projects/py_devops_fastapi_app:py_devops_fastapi_app_image.tar
+manifests:
+  rawYaml:
+    - kubernetes/*
+
+  # - image: my-app:latest
+  #   bazel:
+  #     target: //my-app:image
+  # - image: my-other-app:latest
+  #   bazel:
+  #     target: //my-other-app:image
+# deploy:
+#   kubectl:
+#     manifests:
+#     - k8s/k8s-pod.yaml
+#   kustomize:
+#     configs:
+#     - k8s/kustomization.yaml
+# profiles:
+# - name: development
+#   helm:
+#     chart: my-app
+#     version: 0.1.0
+#     values:
+#       ENVIRONMENT: development
+# - name: production
+#   helm:
+#     chart: my-app
+#     version: 0.1.0
+#     values:
+#       ENVIRONMENT: production
+# portForward:
+#   - resourceType: deployment
+#     resourceName: leeroy-web
+#     port: 8080
+#     localPort: 9000
+#   - resourceType: deployment
+#     resourceName: leeroy-app
+#     port: http
+#     localPort: 9001
+
+
+# See:
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/structure-tests/skaffold.yaml
+
+# apiVersion: skaffold/v4beta5
+# kind: Config
+# build:
+#   artifacts:
+#   - image: skaffold-bazel
+#     bazel:
+#       target: //:skaffold_example.tar
