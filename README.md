@@ -1,4 +1,6 @@
-# Monorepo Blueprint
+# mnorepo
+
+A place to develop monorepo patterns.
 
 ## Overview
 
@@ -8,18 +10,20 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 
 ### Continuous Development
 
-- [x] [Skaffold](https://github.com/GoogleContainerTools/skaffold)
+- [x] [Skaffold for continuous development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
+    - [ ] [Skaffold for CI](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-integration)
+    - [ ] [Skaffold for CD](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-delivery)
 - [x] [Bazel]()
 - [ ] [Pants]()
 
-### Continous Integration
+### Continuous Integration
 
 - [x] [Github Actions](https://docs.github.com/en/actions)
 - [ ] [Cloud Build](https://cloud.google.com/build)
 - [ ] [CircleCI](https://circleci.com/)
 - [ ] [Harness](https://www.harness.io/)
 
-### Continous Deployment
+### Continuous Deployment
 
 - [ ] [Argo CD](https://github.com/argoproj/argo-cd)
 - [ ] [Cloud Deploy](https://cloud.google.com/deploy)
@@ -33,6 +37,7 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 
 1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
 1. Download latest [skaffold](https://skaffold.dev/docs/install/)
+1. Download latest [minikube](https://minikube.sigs.k8s.io/docs/start/)
 
 ## Motivation
 
@@ -112,3 +117,5 @@ monorepo/
 ## References
 
 - https://github.com/aspect-build/bazel-examples/tree/main
+- https://s.itho.me/ccms_slides/2022/9/27/8dc835fc-b6f6-4656-84d4-53df725d1d6e.pdf
+- https://nubenetes.com/kubernetes-based-devel/
