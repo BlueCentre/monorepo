@@ -1,0 +1,86 @@
+# See: https://bazel.build/concepts/build-files
+# TODO:
+# - Migrate to rules_oci (https://github.com/bazel-contrib/rules_oci/blob/main/docs/go.md)
+# - https://github.com/aspect-build/bazel-examples/tree/main/oci_go_image
+
+#
+# Golang (rules_oci - oci_go_image)
+#
+
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@container_structure_test//:defs.bzl", "container_structure_test")
+
+go_library(
+    name = "app_lib",
+    srcs = ["src/main.go"],
+    importpath = "example.com/custom_registry/app",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_google_go_cmp//cmp"],
+)
+
+go_binary(
+    name = "app",
+    embed = [":app_lib"],
+    visibility = ["//visibility:public"],
+)
+
+# Put app go_binary into a tar layer.
+pkg_tar(
+    name = "app_layer",
+    srcs = [":app"],
+    # If the binary depends on RUNFILES, uncomment the attribute below.
+    # include_runfiles = True
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_base",
+    entrypoint = ["/app"],
+    tars = [":app_layer"],
+)
+
+# This is the target that should be released to the target platform
+platform_transition_filegroup(
+    name = "transitioned_image",
+    srcs = [":image"],
+    target_platform = select({
+        "@platforms//cpu:arm64": "@rules_go//go/toolchain:linux_arm64",
+        "@platforms//cpu:x86_64": "@rules_go//go/toolchain:linux_amd64",
+    }),
+)
+
+# $ bazel build projects/go_devops_cli_app:tarball
+# $ docker load --input $(bazel cquery --output=files projects/go_devops_cli_app:tarball)
+# $ docker run --rm flyr.io/go-devops-cli-app:latest
+#   string(
+# -       "Hello World",
+# +       "Hello Go",
+#   )
+oci_tarball(
+    name = "tarball",
+    # Use the image built for the exec platform rather than the target platform
+    image = ":image",
+    repo_tags = [
+        "flyr.io/go-devops-cli-app:latest",
+    ],
+)
+
+# Skaffold needs a target ending with .tar
+oci_tarball(
+    name = "tarball.tar",
+    # Use the image built for the exec platform rather than the target platform
+    image = ":image",
+    repo_tags = ["go-devops-cli-app"],
+)
+
+# See: https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
+container_structure_test(
+    name = "test",
+    configs = ["tests/test.yaml"],
+    # Use the image built for the exec platform rather than the target platform
+    image = ":image",
+    timeout = "short"
+)

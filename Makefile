@@ -72,6 +72,20 @@ run_oci_py_helloworld_v2:
 	docker load --input `bazel cquery --output=files //projects/py_helloworld_v2_cli_app:tarball`
 	docker run --rm local/py_helloworld_v2_cli_app:latest
 
+run_go_devops_cli_app:
+	skaffold dev -m go-devops-cli-app-config
+
+run_py_devops_fastapi_app:
+	skaffold build -m py-devops-fastapi-app-config
+
+
+
+dev_go_devops_cli_app:
+	skaffold dev -m go-devops-cli-app-config
+
+dev_py_devops_fastapi_app:
+	skaffold dev -m py-devops-fastapi-app-config
+
 
 
 git_new:

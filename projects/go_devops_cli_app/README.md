@@ -12,4 +12,4 @@ Template for creating FastAPI projects.
 
 ## Known issues
 
-- [ ] Does not work with skaffold yet because we are using rules_oci
+- [ ] None yet

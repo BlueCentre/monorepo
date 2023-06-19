@@ -1,0 +1,19 @@
+# See:
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/structure-tests/skaffold.yaml
+
+apiVersion: skaffold/v4beta5
+kind: Config
+metadata:
+  # skaffold dev -m go-devops-cli-app-config
+  name: go-devops-cli-app-config
+build:
+  artifacts:
+  - image: go-devops-cli-app
+    context: .
+    bazel:
+      # target: //projects/go_devops_cli_app:go_devops_cli_app_image.tar
+      target: //projects/go_devops_cli_app:tarball.tar
+manifests:
+  rawYaml:
+    - kubernetes/*
