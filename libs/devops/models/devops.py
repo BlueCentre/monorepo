@@ -1,6 +1,8 @@
 # See:
 # - https://www.w3schools.com/python/python_inheritance.asp
 # - https://github.com/faif/python-patterns/blob/master/patterns/creational/abstract_factory.py
+# Example:
+# - https://github.com/Netflix/dispatch/blob/master/tests/factories.py
 
 import random
 from typing import Type
