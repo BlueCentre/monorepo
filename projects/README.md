@@ -9,6 +9,7 @@ Where all project applications are implemented.
 
 ## Project Reference Table
 
-| Project Name | Short Description | Owner(s) |
-|--------------|-------------------|----------|
-| Example | My example project | [John Doe](mailto://john.doe@email) |
+| Project Name | Short Description | State | Owner(s) |
+|--------------|-------------------|-------|----------|
+| Example | My example project | Production | [John Doe](mailto://john.doe@email) |
+| go_devops_cli_app | Example golang project with skaffold & bazel | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |

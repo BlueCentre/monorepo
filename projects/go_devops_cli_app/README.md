@@ -1,10 +1,12 @@
 # Overview
 
-Template for creating FastAPI projects.
+Template for creating Golang projects.
 
 ## Roadmap
 
-- [ ] Setup basic templating
+- [x] Setup basic templating
+    - [x] Use latest bazel and modules including rules_oci
+    - [x] Use latest skaffold with bazel build
 - [ ] Research Cookiecutter
 - [ ] Bake-in everything including best practices
 - [ ] Test and validate framework
@@ -12,4 +14,5 @@ Template for creating FastAPI projects.
 
 ## Known issues
 
-- [ ] None yet
+- [ ] skaffold dev does not yet work with latest rules_oci
+    - [ ] bazel-contrib/rules_oci issue [#265](https://github.com/bazel-contrib/rules_oci/issues/265)
