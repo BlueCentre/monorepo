@@ -4,10 +4,35 @@
 
 Unlike other examples and demos out in the wild, we have a loftier goals. If you don't see the following objectives being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience was while looking for best practices and more indepth examples that can be used as blueprints rather than a one time presentation.
 
+## Blueprint Capability
+
+### Continuous Development
+
+- [x] [Skaffold](https://github.com/GoogleContainerTools/skaffold)
+- [x] [Bazel]()
+- [ ] [Pants]()
+
+### Continous Integration
+
+- [x] [Github Actions](https://docs.github.com/en/actions)
+- [ ] [Cloud Build](https://cloud.google.com/build)
+- [ ] [CircleCI](https://circleci.com/)
+- [ ] [Harness](https://www.harness.io/)
+
+### Continous Deployment
+
+- [ ] [Argo CD](https://github.com/argoproj/argo-cd)
+- [ ] [Cloud Deploy](https://cloud.google.com/deploy)
+
+### Progressive Delivery
+
+- [ ] [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
+- [ ] [Cloud Deploy](https://cloud.google.com/deploy)
+
 ## Quickstart
 
-1. Download bazelisk
-1. Download skaffold
+1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
+1. Download latest [skaffold](https://skaffold.dev/docs/install/)
 
 ## Motivation
 
@@ -84,77 +109,6 @@ monorepo/
     `-- workspace_status.sh
 ```
 
-# Useful Commands
-
-```
-bazel version
-bazel info [release]
-bazel help info-keys
-bazel clean --async
-```
-
-## General
-
-```
-bazel build //...
-bazel build //projects/...
-bazel build //projects/my_app/...
-OR (for easier use of tab completion)
-bazel build ...
-bazel build projects/...
-bazel build projects/my_app/...
-```
-
-## 3rd Party PIP
-
-```
-bazel run //third_party/python:requirements_3_11.update
-bazel run //third_party/python:requirements_3_10.update
-bazel run //third_party/python:requirements_3_9.update
-bazel run //third_party/python:requirements_3_8.update
-OR
-make update
-```
-
-## Common Libraries
-
-```
-bazel build libs/calculator/...
-bazel test libs/calculator/...
-```
-
-## CLI Apps
-
-```
-bazel run projects/py_calculator_cli_app:app
-bazel query projects/py_calculator_cli_app:app --output=build
-```
-
-## Flask Apps
-
-```
-bazel run projects/py_calculator_flask_app:app
-bazel query projects/py_calculator_flask_app:*
-bazel query projects/py_calculator_flask_app:app --output=build
-```
-
-## FastAPI Apps
-
-```
-
-```
-
-## Queries
-
-```
-bazel query --noimplicit_deps "deps(//libs/calculator:calculator_lib)"
-bazel query --noimplicit_deps "deps(//libs/echo:echo_lib)"
-bazel query --noimplicit_deps "deps(//libs/echo:echo_test)"
-bazel query --noimplicit_deps "deps(//projects/py_calculator_cli_app:app)"
-bazel query --noimplicit_deps "deps(//projects/py_echo_fastapi_app:webapp)"
-```
-
 ## References
 
 - https://github.com/aspect-build/bazel-examples/tree/main
-- 
