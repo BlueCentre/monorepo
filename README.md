@@ -1,4 +1,4 @@
-# mnorepo
+# Monorepo Blueprints
 
 A place to develop monorepo patterns.
 
