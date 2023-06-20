@@ -3,6 +3,7 @@
 ```
 bazel version
 bazel info [release]
+bazel info --show_make_env
 bazel help info-keys
 bazel clean --async
 ```
