@@ -119,3 +119,5 @@ monorepo/
 - https://github.com/aspect-build/bazel-examples/tree/main
 - https://s.itho.me/ccms_slides/2022/9/27/8dc835fc-b6f6-4656-84d4-53df725d1d6e.pdf
 - https://nubenetes.com/kubernetes-based-devel/
+- https://blog.getambassador.io/skaffold-vs-telepresence-comparing-kubernetes-inner-development-loop-tools-c8abd70545e5
+- https://sixfeetup.com/blog/common-kubernetes-concerns
