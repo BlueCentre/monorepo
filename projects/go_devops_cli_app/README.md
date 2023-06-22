@@ -5,7 +5,7 @@ Template for creating Golang projects.
 ## Roadmap
 
 - [x] Setup basic templating
-    - [x] Use latest bazel and modules including rules_oci
+    - [x] Use latest bazel and modules including rules_oci (using workaround custom build script)
     - [x] Use latest skaffold with bazel build
 - [ ] Research Cookiecutter
 - [ ] Bake-in everything including best practices

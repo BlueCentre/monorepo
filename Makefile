@@ -72,19 +72,54 @@ run_oci_py_helloworld_v2:
 	docker load --input `bazel cquery --output=files //projects/py_helloworld_v2_cli_app:tarball`
 	docker run --rm local/py_helloworld_v2_cli_app:latest
 
-run_go_devops_cli_app:
+
+
+skaffold_dev_go_devops_cli_app:
 	skaffold dev -m go-devops-cli-app-config
 
-run_py_devops_fastapi_app:
+skaffold_dev_go_devops_cli_app_debug:
+	skaffold dev -m go-devops-cli-app-config -v debug
+
+skaffold_dev_py_devops_fastapi_app:
+	skaffold dev -m py-devops-fastapi-app-config
+
+
+
+skaffold_build_go_devops_cli_app:
+	skaffold build --quiet -m go-devops-cli-app-config
+
+skaffold_build_py_devops_fastapi_app:
 	skaffold build -m py-devops-fastapi-app-config
 
 
 
-dev_go_devops_cli_app:
-	skaffold dev -m go-devops-cli-app-config
+skaffold_run_go_devops_cli_app:
+	skaffold run -m go-devops-cli-app-config
 
-dev_py_devops_fastapi_app:
-	skaffold dev -m py-devops-fastapi-app-config
+
+
+skaffold_render_go_devops_cli_app:
+	skaffold render -m go-devops-cli-app-config
+
+
+
+minikube_start:
+	minikube start
+
+minikube_eval:
+	echo 'eval $$(minikube -p minikube docker-env)'
+
+minikube_images:
+	minikube image ls --format='table'
+
+
+
+watch_images:
+	# watch -n 5 'clear; docker images'
+	watch -n 5 'clear; minikube image ls --format="table" | grep flyr'
+
+watch_k8s:
+	watch -n 5 'clear; kubectl get all --all-namespaces'
 
 
 
@@ -99,3 +134,9 @@ git_push: test
 # See: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/How-to-use-the-git-log-graph-command
 git_show_tree:
 	git show-tree || git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset%n' --abbrev-commit --date=relative --branches
+
+
+
+# See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
+bazel_query_go_devops_cli_app_artifact:
+	bazel cquery projects/go_devops_cli_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
