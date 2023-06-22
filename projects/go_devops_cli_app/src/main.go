@@ -1,10 +1,15 @@
 package main		
 
 import (		
-	"fmt"		
-	"github.com/google/go-cmp/cmp"		
+	"fmt"
+	"time"
+	"github.com/google/go-cmp/cmp"
 )		
 
-func main() {		
-    fmt.Println(cmp.Diff("Hello World", "Hello Go"))		
+func main() {
+	for {
+		fmt.Println("Hello FLYR!")
+		fmt.Println(cmp.Diff("Hello FLYR!", "Hello Platform!"))
+		time.Sleep(time.Second * 2)
+	}	
 }

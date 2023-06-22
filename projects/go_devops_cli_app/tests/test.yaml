@@ -1,5 +1,32 @@
 schemaVersion: 2.0.0
-commandTests:
-  - name: 'test'
-    command: '/app'
-    expectedOutput: ['"Hello World"']
+
+# See: https://github.com/GoogleContainerTools/container-structure-test
+
+# globalEnvVars:
+#   - key: "VIRTUAL_ENV"
+#     value: "/env"
+#   - key: "PATH"
+#     value: "/env/bin:$PATH"
+
+# commandTests:
+
+# # check the expected output of app
+#   - name: 'test'
+#     command: '/app'
+#     expectedOutput: ['"Hello FLYR!"']
+
+# fileContentTests:
+
+# # check that the default apt repository is set correctly
+#   - name: 'apt sources'
+#     path: '/etc/apt/sources.list'
+#     expectedContents: ['.*httpredir\.debian\.org/debian jessie main.*']
+
+
+fileExistenceTests:
+
+# check that the apt-packages text file exists and has the correct permissions
+  - name: 'apt packages'
+    path: '/app'
+    shouldExist: true
+    #permissions: '-rwxr-xr-x'
