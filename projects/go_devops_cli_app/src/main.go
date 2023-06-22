@@ -7,8 +7,9 @@ import (
 )		
 
 func main() {
-	for true {
+	for {
+		fmt.Println("Hello FLYR!")
 		fmt.Println(cmp.Diff("Hello FLYR!", "Hello Platform!"))
-		time.Sleep(2 * time.Second)
+		time.Sleep(time.Second * 2)
 	}	
 }
