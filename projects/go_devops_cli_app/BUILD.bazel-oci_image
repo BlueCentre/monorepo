@@ -104,7 +104,9 @@ oci_tarball(
 #     ) | tee $@""",
 # )
 
-# See: https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
+# See:
+# - https://github.com/GoogleContainerTools/container-structure-test
+# - https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
 container_structure_test(
     name = "test",
     configs = ["tests/test.yaml"],

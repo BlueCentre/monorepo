@@ -1,5 +1,7 @@
 schemaVersion: 2.0.0
 
+# See: https://github.com/GoogleContainerTools/container-structure-test
+
 # globalEnvVars:
 #   - key: "VIRTUAL_ENV"
 #     value: "/env"
