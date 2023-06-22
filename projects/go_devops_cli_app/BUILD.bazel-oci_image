@@ -22,7 +22,7 @@ go_library(
 )
 
 go_binary(
-    name = "app",
+    name = "app_bin",
     embed = [":app_lib"],
     visibility = ["//visibility:public"],
 )
@@ -30,7 +30,7 @@ go_binary(
 # Put app go_binary into a tar layer.
 pkg_tar(
     name = "app_layer",
-    srcs = [":app"],
+    srcs = [":app_bin"],
     # If the binary depends on RUNFILES, uncomment the attribute below.
     # include_runfiles = True
 )

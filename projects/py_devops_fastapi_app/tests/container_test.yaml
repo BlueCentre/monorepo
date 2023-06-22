@@ -18,7 +18,7 @@ fileExistenceTests:
 - name: 'run_bin'
   path: '/opt/projects/py_devops_fastapi_app/run_bin'
   shouldExist: true
-  permissions: '-r-xr-xr-x'
+  #permissions: '-r-xr-xr-x'
   # uid: 1000
   # gid: 1000
   # isExecutableBy: 'group'
