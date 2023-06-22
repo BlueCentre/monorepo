@@ -1,6 +1,6 @@
 # Monorepo Blueprints
 
-A place to develop monorepo patterns.
+A place to develop [monorepo](https://monorepo.tools/#what-is-a-monorepo) patterns.
 
 ## Overview
 
@@ -41,15 +41,16 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 
 ## Motivation
 
-[Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
-[DevOps Toolkit](https://www.youtube.com/watch?v=qS_4Qf8owc0)
+- [Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
+- [DevOps Toolkit](https://www.youtube.com/watch?v=qS_4Qf8owc0)
 
 ## Goals
 
-1. Keep dependencies and their versions up to date, not only with dependabot, but also breaking changes and automated tests.
-1. Keep extending blueprints and add more complex use cases to demonstrate that these blueprints can scale beyond simple examples.
-1. Avoid bad examples that are a dime a dozen and add little value outside of the beginner experience level. Here we are targeting the more advanced engineers looking to improve their own blueprints and hopefully even contribute back to the community.
-1. Constantly reevaluate the technology stack to keep relevant.
+1. Quick, reliable and convenient builds for SDLC.
+1. Manage dependencies across all projects.
+1. Manage [polyglot](https://www.pluralsight.com/blog/software-development/how-polyglot-dev-team) builds.
+1. Manage blueprints for rapid application development.
+1. Constant evaluation of the technology stack and scale for thousands of engineers.
 
 ## Objectives
 
@@ -63,10 +64,10 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [x] Setup basic Bazel builds and simple examples
 - [x] Setup automated Bazel build + test using Github Actions
 - [ ] Setup e2e Python example
-- [ ] Test multi-version python
+    - [ ] Test multi-version python
 - [ ] Setup e2e Golang example
 - [ ] Setup e2e Springboot example
-- [ ] OCI container support
+- [x] OCI container support
 - [ ] Research and setup container & kubernetes development with Skaffold
 - [ ] Research build systems like Cloud Build, Harness.io, etc
 - [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc

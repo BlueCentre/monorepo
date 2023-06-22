@@ -27,20 +27,20 @@ def random_platform(name: str) -> DevOps:
 
 @app.on_event("startup")
 async def startup_event():
-    logging.info(f"===[Starting FastAPI app...]===")
+    logging.info(f"=== [Starting FastAPI app...] ===")
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    logging.info(f"===[Stopping FastAPI app...]===")
+    logging.info(f"=== [Stopping FastAPI app...] ===")
 
 
 @app.get("/")
 async def root():
-    return JSONResponse("I am alive")
+    return JSONResponse("I am alive!!!")
 
 @app.get("/status")
 async def read_root():
-    return {"status": "UP", "version": "0.1.0"}
+    return {"status": "UP", "version": "0.1.1"}
 
 
 @app.get("/devops/{devops_id}")

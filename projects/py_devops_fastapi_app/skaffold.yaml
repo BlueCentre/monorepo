@@ -3,16 +3,34 @@ kind: Config
 metadata:
   # skaffold build -m py-devops-fastapi-app-config
   name: py-devops-fastapi-app-config
+
 build:
+  local:
+    push: false
   artifacts:
-  - image: py_devops_fastapi_app
-    # context: projects/py_devops_fastapi_app
-    context: .
-    bazel:
-      target: //projects/py_devops_fastapi_app:py_devops_fastapi_app_image.tar
+  - image: flyr.io/bazel/py-devops-fastapi-app
+    custom:
+      buildCommand: ./build.sh
+      dependencies:
+        paths:
+          - app/**
+          - tests/**
+          - kubernetes/**
+          - ./BUILD.bazel
+          - ./build.sh
+        ignore:
+          - README*
+          - tmp/**
+
 manifests:
   rawYaml:
     - kubernetes/*
+
+portForward:
+- resourceType: deployment
+  resourceName: py-devops-fastapi-app
+  port: http
+  localPort: 5000
 
   # - image: my-app:latest
   #   bazel:

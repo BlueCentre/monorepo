@@ -103,16 +103,19 @@ skaffold_render_go_devops_cli_app:
 
 
 
-minikube_start:
+minikube_start: minikube_eval
 	minikube start
 
 minikube_eval:
-	echo 'eval $$(minikube -p minikube docker-env)'
+	echo 'Remember to run: eval $$(minikube -p minikube docker-env)'
 
 minikube_images:
 	minikube image ls --format='table'
 
 
+
+watch:
+	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table"; kubectl get all --all-namespaces | column -t'
 
 watch_images:
 	# watch -n 5 'clear; docker images'
