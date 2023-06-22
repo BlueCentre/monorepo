@@ -11,3 +11,5 @@ requires:
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/multi-config-microservices
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/microservices
+# - https://codelabs.developers.google.com/skaffold-deep-dive#0
+# - https://skaffold.dev/docs/environment/local-cluster/

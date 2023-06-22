@@ -64,17 +64,45 @@ oci_tarball(
     # Use the image built for the exec platform rather than the target platform
     image = ":image",
     repo_tags = [
-        "flyr.io/go-devops-cli-app:latest",
+        "flyr.io/bazel/go-devops-cli-app:latest",
     ],
 )
 
 # Skaffold needs a target ending with .tar
-oci_tarball(
-    name = "tarball.tar",
-    # Use the image built for the exec platform rather than the target platform
-    image = ":image",
-    repo_tags = ["go-devops-cli-app"],
-)
+# ISSUE: Currently does not work
+# oci_tarball(
+#     name = "tarball.tar",
+#     # Use the image built for the exec platform rather than the target platform
+#     image = ":image",
+#     # repo_tags = ["tarball"],
+#     repo_tags = [
+#         "flyr.io/bazel/tarball:latest",
+#     ],
+# )
+
+# genrule(
+#     name = "skaffold_tarball.tar",
+#     srcs = [":tarball"],
+#     outs = ["envinfo.txt"],
+#     cmd_bash = """(
+#         echo "-----ENV INFO----"
+#         echo "ENV:"
+#         env
+#         echo "-----FILESYSTEM INFO----"
+#         echo "PWD: `pwd`"
+#         echo "Files:"
+#         ls -laF
+#         echo "-----DEBUG INFO----"
+#         echo "whoami     = $$(whoami)"
+#         echo "TARGET_CPU = $(TARGET_CPU)"
+#         echo "BINDIR     = $(BINDIR)"
+#         echo "GENDIR     = $(GENDIR)"
+#         echo "OUTS       = $(OUTS)"
+#         echo "SRCS       = $(SRCS)"
+#         echo "RULEDIR    = $(RULEDIR)"
+#         docker load --input $(SRCS)
+#     ) | tee $@""",
+# )
 
 # See: https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
 container_structure_test(
