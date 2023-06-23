@@ -18,8 +18,9 @@ py_library(
     srcs = ["app/web_app.py"],
     # srcs_version = "PY3",
     deps = [
-        requirement("fastapi"),
-        "//libs/devops:devops_lib"
+        # requirement("fastapi"),
+        "//libs/devops:devops_lib",
+        "//projects/base_py_fastapi_app:fastapi_lib",
     ],
 )
 

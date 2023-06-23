@@ -29,11 +29,28 @@ update_python_requirements:
 
 
 
+build_libs:
+	bazel build //libs/...
+
+build_projects:
+	bazel build //projects/...
+
+build_base_py_fastapi_app:
+	bazel build //projects/base_py_fastapi_app/...
+
+build_py_devops_fastapi_app:
+	bazel build //projects/py_devops_fastapi_app:tarball
+
+
+
 test_libs:
 	bazel test //libs/...
 
 test_projects:
 	bazel test //projects/...
+
+test_py_devops_fastapi_app:
+	bazel test //projects/py_devops_fastapi_app:web_app_test
 
 test_py_calculator:
 	echo "TODO"
@@ -51,6 +68,9 @@ test_oci_py_helloworld_v2:
 	bazel test //projects/py_helloworld_v2_cli_app:test
 
 
+
+run_py_devops_fastapi_app:
+	bazel run //projects/py_devops_fastapi_app:run_bin
 
 run_py_calculator:
 	bazel run //projects/py_calculator_cli_app:app
@@ -73,6 +93,9 @@ run_oci_py_helloworld_v2:
 	docker run --rm local/py_helloworld_v2_cli_app:latest
 
 
+
+skaffold_dev_base_py_fastapi_app:
+	skaffold dev -m base-py-fastapi-app-config
 
 skaffold_dev_go_devops_cli_app:
 	skaffold dev -m go-devops-cli-app-config
@@ -100,6 +123,9 @@ skaffold_run_go_devops_cli_app:
 
 skaffold_render_go_devops_cli_app:
 	skaffold render -m go-devops-cli-app-config
+
+skaffold_render_py_devops_fastapi_app:
+	skaffold render -m py-devops-fastapi-app-config
 
 
 

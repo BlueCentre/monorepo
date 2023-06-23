@@ -9,7 +9,9 @@ Where all project applications are implemented.
 
 ## Project Reference Table
 
-| Project Name | Short Description | State | Owner(s) |
-|--------------|-------------------|-------|----------|
-| Example | My example project | Production | [John Doe](mailto://john.doe@email) |
-| go_devops_cli_app | Example golang project with skaffold & bazel | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| Project Name | Short Description | Upstream | State | CODEOWNER |
+|--------------|-------------------|-------|----------|----------|
+| Example | My example project | None | Production | [John Doe](mailto://john.doe@email) |
+| base_py_fastapi_app | Base project to extend | some_lib | Production | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| go_devops_cli_app | Example golang project with skaffold & bazel | base_go_franework_app | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| py_devops_fastapi_app | desc | base_py_fastapi_app | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |

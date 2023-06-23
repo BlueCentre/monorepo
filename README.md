@@ -13,7 +13,7 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [x] [Skaffold for continuous development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
     - [ ] [Skaffold for CI](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-integration)
     - [ ] [Skaffold for CD](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-delivery)
-- [x] [Bazel]()
+- [x] [Bazel](https://en.wikipedia.org/wiki/Bazel_(software))
 - [ ] [Pants]()
 
 ### Continuous Integration
@@ -42,7 +42,10 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 ## Motivation
 
 - [Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
-- [DevOps Toolkit](https://www.youtube.com/watch?v=qS_4Qf8owc0)
+- [Uber](https://www.uber.com/blog/go-monorepo-bazel/)
+- [Twitter](https://opensourcelive.withgoogle.com/events/bazelcon2020/watch?talk=day1-talk2)
+- [BazelCon - bzlmod](https://www.youtube.com/watch?v=2Nn71RV_yhI)
+- [DevOps Toolkit - skaffold](https://www.youtube.com/watch?v=qS_4Qf8owc0)
 
 ## Goals
 
