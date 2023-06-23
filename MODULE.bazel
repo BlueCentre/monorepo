@@ -1,4 +1,5 @@
 # See:
+# - https://www.youtube.com/watch?v=2Nn71RV_yhI
 # - https://bazel.build/external/overview#blzmod
 # - https://docs.aspect.build/rules/aspect_bazel_lib/
 # - https://github.com/aspect-build/bazel-examples/blob/main/oci_python_image/MODULE.bazel

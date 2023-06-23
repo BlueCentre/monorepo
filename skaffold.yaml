@@ -1,14 +1,14 @@
 apiVersion: skaffold/v4beta5
 kind: Config
 requires:
-# - path: ./leeroy-app
-# - path: ./leeroy-web
+# - path: ./projects/base_py_fastapi_app # Nothing to skaffold here!
 - path: ./projects/go_devops_cli_app
 - path: ./projects/py_devops_fastapi_app
 
 
 
 # See:
+# - https://www.youtube.com/watch?v=qS_4Qf8owc0
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/multi-config-microservices
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/microservices
 # - https://codelabs.developers.google.com/skaffold-deep-dive#0
