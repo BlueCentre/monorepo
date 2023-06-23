@@ -1,15 +1,9 @@
-import click
-import logging
 import random
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-
 from libs.devops.models.devops import DevOps, InfrastructureEngineer, DeveloperExperienceEngineer, DataEngineer, MachineLearningEngineer, WebEngineer, ReliabilityEngineer, PlatformEngineer, PlatformOrganization
+from projects.base_py_fastapi_app.app.main import app, logging
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
-app = FastAPI()
+logging.getLogger(__name__)
 
 
 # Create a random platform
@@ -24,23 +18,6 @@ def random_platform(name: str) -> DevOps:
         ReliabilityEngineer, 
         PlatformEngineer])(name)
 
-
-@app.on_event("startup")
-async def startup_event():
-    logging.info(f"=== [Starting FastAPI app...] ===")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logging.info(f"=== [Stopping FastAPI app...] ===")
-
-
-@app.get("/")
-async def root():
-    return JSONResponse("I am alive!!!")
-
-@app.get("/status")
-async def read_root():
-    return {"status": "UP", "version": "0.1.1"}
 
 
 @app.get("/devops/{devops_id}")
@@ -58,6 +35,8 @@ async def get_devops_random(name):
     devops = platform.request_devops(name)
     devops.speak()
     return devops.__str__()
+
+
 
 # @router.get("/{workflow_id}", response_model=WorkflowRead)
 # def get_workflow(db_session: DbSession, workflow_id: PrimaryKey):

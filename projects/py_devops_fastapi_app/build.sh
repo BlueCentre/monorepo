@@ -12,7 +12,8 @@ echo "PLATFORMS: ${PLATFORMS}"
 echo "SKIP_TEST: ${SKIP_TEST}"
 echo "===[DEBUG] build.sh==="
 
-bazel build //projects/py_devops_fastapi_app:tarball
+# If we can't build, fail quick and exit
+bazel build //projects/py_devops_fastapi_app:tarball || exit 1
 
 # TAR_FILE=$(bazel cquery --output=files //projects/go_devops_cli_app:tarball)
 # docker load --input ${TAR_FILE}
