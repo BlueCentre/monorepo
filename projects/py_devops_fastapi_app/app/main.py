@@ -1,6 +1,7 @@
 import random
 
 from libs.devops.models.devops import DevOps, InfrastructureEngineer, DeveloperExperienceEngineer, DataEngineer, MachineLearningEngineer, WebEngineer, ReliabilityEngineer, PlatformEngineer, PlatformOrganization
+
 from projects.base_py_fastapi_app.app.main import app, logging
 
 logging.getLogger(__name__)
@@ -19,9 +20,8 @@ def random_platform(name: str) -> DevOps:
         PlatformEngineer])(name)
 
 
-
 @app.get("/devops/{devops_id}")
-async def get_devops(devops_id):
+async def get_devops(devops_id: str):
     """Get a devops."""
     platform = PlatformOrganization(InfrastructureEngineer)
     devops = platform.request_devops("James")
@@ -29,7 +29,7 @@ async def get_devops(devops_id):
     return devops.__str__()
 
 @app.get("/devops/random/{name}")
-async def get_devops_random(name):
+async def get_devops_random_item(name: str):
     """Get a random devops."""
     platform = PlatformOrganization(random_platform)
     devops = platform.request_devops(name)

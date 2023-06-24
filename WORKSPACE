@@ -1,1 +1,1 @@
-WORKSPACE.bazel
+WORKSPACE.bzlmod
