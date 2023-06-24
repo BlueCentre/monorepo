@@ -14,8 +14,8 @@ load("@container_structure_test//:defs.bzl", "container_structure_test")
 
 
 py_library(
-    name = "web_lib",
-    srcs = ["app/web_app.py"],
+    name = "main_lib",
+    srcs = ["app/main.py"],
     # srcs_version = "PY3",
     deps = [
         # requirement("fastapi"),
@@ -34,7 +34,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         requirement("uvicorn"),
-        ":web_lib",
+        ":main_lib",
     ],
 )
 
@@ -52,7 +52,7 @@ py_binary(
 # )
 
 py_test(
-    name = "web_app_test",
+    name = "main_test",
     srcs = glob(["tests/*.py"]),
     # srcs = ["tests/webapp_test.py"],
     timeout = "short",
@@ -60,7 +60,7 @@ py_test(
         requirement("requests"),
         requirement("httpx"),
         requirement("fastapi"),
-        ":web_lib",
+        ":main_lib",
         ":run_bin",
     ],
 )
