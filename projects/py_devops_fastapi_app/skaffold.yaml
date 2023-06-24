@@ -13,13 +13,15 @@ build:
       buildCommand: ./build.sh
       dependencies:
         paths:
+          - ../base_py_fastapi_app/**
           - app/**
+          - bin/**
           - tests/**
           - kubernetes/**
           - ./BUILD.bazel
           - ./build.sh
         ignore:
-          - README*
+          - ./**.md
           - tmp/**
 
 manifests:

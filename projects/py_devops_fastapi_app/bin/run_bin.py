@@ -3,10 +3,12 @@ import uvicorn
 
 if __name__ == "__main__":
     # freeze_support()
-    uvicorn.run("projects.py_devops_fastapi_app.app.web_app:app", 
-        host="0.0.0.0", 
-        port=5000, 
-        reload=True, 
+    uvicorn.run(
+        "projects.py_devops_fastapi_app.app.main:app",
+        # "--proxy-headers", # when running behind TLS termination proxy
+        host="0.0.0.0",
+        port=5000,
+        reload=True,
         access_log=True
     )
 

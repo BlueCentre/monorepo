@@ -19,7 +19,7 @@ metadata:
   labels:
     app: py-devops-fastapi-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: py-devops-fastapi-app

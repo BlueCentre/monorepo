@@ -11,7 +11,7 @@ test:
 	bazel test //...
 
 .PHONY: clean
-clean:
+clean: clean_docker_images
 	bazel clean --async
 
 .PHONY: update
@@ -26,6 +26,11 @@ update_python_requirements:
 	bazel run //third_party/python:requirements_3_10.update
 	bazel run //third_party/python:requirements_3_9.update
 	bazel run //third_party/python:requirements_3_8.update
+
+
+
+clean_docker_images:
+	./tools/scripts/docker_images_rmi.sh
 
 
 
@@ -94,16 +99,16 @@ run_oci_py_helloworld_v2:
 
 
 
-skaffold_dev_base_py_fastapi_app:
+dev_base_py_fastapi_app:
 	skaffold dev -m base-py-fastapi-app-config
 
-skaffold_dev_go_devops_cli_app:
+dev_go_devops_cli_app:
 	skaffold dev -m go-devops-cli-app-config
 
-skaffold_dev_go_devops_cli_app_debug:
+dev_go_devops_cli_app_debug:
 	skaffold dev -m go-devops-cli-app-config -v debug
 
-skaffold_dev_py_devops_fastapi_app:
+dev_py_devops_fastapi_app:
 	skaffold dev -m py-devops-fastapi-app-config
 
 
