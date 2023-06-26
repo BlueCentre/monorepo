@@ -1,0 +1,24 @@
+# See:
+# - https://app.buildbuddy.io/docs/setup
+# - https://www.buildbuddy.io/docs/rbe-setup
+# - https://www.buildbuddy.io/docs/rbe-github-actions
+
+build:remote --host_platform=@buildbuddy_toolchain//:platform
+build:remote --platforms=@buildbuddy_toolchain//:platform
+build:remote --extra_execution_platforms=@buildbuddy_toolchain//:platform
+build:remote --crosstool_top=@buildbuddy_toolchain//:toolchain
+build:remote --extra_toolchains=@buildbuddy_toolchain//:cc_toolchain
+build:remote --bes_results_url=https://app.buildbuddy.io/invocation/
+build:remote --bes_backend=grpcs://remote.buildbuddy.io
+build:remote --remote_executor=grpcs://remote.buildbuddy.io
+build:remote --remote_cache=grpcs://remote.buildbuddy.io
+build:remote --remote_timeout=3600
+build:remote --remote_header=x-buildbuddy-api-key=M6xoyCQXGmbU7SyJx6GO
+build:remote --jobs=50
+build:remote --define=EXECUTOR=remote
+
+
+build:ci --build_metadata=ROLE=CI
+build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
+build:ci --bes_backend=grpcs://remote.buildbuddy.io
+# build:ci --build_metadata=VISIBILITY=PUBLIC
