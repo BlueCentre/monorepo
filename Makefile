@@ -11,7 +11,7 @@ test:
 	bazel test //...
 
 .PHONY: clean
-clean: clean_docker_images
+clean:
 	bazel clean --async
 
 .PHONY: update
@@ -29,8 +29,22 @@ update_python_requirements:
 
 
 
-clean_docker_images:
-	./tools/scripts/docker_images_rmi.sh
+clean_docker:
+	./tools/scripts/docker_cleanup.sh
+
+
+
+query_libs:
+	bazel query //libs/...
+
+query_projects:
+	bazel query //projects/...
+
+query_base_py_fastapi_app:
+	bazel query //projects/base_py_fastapi_app/...
+
+query_py_devops_fastapi_app:
+	bazel query //projects/py_devops_fastapi_app/...
 
 
 
@@ -46,6 +60,9 @@ build_base_py_fastapi_app:
 build_py_devops_fastapi_app:
 	bazel build //projects/py_devops_fastapi_app:tarball
 
+build_py_devops_fastapi_app_remote:
+	bazel build //projects/py_devops_fastapi_app/... --config=remote
+
 
 
 test_libs:
@@ -54,8 +71,14 @@ test_libs:
 test_projects:
 	bazel test //projects/...
 
+test_base_py_fastapi_app:
+	bazel test //projects/base_py_fastapi_app/...
+
 test_py_devops_fastapi_app:
-	bazel test //projects/py_devops_fastapi_app:web_app_test
+	bazel test //projects/py_devops_fastapi_app/...
+
+test_py_devops_fastapi_app_remote:
+	bazel test //projects/py_devops_fastapi_app/... --config=remote
 
 test_py_calculator:
 	echo "TODO"

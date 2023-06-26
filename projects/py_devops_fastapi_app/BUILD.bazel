@@ -15,7 +15,7 @@ load("@container_structure_test//:defs.bzl", "container_structure_test")
 
 py_library(
     name = "main_lib",
-    srcs = ["app/main.py"],
+    srcs = glob(["app/*.py"]),
     # srcs_version = "PY3",
     deps = [
         # requirement("fastapi"),
@@ -38,6 +38,19 @@ py_binary(
     ],
 )
 
+py_test(
+    name = "main_test",
+    srcs = glob(["tests/*.py"]),
+    timeout = "short",
+    deps = [
+        requirement("requests"),
+        requirement("httpx"),
+        requirement("fastapi"),
+        ":main_lib",
+        ":run_bin",
+    ],
+)
+
 # pytest_test(
 #     name = "webapp_test",
 #     srcs = glob(["tests/*.py"]),
@@ -50,20 +63,6 @@ py_binary(
 #         ":run",
 #     ],
 # )
-
-py_test(
-    name = "main_test",
-    srcs = glob(["tests/*.py"]),
-    # srcs = ["tests/webapp_test.py"],
-    timeout = "short",
-    deps = [
-        requirement("requests"),
-        requirement("httpx"),
-        requirement("fastapi"),
-        ":main_lib",
-        ":run_bin",
-    ],
-)
 
 py_image_layer(
     name = "app_layer",
