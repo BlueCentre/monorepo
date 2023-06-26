@@ -1,3 +1,4 @@
+# See: https://skaffold.dev/docs/references/yaml/
 apiVersion: skaffold/v4beta5
 kind: Config
 metadata:
@@ -18,21 +19,33 @@ build:
           - bin/**
           - tests/**
           - kubernetes/**
+          - helm-charts/**
           - ./BUILD.bazel
           - ./build.sh
+          - ./skaffold.yaml
         ignore:
           - ./**.md
           - tmp/**
 
-manifests:
-  rawYaml:
-    - kubernetes/*
+# manifests:
+#   rawYaml:
+#     - kubernetes/*
+
+deploy:
+  helm:
+    releases:
+    - name: py-devops-fastapi-app-chart
+      chartPath: ./helm-charts
+      overrides:
+        image: flyr.io/bazel/py-devops-fastapi-app
 
 portForward:
 - resourceType: deployment
-  resourceName: py-devops-fastapi-app
-  port: http
+  resourceName: py-devops-fastapi-app-chart
+  port: 5000
   localPort: 5000
+
+
 
   # - image: my-app:latest
   #   bazel:

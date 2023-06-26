@@ -5,7 +5,7 @@ name: CI
 on: [push]
 
 jobs:
-  test:
+  build:
     # virtual environments: https://github.com/actions/virtual-environments
     runs-on: ubuntu-20.04
 
@@ -21,12 +21,26 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, which is the CWD for
       # the rest of the steps
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Run the test
-        run: bazel test //...
+      # See: https://www.buildbuddy.io/docs/rbe-github-actions
+      # Use remote build (BuildBuddy)
+          # --config=ci \
+          # --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
       - name: Build the code
-        run: bazel build //...
+        run: |
+          bazel build \
+          //...
+
+      # See: https://www.buildbuddy.io/docs/rbe-github-actions
+      # Use remote build (BuildBuddy)
+          # --config=ci \
+          # --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
+      - name: Run the test
+        run: |
+          bazel test \
+          //...
 
 # name: CI
 
