@@ -1,3 +1,6 @@
+# See:
+# - https://kubernetes.io/docs/concepts/services-networking/service/
+# - https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,9 +8,12 @@ metadata:
   labels:
     app: {{ .Chart.Name }}
 spec:
-  clusterIP: None
-  ports:
-    - port: 5000
-      name: {{ .Chart.Name }}
   selector:
     app: {{ .Chart.Name }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  type: {{ .Values.service.type }}
+  clusterIP: None

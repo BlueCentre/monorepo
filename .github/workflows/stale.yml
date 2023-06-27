@@ -54,7 +54,7 @@ jobs:
           It will be closed if no further activity occurs in 30 days.
 
           Collaborators can add an assignee to keep this open indefinitely.
-          Thanks for your contributions to rules_python!
+          Thanks for your contributions to replace_repo_name_here!
 
         stale-pr-message: >
           This Pull Request has been automatically marked as stale because it has not had
@@ -62,7 +62,7 @@ jobs:
           It will be closed if no further activity occurs in 30 days.
 
           Collaborators can add an assignee to keep this open indefinitely.
-          Thanks for your contributions to rules_python!
+          Thanks for your contributions to replace_repo_name_here!
 
         close-issue-message: >
           This issue was automatically closed because it went 30 days without a reply
@@ -71,4 +71,3 @@ jobs:
         close-pr-message: >
           This PR was automatically closed because it went 30 days without a reply
           since it was labeled "Can Close?"
-
