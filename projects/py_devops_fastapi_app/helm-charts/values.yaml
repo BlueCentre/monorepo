@@ -1,16 +1,74 @@
-# Default values for acp-client-remake.
-# This is a YAML-formatted file.
+# See:
+# - https://helm.sh/docs/chart_template_guide/values_files/
+# - https://opensource.com/article/20/5/helm-charts
+# Default values for application chart.
 # Declare variables to be passed into your templates.
+# This is a YAML-formatted file.
 
 chartManagedNS: true
+
+replicaCount: 1
 
 image:
   repository: flyr.io/bazel/py-devops-fastapi-app 
   pullPolicy: IfNotPresent
   tag: "latest" # appset override 
 
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
 service:
   type: ClusterIP
   port: 5000
 
-replicaCount: 1
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: py-devops-fastapi-app.local
+      paths: []
+  tls: []
+  #  - secretName: py-devops-fastapi-app-tls
+  #    hosts:
+  #      - py-devops-fastapi-app.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
