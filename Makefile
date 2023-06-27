@@ -169,7 +169,7 @@ minikube_images:
 
 
 watch:
-	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table"; kubectl get all --all-namespaces | column -t'
+	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table"; kubectl get all --all-namespaces | column -t; helm list'
 
 watch_images:
 	# watch -n 5 'clear; docker images'
