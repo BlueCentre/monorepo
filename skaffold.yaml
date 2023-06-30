@@ -13,3 +13,4 @@ requires:
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/microservices
 # - https://codelabs.developers.google.com/skaffold-deep-dive#0
 # - https://skaffold.dev/docs/environment/local-cluster/
+# - https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development

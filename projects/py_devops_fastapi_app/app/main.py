@@ -24,7 +24,7 @@ def random_platform(name: str) -> DevOps:
 async def get_devops(devops_id: str):
     """Get a devops."""
     platform = PlatformOrganization(InfrastructureEngineer)
-    devops = platform.request_devops("James")
+    devops = platform.request_devops("John")
     devops.speak()
     return devops.__str__()
 

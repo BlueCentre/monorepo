@@ -19,6 +19,7 @@ build:
           - bin/**
           - tests/**
           - kubernetes/**
+          - kustomize/overlays/dev**
           - helm-charts/**
           - ./BUILD.bazel
           - ./build.sh
@@ -27,67 +28,46 @@ build:
           - ./**.md
           - tmp/**
 
-# manifests:
-#   rawYaml:
-#     - kubernetes/*
+manifests:
+  # rawYaml:
+  #   - kubernetes/*
+  kustomize:
+    paths:
+    # - "./kustomize/base"
+    - "./kustomize/overlays/dev"
+    # - "./kustomize/overlays/stg"
+    # - "./kustomize/overlays/int"
+    # - "./kustomize/overlays/prd"
+  # helm: # Does not work
+  #   releases:
+  #   - name: py-devops-fastapi-app-chart
+  #     chartPath: ./helm-charts
+  #     overrides:
+  #       image: flyr.io/bazel/py-devops-fastapi-app
 
-deploy:
-  helm:
-    releases:
-    - name: py-devops-fastapi-app-chart
-      chartPath: ./helm-charts
-      overrides:
-        image: flyr.io/bazel/py-devops-fastapi-app
+# deploy:
+#   helm:
+#     releases:
+#     - name: py-devops-fastapi-app-chart
+#       chartPath: ./helm-charts
+#       overrides:
+#         image: flyr.io/bazel/py-devops-fastapi-app
 
 portForward:
 - resourceType: deployment
-  resourceName: py-devops-fastapi-app-chart
+  # resourceName: py-devops-fastapi-app       # rawYaml
+  resourceName: dev-py-devops-fastapi-app   # kustomize
+  # resourceName: py-devops-fastapi-app-chart # helm
   port: 5000
   localPort: 5000
 
-
-
-  # - image: my-app:latest
-  #   bazel:
-  #     target: //my-app:image
-  # - image: my-other-app:latest
-  #   bazel:
-  #     target: //my-other-app:image
-# deploy:
-#   kubectl:
-#     manifests:
-#     - k8s/k8s-pod.yaml
-#   kustomize:
-#     configs:
-#     - k8s/kustomization.yaml
-# profiles:
-# - name: development
-#   helm:
-#     chart: my-app
-#     version: 0.1.0
-#     values:
-#       ENVIRONMENT: development
-# - name: production
-#   helm:
-#     chart: my-app
-#     version: 0.1.0
-#     values:
-#       ENVIRONMENT: production
-# portForward:
-#   - resourceType: deployment
-#     resourceName: leeroy-web
-#     port: 8080
-#     localPort: 9000
-#   - resourceType: deployment
-#     resourceName: leeroy-app
-#     port: http
-#     localPort: 9001
 
 
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/structure-tests/skaffold.yaml
 
+# NOTE: Only works with the old rules_docker approach
 # apiVersion: skaffold/v4beta5
 # kind: Config
 # build:
