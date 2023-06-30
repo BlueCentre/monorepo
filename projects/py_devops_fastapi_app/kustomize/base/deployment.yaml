@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: py-devops-fastapi-app
+  labels:
+    app: py-devops-fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: py-devops-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: py-devops-fastapi-app
+    spec:
+      containers:
+      - name: py-devops-fastapi-app
+        image: flyr.io/bazel/py-devops-fastapi-app
+        ports:
+        - containerPort: 5000
+          name: http
