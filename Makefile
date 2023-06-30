@@ -131,8 +131,11 @@ dev_go_devops_cli_app:
 dev_go_devops_cli_app_debug:
 	skaffold dev -m go-devops-cli-app-config -v debug
 
+# See: https://github.com/GoogleContainerTools/skaffold/issues/4033
+# TODO: bazel support in the container does not work so we stick with local skaffold
 dev_py_devops_fastapi_app:
 	skaffold dev -m py-devops-fastapi-app-config
+	# ./tools/scripts/skaffold_container.sh dev -m py-devops-fastapi-app-config
 
 
 
@@ -158,7 +161,7 @@ skaffold_render_py_devops_fastapi_app:
 
 
 minikube_start: minikube_eval
-	minikube start
+	minikube start --mount --mount-string "${HOME}:${HOME}"
 
 minikube_eval:
 	echo 'Remember to run: eval $$(minikube -p minikube docker-env)'
@@ -169,7 +172,7 @@ minikube_images:
 
 
 watch:
-	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table"; kubectl get all --all-namespaces | column -t; helm list'
+	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table"; kubectl get all --all-namespaces | column -t; kubectl get configmaps; helm list'
 
 watch_images:
 	# watch -n 5 'clear; docker images'

@@ -1,0 +1,13 @@
+resources:
+- ../../base
+namePrefix: dev-
+# patches:
+# - path: patch.yaml
+configMapGenerator:
+- name: py-devops-fastapi-app-configmap
+  behavior: replace
+  files:
+    - application.properties
+  literals:
+    - foo=bar
+  env: dev.env
