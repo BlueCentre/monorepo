@@ -1,6 +1,0 @@
-# resources:
-# - dev
-# - stg
-# - int
-# - prd
-# namePrefix: cluster-a-

@@ -1,9 +1,11 @@
 apiVersion: skaffold/v4beta5
 kind: Config
 requires:
-# - path: ./projects/base_py_fastapi_app # Nothing to skaffold here!
+# - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
+# - path: ./projects/base_gin_app        # Nothing to skaffold here!
+# - path: ./projects/base_springboot_app # Nothing to skaffold here!
 - path: ./projects/go_devops_cli_app
-- path: ./projects/py_devops_fastapi_app
+- path: ./projects/devops_fastapi_app
 
 
 

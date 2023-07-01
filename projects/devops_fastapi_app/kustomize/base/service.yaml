@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-fastapi-app
+  labels:
+    app: devops-fastapi-app
+spec:
+  clusterIP: None
+  ports:
+    - port: 5000
+      name: devops-fastapi-app
+  selector:
+    app: devops-fastapi-app
