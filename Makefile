@@ -40,11 +40,11 @@ query_libs:
 query_projects:
 	bazel query //projects/...
 
-query_base_py_fastapi_app:
-	bazel query //projects/base_py_fastapi_app/...
+query_base_fastapi_app:
+	bazel query //projects/base_fastapi_app/...
 
-query_py_devops_fastapi_app:
-	bazel query //projects/py_devops_fastapi_app/...
+query_devops_fastapi_app:
+	bazel query //projects/devops_fastapi_app/...
 
 
 
@@ -54,14 +54,14 @@ build_libs:
 build_projects:
 	bazel build //projects/...
 
-build_base_py_fastapi_app:
-	bazel build //projects/base_py_fastapi_app/...
+build_base_fastapi_app:
+	bazel build //projects/base_fastapi_app/...
 
-build_py_devops_fastapi_app:
-	bazel build //projects/py_devops_fastapi_app:tarball
+build_devops_fastapi_app:
+	bazel build //projects/devops_fastapi_app:tarball
 
-build_py_devops_fastapi_app_remote:
-	bazel build //projects/py_devops_fastapi_app/... --config=remote
+build_devops_fastapi_app_remote:
+	bazel build //projects/devops_fastapi_app/... --config=remote
 
 
 
@@ -71,14 +71,14 @@ test_libs:
 test_projects:
 	bazel test //projects/...
 
-test_base_py_fastapi_app:
-	bazel test //projects/base_py_fastapi_app/...
+test_base_fastapi_app:
+	bazel test //projects/base_fastapi_app/...
 
-test_py_devops_fastapi_app:
-	bazel test //projects/py_devops_fastapi_app/...
+test_devops_fastapi_app:
+	bazel test //projects/devops_fastapi_app/...
 
-test_py_devops_fastapi_app_remote:
-	bazel test //projects/py_devops_fastapi_app/... --config=remote
+test_devops_fastapi_app_remote:
+	bazel test //projects/devops_fastapi_app/... --config=remote
 
 test_py_calculator:
 	echo "TODO"
@@ -97,8 +97,8 @@ test_oci_py_helloworld_v2:
 
 
 
-run_py_devops_fastapi_app:
-	bazel run //projects/py_devops_fastapi_app:run_bin
+run_devops_fastapi_app:
+	bazel run //projects/devops_fastapi_app:run_bin
 
 run_py_calculator:
 	bazel run //projects/py_calculator_cli_app:app
@@ -122,8 +122,8 @@ run_oci_py_helloworld_v2:
 
 
 
-dev_base_py_fastapi_app:
-	skaffold dev -m base-py-fastapi-app-config
+# dev_base_fastapi_app:
+# 	skaffold dev -m base-fastapi-app-config
 
 dev_go_devops_cli_app:
 	skaffold dev -m go-devops-cli-app-config
@@ -133,17 +133,17 @@ dev_go_devops_cli_app_debug:
 
 # See: https://github.com/GoogleContainerTools/skaffold/issues/4033
 # TODO: bazel support in the container does not work so we stick with local skaffold
-dev_py_devops_fastapi_app:
-	skaffold dev -m py-devops-fastapi-app-config
-	# ./tools/scripts/skaffold_container.sh dev -m py-devops-fastapi-app-config
+dev_devops_fastapi_app:
+	skaffold dev -m devops-fastapi-app-config
+	# ./tools/scripts/skaffold_container.sh dev -m devops-fastapi-app-config
 
 
 
 skaffold_build_go_devops_cli_app:
 	skaffold build --quiet -m go-devops-cli-app-config
 
-skaffold_build_py_devops_fastapi_app:
-	skaffold build -m py-devops-fastapi-app-config
+skaffold_build_devops_fastapi_app:
+	skaffold build -m devops-fastapi-app-config
 
 
 
@@ -155,8 +155,8 @@ skaffold_run_go_devops_cli_app:
 skaffold_render_go_devops_cli_app:
 	skaffold render -m go-devops-cli-app-config
 
-skaffold_render_py_devops_fastapi_app:
-	skaffold render -m py-devops-fastapi-app-config
+skaffold_render_devops_fastapi_app:
+	skaffold render -m devops-fastapi-app-config
 
 
 
@@ -168,6 +168,10 @@ minikube_eval:
 
 minikube_images:
 	minikube image ls --format='table'
+
+# See: https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+minikube_ingress:
+	minikube addons enable ingress
 
 
 
