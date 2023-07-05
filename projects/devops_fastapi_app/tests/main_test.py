@@ -1,7 +1,7 @@
 ### pytest_test approach ###
 # from fastapi.testclient import TestClient
 
-# from projects.py_echo_fastapi_app.src import run
+# from projects.echo_fastapi_app.src import run
 
 # client = TestClient(run)
 

@@ -5,14 +5,18 @@ flask
 
 # list externals dependencies available for every python packages
 fastapi
+sqlalchemy
+asyncpg
+pydantic
 uvicorn
 
-#test
+# test
 requests
 pytest
 httpx
 
-#tools
+# tools
+copier
 pylint
 black
 pytest-pylint

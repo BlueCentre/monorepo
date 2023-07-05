@@ -73,5 +73,5 @@ bazel query --noimplicit_deps "deps(//libs/calculator:calculator_lib)"
 bazel query --noimplicit_deps "deps(//libs/echo:echo_lib)"
 bazel query --noimplicit_deps "deps(//libs/echo:echo_test)"
 bazel query --noimplicit_deps "deps(//projects/py_calculator_cli_app:app)"
-bazel query --noimplicit_deps "deps(//projects/py_echo_fastapi_app:webapp)"
+bazel query --noimplicit_deps "deps(//projects/echo_fastapi_app:webapp)"
 ```

@@ -10,5 +10,5 @@ if __name__ == "__main__":
         access_log=True
     )
 
-    # sys.argv.insert(1, "projects.py_echo_fastapi_app.main:app")
+    # sys.argv.insert(1, "projects.echo_fastapi_app.main:app")
     # sys.exit(uvicorn.main())  # pylint: disable=no-value-for-parameter

@@ -1,3 +1,4 @@
+# DEPRECATED NOTICE!!!
 # Declares that this directory is the root of a Bazel workspace.
 # See: https://docs.bazel.build/versions/main/build-ref.html#workspace
 # ISSUE: This needs to be symlinked to WORKSPACE for Skaffold

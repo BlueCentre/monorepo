@@ -17,7 +17,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from projects.py_echo_fastapi_app.bin import run_bin
+from projects.echo_fastapi_app.bin import run_bin
 
 client = TestClient(run_bin)
 

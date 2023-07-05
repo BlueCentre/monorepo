@@ -27,8 +27,7 @@ from fastapi.responses import JSONResponse
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: (%(module)s) %(message)s')
 logging.getLogger(__name__)
 
-app = FastAPI()
-
+app = FastAPI(title="DevOps FastAPI Application", version="0.1.2")
 
 @app.on_event("startup")
 async def startup_event():
