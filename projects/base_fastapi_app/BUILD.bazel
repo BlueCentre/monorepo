@@ -21,6 +21,7 @@ py_library(
     ]),
     deps = [
         requirement("fastapi"),
+        requirement("asyncpg"),
         # "//libs/devops:devops_lib"
     ],
 )

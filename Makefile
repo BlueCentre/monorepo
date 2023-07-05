@@ -46,6 +46,13 @@ query_base_fastapi_app:
 query_devops_fastapi_app:
 	bazel query //projects/devops_fastapi_app/...
 
+query_devops_fastapi_app_artifact:
+	bazel cquery projects/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+
+# See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
+query_go_devops_cli_app_artifact:
+	bazel cquery projects/go_devops_cli_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+
 
 
 build_libs:
@@ -86,8 +93,8 @@ test_py_calculator:
 test_flask_calculator:
 	echo "TODO"
 
-test_fastapi_echo:
-	bazel test //projects/py_echo_fastapi_app:webapp_test
+test_echo_fastapi_app:
+	bazel test //projects/echo_fastapi_app:webapp_test
 
 test_oci_py_helloworld:
 	bazel test //projects/py_helloworld_cli_app:test
@@ -106,8 +113,8 @@ run_py_calculator:
 run_flask_calculator:
 	bazel run //projects/py_calculator_flask_app:app
 
-run_fastapi_echo:
-	bazel run //projects/py_echo_fastapi_app:run
+run_echo_fastapi_app:
+	bazel run //projects/echo_fastapi_app:run_bin
 
 run_oci_py_helloworld:
 	bazel build //projects/py_helloworld_cli_app:tarball
@@ -160,6 +167,9 @@ skaffold_render_devops_fastapi_app:
 
 
 
+
+
+
 minikube_start: minikube_eval
 	minikube start --mount --mount-string "${HOME}:${HOME}"
 
@@ -201,6 +211,22 @@ git_show_tree:
 
 
 
-# See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
-bazel_query_go_devops_cli_app_artifact:
-	bazel cquery projects/go_devops_cli_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+# Install tooling for quickstart
+# NOTE: Not needed if using Cloud Workstations
+env_setup:
+	echo "Lets get started!"
+
+env_setup_copier:
+	pip install pipx
+	pipx install copier
+
+env_setup_bazel:
+	echo "Lets build something!"
+
+env_setup_skaffold:
+	echo "Continuous Development!"
+
+
+# TODO:
+# - https://github.com/lucperkins/colossus/blob/main/Makefile
+# - https://github.com/kriscfoster/multi-language-bazel-monorepo
