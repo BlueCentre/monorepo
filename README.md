@@ -33,6 +33,14 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [ ] [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
 - [ ] [Cloud Deploy](https://cloud.google.com/deploy)
 
+### Framework Best Practice
+
+- [ ] React
+- [ ] FastAPI
+- [ ] Gin
+- [ ] Springboot
+- [ ] Typer
+
 ## Quickstart
 
 1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
@@ -69,14 +77,20 @@ Unlike other examples and demos out in the wild, we have a loftier goals. If you
 - [ ] Setup e2e Python example
     - [ ] Test multi-version python
 - [ ] Setup e2e Golang example
+    - [ ] Test multi-version golang
 - [ ] Setup e2e Springboot example
+    - [ ] Test multi-version springboot
+- [ ] Setup e2e React example
 - [x] OCI container support
+    - [ ] Test container structure
+- [ ] Define promotion strategy supporting multi-release cadance
 - [ ] Research and setup container & kubernetes development with Skaffold
 - [ ] Research build systems like Cloud Build, Harness.io, etc
 - [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc
 - [ ] Research testing best practice
 - [ ] Document VSCode and PyCharm IDE development environment
 - [ ] Tooling for boilerplate project creation
+    - [ ] CookieCutter or Copier
 
 ## Directory Convention
 
@@ -105,7 +119,7 @@ monorepo/
 |   |-- base_project/
 |   |-- py_calculator_cli_app/
 |   |-- py_calculator_flask_app/
-|   |-- py_echo_fastapi_app/
+|   |-- echo_fastapi_app/
 |   |-- py_helloworld_cli_app/
 |   |-- py_helloworld_v2_cli_app/
 |   `-- ...

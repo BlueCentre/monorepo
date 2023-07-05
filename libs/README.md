@@ -20,6 +20,15 @@ ROOT
 |   `-- ...
 ```
 
+## Library Reference Table
+
+| Library | Short Description | Upstream | State | CODEOWNER |
+|--------------|-------------------|-------|----------|----------|
+| Example | My example library | None | Production | [John Doe](mailto://john.doe@email) |
+| base | Base library with cross-cutting concerns implemented | some_lib | Production | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| caculator | Calculator helper library | base_go_franework_app | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| devops | DevOps helper library | base | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+
 ## Best Practice
 
 1. Keep library implementation simple and avoid long chained dependencies
