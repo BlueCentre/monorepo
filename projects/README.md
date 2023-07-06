@@ -11,7 +11,7 @@ Where all project applications are implemented.
 
 | Project Name | Short Description | Upstream | State | CODEOWNER |
 |--------------|-------------------|-------|----------|----------|
-| Example | My example project | None | Production | [John Doe](mailto://john.doe@email) |
-| base_fastapi_app | Base project to extend | some_lib | Production | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
-| go_devops_cli_app | Example golang project with skaffold & bazel | base_go_franework_app | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
-| devops_fastapi_app | desc | base_fastapi_app | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| base_fastapi_app | Base project to extend | `None` | Production | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| devops_go_app | Simple Golang example | `Standalone` | Production | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| devops_fastapi_app | DevOps example FastAPI | `base_fastapi_app` | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |
+| echo_fastapi_app | Simple echo example FastAPI | `Standalone` | Development | [James Nguyen](mailto://james.nguyen@flyrlabs.com) |

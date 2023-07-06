@@ -18,11 +18,13 @@ go_library(
     srcs = ["src/main.go"],
     importpath = "example.com/custom_registry/app",
     visibility = ["//visibility:private"],
-    deps = ["@com_github_google_go_cmp//cmp"],
+    deps = [
+        "@com_github_google_go_cmp//cmp",
+    ],
 )
 
 go_binary(
-    name = "app_bin",
+    name = "run_bin",
     embed = [":app_lib"],
     visibility = ["//visibility:public"],
 )
@@ -30,31 +32,32 @@ go_binary(
 # Put app go_binary into a tar layer.
 pkg_tar(
     name = "app_layer",
-    srcs = [":app_bin"],
+    srcs = [":run_bin"],
+    package_dir = "/app"
     # If the binary depends on RUNFILES, uncomment the attribute below.
     # include_runfiles = True
 )
 
 oci_image(
-    name = "image",
+    name = "app_image",
     base = "@distroless_base",
-    entrypoint = ["/app"],
+    entrypoint = ["/app/run_bin"],
     tars = [":app_layer"],
 )
 
 # This is the target that should be released to the target platform
 platform_transition_filegroup(
     name = "transitioned_image",
-    srcs = [":image"],
+    srcs = [":app_image"],
     target_platform = select({
         "@platforms//cpu:arm64": "@rules_go//go/toolchain:linux_arm64",
         "@platforms//cpu:x86_64": "@rules_go//go/toolchain:linux_amd64",
     }),
 )
 
-# $ bazel build projects/go_devops_cli_app:tarball
-# $ docker load --input $(bazel cquery --output=files projects/go_devops_cli_app:tarball)
-# $ docker run --rm flyr.io/go-devops-cli-app:latest
+# $ bazel build projects/devops_go_app:tarball
+# $ docker load --input $(bazel cquery --output=files projects/devops_go_app:tarball)
+# $ docker run --rm flyr.io/devops-go-app:latest
 #   string(
 # -       "Hello World",
 # +       "Hello Go",
@@ -62,9 +65,9 @@ platform_transition_filegroup(
 oci_tarball(
     name = "tarball",
     # Use the image built for the exec platform rather than the target platform
-    image = ":image",
+    image = ":app_image",
     repo_tags = [
-        "flyr.io/bazel/go-devops-cli-app:latest",
+        "flyr.io/bazel/devops-go-app:latest",
     ],
 )
 
@@ -73,7 +76,7 @@ oci_tarball(
 # oci_tarball(
 #     name = "tarball.tar",
 #     # Use the image built for the exec platform rather than the target platform
-#     image = ":image",
+#     image = ":app_image",
 #     # repo_tags = ["tarball"],
 #     repo_tags = [
 #         "flyr.io/bazel/tarball:latest",
@@ -111,6 +114,6 @@ container_structure_test(
     name = "test",
     configs = ["tests/test.yaml"],
     # Use the image built for the exec platform rather than the target platform
-    image = ":image",
+    image = ":app_image",
     timeout = "short"
 )

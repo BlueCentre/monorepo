@@ -50,8 +50,8 @@ query_devops_fastapi_app_artifact:
 	bazel cquery projects/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
 
 # See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
-query_go_devops_cli_app_artifact:
-	bazel cquery projects/go_devops_cli_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+query_devops_go_app_artifact:
+	bazel cquery projects/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
 
 
 
@@ -70,6 +70,9 @@ build_devops_fastapi_app:
 build_devops_fastapi_app_remote:
 	bazel build //projects/devops_fastapi_app/... --config=remote
 
+build_devops_go_app:
+	bazel build //projects/devops_go_app:tarball
+
 
 
 test_libs:
@@ -86,6 +89,9 @@ test_devops_fastapi_app:
 
 test_devops_fastapi_app_remote:
 	bazel test //projects/devops_fastapi_app/... --config=remote
+
+test_devops_go_app:
+	bazel test //projects/devops_go_app/...
 
 test_py_calculator:
 	echo "TODO"
@@ -106,6 +112,9 @@ test_oci_py_helloworld_v2:
 
 run_devops_fastapi_app:
 	bazel run //projects/devops_fastapi_app:run_bin
+
+run_devops_go_app:
+	bazel run //projects/devops_go_app:run_bin
 
 run_py_calculator:
 	bazel run //projects/py_calculator_cli_app:app
@@ -132,11 +141,11 @@ run_oci_py_helloworld_v2:
 # dev_base_fastapi_app:
 # 	skaffold dev -m base-fastapi-app-config
 
-dev_go_devops_cli_app:
-	skaffold dev -m go-devops-cli-app-config
+dev_devops_go_app:
+	skaffold dev -m devops-go-app-config
 
-dev_go_devops_cli_app_debug:
-	skaffold dev -m go-devops-cli-app-config -v debug
+dev_devops_go_app_debug:
+	skaffold dev -m devops-go-app-config -v debug
 
 # See: https://github.com/GoogleContainerTools/skaffold/issues/4033
 # TODO: bazel support in the container does not work so we stick with local skaffold
@@ -146,21 +155,21 @@ dev_devops_fastapi_app:
 
 
 
-skaffold_build_go_devops_cli_app:
-	skaffold build --quiet -m go-devops-cli-app-config
+skaffold_build_devops_go_app:
+	skaffold build --quiet -m devops-go-app-config
 
 skaffold_build_devops_fastapi_app:
 	skaffold build -m devops-fastapi-app-config
 
 
 
-skaffold_run_go_devops_cli_app:
-	skaffold run -m go-devops-cli-app-config
+skaffold_run_devops_go_app:
+	skaffold run -m devops-go-app-config
 
 
 
-skaffold_render_go_devops_cli_app:
-	skaffold render -m go-devops-cli-app-config
+skaffold_render_devops_go_app:
+	skaffold render -m devops-go-app-config
 
 skaffold_render_devops_fastapi_app:
 	skaffold render -m devops-fastapi-app-config
