@@ -10,7 +10,7 @@
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_image(
-    name = "go_devops_cli_app_image",
+    name = "devops_go_app_image",
     srcs = [
         "src/main.go",
         "src/go.mod",

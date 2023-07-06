@@ -5,8 +5,8 @@
 apiVersion: skaffold/v4beta5
 kind: Config
 metadata:
-  # skaffold dev -m go-devops-cli-app-config [-v debug]
-  name: go-devops-cli-app-config
+  # skaffold dev -m devops-go-app-config [-v debug]
+  name: devops-go-app-config
 
 # ISSUE: Broken for now after migration to rules_oci.
 # REFERENCE: https://github.com/GoogleContainerTools/skaffold/blob/main/pkg/skaffold/build/bazel/build.go#L105
@@ -31,16 +31,16 @@ build:
   local:
     push: false
   artifacts:
-    - image: flyr.io/bazel/go-devops-cli-app
+    - image: flyr.io/bazel/devops-go-app
       custom:
-        buildCommand: ./build.sh
+        buildCommand: ./scripts/build.sh
         dependencies:
           paths:
             - src/**
             - tests/**
             - kubernetes/**
             - ./BUILD.bazel
-            - ./build.sh
+            - ./scripts/build.sh
           ignore:
             - README*
             - tmp/**
