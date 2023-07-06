@@ -47,11 +47,17 @@ query_devops_fastapi_app:
 	bazel query //projects/devops_fastapi_app/...
 
 query_devops_fastapi_app_artifact:
-	bazel cquery projects/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+	bazel cquery //projects/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+
+query_devops_go_app:
+	bazel query //projects/devops_go_app/...
 
 # See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
 query_devops_go_app_artifact:
-	bazel cquery projects/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+	bazel cquery //projects/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+
+query_helloworld_py_app:
+	bazel query //projects/helloworld_py_app/...
 
 
 
@@ -68,10 +74,13 @@ build_devops_fastapi_app:
 	bazel build //projects/devops_fastapi_app:tarball
 
 build_devops_fastapi_app_remote:
-	bazel build //projects/devops_fastapi_app/... --config=remote
+	bazel build //projects/devops_fastapi_app:tarball --config=remote
 
 build_devops_go_app:
 	bazel build //projects/devops_go_app:tarball
+
+build_helloworld_py_app:
+	bazel build //projects/helloworld_py_app/...
 
 
 
@@ -93,20 +102,17 @@ test_devops_fastapi_app_remote:
 test_devops_go_app:
 	bazel test //projects/devops_go_app/...
 
+test_echo_fastapi_app:
+	bazel test //projects/echo_fastapi_app:webapp_test
+
+test_helloworld_py_app:
+	bazel test //projects/helloworld_py_app:test
+
 test_py_calculator:
 	echo "TODO"
 
 test_flask_calculator:
 	echo "TODO"
-
-test_echo_fastapi_app:
-	bazel test //projects/echo_fastapi_app:webapp_test
-
-test_oci_py_helloworld:
-	bazel test //projects/py_helloworld_cli_app:test
-
-test_oci_py_helloworld_v2:
-	bazel test //projects/py_helloworld_v2_cli_app:test
 
 
 
@@ -125,16 +131,12 @@ run_flask_calculator:
 run_echo_fastapi_app:
 	bazel run //projects/echo_fastapi_app:run_bin
 
-run_oci_py_helloworld:
-	bazel build //projects/py_helloworld_cli_app:tarball
-	docker load --input `bazel cquery --output=files //projects/py_helloworld_cli_app:tarball`
-	docker run --rm local/py_helloworld_cli_app:latest
-
-run_oci_py_helloworld_v2:
-	#bazel run //projects/py_helloworld_v2_cli_app:hello_world_bin
-	bazel build //projects/py_helloworld_v2_cli_app:tarball
-	docker load --input `bazel cquery --output=files //projects/py_helloworld_v2_cli_app:tarball`
-	docker run --rm local/py_helloworld_v2_cli_app:latest
+# Simple container app without k8s deployment
+run_helloworld_py_app:
+	bazel run //projects/helloworld_py_app:hello_world_bin
+	# bazel build //projects/helloworld_py_app:tarball
+	# docker load --input `bazel cquery --output=files //projects/helloworld_py_app:tarball`
+	# docker run --rm flyr.io/bazel/helloworld_py_app:latest
 
 
 
