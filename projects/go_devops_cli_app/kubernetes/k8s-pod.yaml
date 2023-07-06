@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Pod
-metadata:
-  name: go-devops-cli-app
-spec:
-  containers:
-  - name: go-devops-cli-app
-    image: flyr.io/bazel/go-devops-cli-app
