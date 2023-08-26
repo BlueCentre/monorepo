@@ -27,7 +27,7 @@ py_binary(
 )
 
 py_test(
-    name = "web_test",
+    name = "test",
     srcs = glob(["tests/*.py"]),
     timeout = "short",
     deps = [
