@@ -1,3 +1,9 @@
+.PHONY: quickstart
+quickstart: minikube_start
+	echo "--- QUICKSTART GUIDE ---"
+	echo "1. TODO provide automated required tools check for local development outside of Cloud Workstations!"
+	echo "2. ..."
+
 .PHONY: query
 query:
 	bazel query //...
@@ -29,11 +35,6 @@ update_python_requirements:
 
 
 
-clean_docker:
-	./tools/scripts/docker_cleanup.sh
-
-
-
 query_libs:
 	bazel query //libs/...
 
@@ -55,6 +56,9 @@ query_devops_go_app:
 # See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
 query_devops_go_app_artifact:
 	bazel cquery //projects/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+
+query_echo_fastapi_app:
+	bazel query //projects/echo_fastapi_app/...
 
 query_helloworld_py_app:
 	bazel query //projects/helloworld_py_app/...
@@ -78,6 +82,9 @@ build_devops_fastapi_app_remote:
 
 build_devops_go_app:
 	bazel build //projects/devops_go_app:tarball
+
+build_echo_fastapi_app:
+	bazel build //projects/echo_fastapi_app/...
 
 build_helloworld_py_app:
 	bazel build //projects/helloworld_py_app/...
@@ -103,10 +110,10 @@ test_devops_go_app:
 	bazel test //projects/devops_go_app/...
 
 test_echo_fastapi_app:
-	bazel test //projects/echo_fastapi_app:webapp_test
+	bazel test //projects/echo_fastapi_app/...
 
 test_helloworld_py_app:
-	bazel test //projects/helloworld_py_app:test
+	bazel test //projects/helloworld_py_app/...
 
 test_py_calculator:
 	echo "TODO"
@@ -163,12 +170,8 @@ skaffold_build_devops_go_app:
 skaffold_build_devops_fastapi_app:
 	skaffold build -m devops-fastapi-app-config
 
-
-
 skaffold_run_devops_go_app:
 	skaffold run -m devops-go-app-config
-
-
 
 skaffold_render_devops_go_app:
 	skaffold render -m devops-go-app-config
@@ -178,6 +181,8 @@ skaffold_render_devops_fastapi_app:
 
 
 
+docker_clean:
+	./tools/scripts/make_docker_cleanup.sh
 
 
 
@@ -185,7 +190,7 @@ minikube_start: minikube_eval
 	minikube start --mount --mount-string "${HOME}:${HOME}"
 
 minikube_eval:
-	echo 'Remember to run: eval $$(minikube -p minikube docker-env)'
+	echo '[!!README!!] Remember to run: eval $$(minikube -p minikube docker-env)'
 
 minikube_images:
 	minikube image ls --format='table'
@@ -236,6 +241,13 @@ env_setup_bazel:
 
 env_setup_skaffold:
 	echo "Continuous Development!"
+
+
+
+# Analysis
+repo_stats:
+	docker run --rm -v "$(PWD):/tmp" aldanial/cloc .
+
 
 
 # TODO:
