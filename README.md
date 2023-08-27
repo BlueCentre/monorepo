@@ -6,14 +6,31 @@ A place to develop [monorepo](https://monorepo.tools/#what-is-a-monorepo) patter
 
 Unlike other examples and demos out in the wild, we have loftier goals. If you don't see the following objectives being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience was while looking for best practices and more indepth examples that can be used as blueprints rather than a one time presentation.
 
+## Quickstart
+
+1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
+1. Download latest [skaffold](https://skaffold.dev/docs/install/)
+1. Download latest [minikube](https://minikube.sigs.k8s.io/docs/start/)
+1. Todo automate for local development outside of Google Cloud Workstations
+1. Clone this repo to your local workstation or Google Cloud Workstations
+1. Run `make quickstart` followed by `eval $(minikube -p minikube docker-env)`
+1. Start with skaffold?
+1. Run `bazel build //...` or `bazel test //...`
+
 ## Blueprint Capability
 
 ### Continuous Development
 
 - [x] [Skaffold for continuous development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
+    - [x] [Skaffold for development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
     - [ ] [Skaffold for CI](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-integration)
     - [ ] [Skaffold for CD](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-delivery)
 - [x] [Bazel](https://en.wikipedia.org/wiki/Bazel_(software))
+    - [x] Local build and test
+    - [x] Local build and test cache
+    - [x] CI build and test
+    - [ ] CI build and test cache
+    - [ ] CI remote workers
 - [ ] [Pants]()
 
 ### Continuous Integration
@@ -41,12 +58,6 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
 - [ ] Springboot
 - [ ] Typer
 
-## Quickstart
-
-1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
-1. Download latest [skaffold](https://skaffold.dev/docs/install/)
-1. Download latest [minikube](https://minikube.sigs.k8s.io/docs/start/)
-
 ## Motivation
 
 - [Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
@@ -61,7 +72,7 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
 1. Manage dependencies across all projects.
 1. Manage [polyglot](https://www.pluralsight.com/blog/software-development/how-polyglot-dev-team) builds.
 1. Manage blueprints for rapid application development.
-1. Constant evaluation of the technology stack and scale for thousands of engineers.
+1. Constant evaluation of the technology stack and scale for thousands of engineers AND feature development.
 
 ## Objectives
 
@@ -82,7 +93,8 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
     - [ ] Test multi-version springboot
 - [ ] Setup e2e React example
 - [x] OCI container support
-    - [ ] Test container structure
+    - [x] Test container structure
+    - [x] Make sure we are not regressing to using [Dockerfile](https://tinyurl.com/29wvdf4e) image builds
 - [ ] Define promotion strategy supporting multi-release cadance
 - [ ] Research and setup container & kubernetes development with Skaffold
 - [ ] Research build systems like Cloud Build, Harness.io, etc
@@ -91,6 +103,7 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
 - [ ] Document VSCode and PyCharm IDE development environment
 - [ ] Tooling for boilerplate project creation
     - [ ] CookieCutter or Copier
+- [ ] Port [microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo)
 
 ## Directory Convention
 
