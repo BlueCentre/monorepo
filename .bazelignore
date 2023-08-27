@@ -1,0 +1,2 @@
+# Paths that have their own WORKSPACE file or not relevant to bazel
+docs/

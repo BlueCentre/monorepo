@@ -1,8 +1,10 @@
 .PHONY: quickstart
 quickstart: minikube_start
-	echo "--- QUICKSTART GUIDE ---"
-	echo "1. TODO provide automated required tools check for local development outside of Cloud Workstations!"
-	echo "2. ..."
+	# --- QUICKSTART GUIDE ---
+	# 1. TODO provide automated required tools check for local development outside of Cloud Workstations!
+	# 2. TODO optionally just automate installing required tools
+	# 3. For now, we assume the tools are installed
+	# 4. Do not forget to run [eval $(minikube -p minikube docker-env)] to configure docker to use the minikube docker session
 
 .PHONY: query
 query:
@@ -190,7 +192,7 @@ minikube_start: minikube_eval
 	minikube start --mount --mount-string "${HOME}:${HOME}"
 
 minikube_eval:
-	echo '[!!README!!] Remember to run: eval $$(minikube -p minikube docker-env)'
+	#[!! NOTICE !!]# Run this command in your prompt: eval $$(minikube -p minikube docker-env)
 
 minikube_images:
 	minikube image ls --format='table'
