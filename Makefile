@@ -35,6 +35,14 @@ update_python_requirements:
 	bazel run //third_party/python:requirements_3_9.update
 	bazel run //third_party/python:requirements_3_8.update
 
+update_maven:
+	# bazel run @maven//:pin
+	bazel run @unpinned_maven//:pin
+	# To repin everything:
+	# REPIN=1 bazel run @unpinned_maven//:pin
+	# To only repin rules_jvm_external:
+	# RULES_JVM_EXTERNAL_REPIN=1 bazel run @unpinned_maven//:pin
+
 
 
 query_libs:
@@ -91,6 +99,9 @@ build_echo_fastapi_app:
 build_helloworld_py_app:
 	bazel build //projects/helloworld_py_app/...
 
+build_hello_springboot_app:
+	bazel build //projects/hello_springboot_app/src/main/java/hello:app
+
 
 
 test_libs:
@@ -116,6 +127,9 @@ test_echo_fastapi_app:
 
 test_helloworld_py_app:
 	bazel test //projects/helloworld_py_app/...
+
+test_hello_springboot_app:
+	bazel test //projects/hello_springboot_app/src/test/...
 
 test_py_calculator:
 	echo "TODO"
@@ -146,6 +160,9 @@ run_helloworld_py_app:
 	# bazel build //projects/helloworld_py_app:tarball
 	# docker load --input `bazel cquery --output=files //projects/helloworld_py_app:tarball`
 	# docker run --rm flyr.io/bazel/helloworld_py_app:latest
+
+run_hello_springboot_app:
+	bazel run //projects/hello_springboot_app/src/main/java/hello:app
 
 
 

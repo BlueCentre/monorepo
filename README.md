@@ -52,11 +52,11 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
 
 ### Framework Best Practice
 
-- [ ] React
-- [ ] FastAPI
-- [ ] Gin
-- [ ] Springboot
-- [ ] Typer
+- [ ] React - Frontend
+- [ ] FastAPI - Backend
+- [ ] Gin - Backend
+- [ ] Springboot - Backend
+- [ ] Typer - CLI
 
 ## Motivation
 
