@@ -95,7 +95,35 @@ use_repo(oci, "distroless_python")
 # - https://github.com/bazelbuild/rules_jvm_external/blob/master/docs/bzlmod.md
 # - https://github.com/bazelbuild/rules_jvm_external/blob/master/README.md#updating-maven_installjson
 
-#bazel_dep(name = "rules_jvm_external", version = "5.3")
+# Maven POJO
+maven_pojo = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven_pojo.install(
+    # name = "maven_install_in_custom_location",
+    name = "maven_pojo",
+    artifacts = [
+        # This line is an example coordinate, you'd copy-paste your actual dependencies here
+        # from your build.gradle or pom.xml file.
+        # "org.seleniumhq.selenium:selenium-java:4.4.0",
+        # log4j deps are added only for https://github.com/bazelbuild/rules_jvm_external/issues/630
+        "org.apache.logging.log4j:log4j-api:2.16.0",
+        "org.apache.logging.log4j:log4j-to-slf4j:2.16.0",
+    ],
+    # fetch_sources = True,
+    # use_credentials_from_home_netrc_file = True,
+    repositories = [
+        # Private repositories are supported through HTTP Basic auth
+        # "http://username:password@localhost:8081/artifactory/my-repository",
+        # "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    # maven_install_json = "//third_party/java:maven_install.json",
+    # version_conflict_policy = "pinned",
+    lock_file = "//third_party/java:maven_pojo_install.json",
+)
+# use_repo(maven_pojo, "maven_pojo")
+use_repo(maven_pojo, "maven_pojo", "unpinned_maven_pojo")
+
+# Maven Springboot
 maven_springboot = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven_springboot.install(
     # name = "maven_install_in_custom_location",

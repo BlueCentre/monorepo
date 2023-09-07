@@ -35,6 +35,10 @@ update_python_requirements:
 	bazel run //third_party/python:requirements_3_9.update
 	bazel run //third_party/python:requirements_3_8.update
 
+update_maven_pojo:
+	# bazel run @maven_pojo//:pin
+	bazel run @unpinned_maven_pojo//:pin
+
 update_maven_springboot:
 	# bazel run @maven//:pin
 	bazel run @unpinned_maven_springboot//:pin
