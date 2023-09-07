@@ -35,9 +35,9 @@ update_python_requirements:
 	bazel run //third_party/python:requirements_3_9.update
 	bazel run //third_party/python:requirements_3_8.update
 
-update_maven:
+update_maven_springboot:
 	# bazel run @maven//:pin
-	bazel run @unpinned_maven//:pin
+	bazel run @unpinned_maven_springboot//:pin
 	# To repin everything:
 	# REPIN=1 bazel run @unpinned_maven//:pin
 	# To only repin rules_jvm_external:
@@ -72,6 +72,9 @@ query_echo_fastapi_app:
 
 query_helloworld_py_app:
 	bazel query //projects/helloworld_py_app/...
+
+query_hello_springboot_app:
+	bazel query //projects/hello_springboot_app/...
 
 
 
