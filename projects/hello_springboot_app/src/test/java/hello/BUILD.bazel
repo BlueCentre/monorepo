@@ -11,6 +11,7 @@ java_test(
         "@maven_springboot//:org_springframework_spring_test",
         "@maven_springboot//:org_springframework_spring_web",
     ],
+    timeout = "short",
 )
 
 java_test(
@@ -26,4 +27,5 @@ java_test(
         "@maven_springboot//:org_springframework_spring_test",
         "@maven_springboot//:org_springframework_spring_web",
     ],
+    timeout = "short",
 )
