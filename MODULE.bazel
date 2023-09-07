@@ -96,9 +96,10 @@ use_repo(oci, "distroless_python")
 # - https://github.com/bazelbuild/rules_jvm_external/blob/master/README.md#updating-maven_installjson
 
 #bazel_dep(name = "rules_jvm_external", version = "5.3")
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-maven.install(
+maven_springboot = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven_springboot.install(
     # name = "maven_install_in_custom_location",
+    name = "maven_springboot",
     artifacts = [
         # This line is an example coordinate, you'd copy-paste your actual dependencies here
         # from your build.gradle or pom.xml file.
@@ -127,10 +128,10 @@ maven.install(
     ],
     # maven_install_json = "//third_party/java:maven_install.json",
     # version_conflict_policy = "pinned",
-    lock_file = "//third_party/java:maven_install.json",
+    lock_file = "//third_party/java:maven_springboot_install.json",
 )
 # use_repo(maven, "maven")
-use_repo(maven, "maven", "unpinned_maven")
+use_repo(maven_springboot, "maven_springboot", "unpinned_maven_springboot")
 
 # load("@maven//:defs.bzl", "pinned_maven_install")
 # pinned_maven_install()
