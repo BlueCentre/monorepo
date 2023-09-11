@@ -36,7 +36,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, which is the CWD for
       # the rest of the steps
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # See: https://www.buildbuddy.io/docs/rbe-github-actions
       # Use remote build (BuildBuddy)
