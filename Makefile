@@ -1,10 +1,12 @@
 .PHONY: quickstart
 quickstart: minikube_start
 	# --- QUICKSTART GUIDE ---
-	# 1. TODO provide automated required tools check for local development outside of Cloud Workstations!
+	# 1. TODO provide automated required tools check for local development
+	#    outside of Cloud Workstations!
 	# 2. TODO optionally just automate installing required tools
 	# 3. For now, we assume the tools are installed
-	# 4. Do not forget to run [eval $(minikube -p minikube docker-env)] to configure docker to use the minikube docker session
+	# 4. Do not forget to run 'eval $$(minikube -p minikube docker-env)' in your SHELL 
+	#    to configure docker to use the minikube docker session
 
 .PHONY: query
 query:
@@ -14,9 +16,18 @@ query:
 build:
 	bazel build //...
 
+.PHONY: build_remote
+build_remote:
+	bazel build //... --config=remote
+
 .PHONY: test
 test:
+	#bazel test //... --config=remote
 	bazel test //...
+
+.PHONY: test_remote
+test_remote:
+	bazel test //... --config=remote
 
 .PHONY: clean
 clean:
@@ -85,8 +96,14 @@ query_hello_springboot_app:
 build_libs:
 	bazel build //libs/...
 
+build_libs_remote:
+	bazel build //libs/... --config=remote
+
 build_projects:
 	bazel build //projects/...
+
+build_projects_remote:
+	bazel build //projects/... --config=remote
 
 build_base_fastapi_app:
 	bazel build //projects/base_fastapi_app/...
@@ -216,7 +233,9 @@ minikube_start: minikube_eval
 	minikube start --mount --mount-string "${HOME}:${HOME}"
 
 minikube_eval:
-	#[!! NOTICE !!]# Run this command in your prompt: eval $$(minikube -p minikube docker-env)
+	#[!! NOTICE !!] 
+	# Run this command in your SHELL: eval $$(minikube -p minikube docker-env)
+	#[!! NOTICE !!]
 
 minikube_images:
 	minikube image ls --format='table'
