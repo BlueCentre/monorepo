@@ -1,8 +1,11 @@
 # See:
 # - https://app.buildbuddy.io/docs/setup
 # - https://www.buildbuddy.io/docs/rbe-setup
+# - https://www.buildbuddy.io/docs/rbe-platforms
 # - https://www.buildbuddy.io/docs/rbe-github-actions
 
+# Commented out params require /BUILD.bazel at root; see rbe-platforms
+# build:remote --host_platform=//:docker_image_platform
 build:remote --host_platform=@buildbuddy_toolchain//:platform
 build:remote --platforms=@buildbuddy_toolchain//:platform
 build:remote --extra_execution_platforms=@buildbuddy_toolchain//:platform
@@ -14,6 +17,8 @@ build:remote --remote_executor=grpcs://remote.buildbuddy.io
 build:remote --remote_cache=grpcs://remote.buildbuddy.io
 build:remote --remote_timeout=3600
 build:remote --remote_header=x-buildbuddy-api-key=M6xoyCQXGmbU7SyJx6GO
+# build:remote --remote_exec_header=x-buildbuddy-platform.container-registry-username=USERNAME
+# build:remote --remote_exec_header=x-buildbuddy-platform.container-registry-password="$(gcloud auth print-access-token)"
 build:remote --jobs=50
 build:remote --define=EXECUTOR=remote
 

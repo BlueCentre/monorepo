@@ -8,3 +8,18 @@
 #     cmd_bash = "grep -Po '^STABLE_BUILD_GIT_DESCRIBE\\s+\\K.*' bazel-out/stable-status.txt | tee $@",
 #     stamp = True,
 # )
+
+# See https://www.buildbuddy.io/docs/rbe-platforms
+# Requires /.buildbuddy/remote.bazelrc
+# platform(
+#     name = "docker_image_platform",
+#     constraint_values = [
+#         "@bazel_tools//platforms:x86_64",
+#         "@bazel_tools//platforms:linux",
+#         "@bazel_tools//tools/cpp:clang",
+#     ],
+#     exec_properties = {
+#         "OSFamily": "Linux",
+#         "container-image": "docker://gcr.io/YOUR:IMAGE",
+#     },
+# )

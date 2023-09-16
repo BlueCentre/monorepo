@@ -45,6 +45,8 @@ jobs:
       - name: Build the code
         run: |
           bazel build \
+          --config=ci \
+          --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
           //...
 
       # See: https://www.buildbuddy.io/docs/rbe-github-actions
