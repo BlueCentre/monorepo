@@ -26,6 +26,7 @@ build:remote --define=EXECUTOR=remote
 build:ci --build_metadata=ROLE=CI
 build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
 build:ci --bes_backend=grpcs://remote.buildbuddy.io
+build:ci --remote_executor=grpcs://remote.buildbuddy.io
 build:ci --remote_cache=grpcs://remote.buildbuddy.io
 build:ci --noremote_upload_local_results # Uploads logs & artifacts without writing to cache
 build:ci --nolegacy_important_outputs # Can significantly reduce the payload size of the uploaded build event stream by eliminating duplicate file references
@@ -35,4 +36,5 @@ build:ci --experimental_remote_build_event_upload=minimal
 build:ci --noslim_profile # For a more detailed timing profile
 build:ci --experimental_profile_include_target_label
 build:ci --experimental_profile_include_primary_output
+build:ci --jobs=50
 # build:ci --build_metadata=VISIBILITY=PUBLIC
