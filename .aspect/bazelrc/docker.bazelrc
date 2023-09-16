@@ -1,0 +1,3 @@
+# having bzlmod enabled seems to interfere with docker toolchain resolution,
+# so we set this flag
+#build --@io_bazel_rules_docker//transitions:enable=false
