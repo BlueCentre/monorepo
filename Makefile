@@ -130,8 +130,14 @@ build_hello_springboot_app:
 test_libs:
 	bazel test //libs/...
 
+test_libs_remote:
+	bazel test //libs/... --config=remote
+
 test_projects:
 	bazel test //projects/...
+
+test_projects_remote:
+	bazel test //projects/... --config=remote
 
 test_base_fastapi_app:
 	bazel test //projects/base_fastapi_app/...

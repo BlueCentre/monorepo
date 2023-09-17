@@ -40,8 +40,6 @@ jobs:
 
       # See: https://www.buildbuddy.io/docs/rbe-github-actions
       # Use remote build (BuildBuddy)
-          # --config=ci \
-          # --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
       - name: Build the code
         run: |
           bazel build \
@@ -49,13 +47,15 @@ jobs:
           --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
           //...
 
-      # See: https://www.buildbuddy.io/docs/rbe-github-actions
-      # Use remote build (BuildBuddy)
-          # --config=ci \
-          # --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
+      # See: 
+      # - https://www.buildbuddy.io/docs/rbe-github-actions
+      # - https://www.buildbuddy.io/docs/rbe-microvms/
+      # Use remote build (BuildBuddy) + microVM for docker testing support used in BUILDs
       - name: Run the test
         run: |
           bazel test \
+          --config=ci \
+          --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_ORG_API_KEY }} \
           //...
 
 # name: CI
