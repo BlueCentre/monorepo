@@ -4,6 +4,7 @@
 # - https://www.buildbuddy.io/docs/rbe-platforms
 # - https://www.buildbuddy.io/docs/rbe-github-actions
 
+build:remote --build_metadata=ROLE=Local
 # Commented out params require /BUILD.bazel at root; see rbe-platforms
 # build:remote --host_platform=//:docker_image_platform
 build:remote --host_platform=@buildbuddy_toolchain//:platform
@@ -31,8 +32,8 @@ build:ci --remote_cache=grpcs://remote.buildbuddy.io
 build:ci --noremote_upload_local_results # Uploads logs & artifacts without writing to cache
 build:ci --nolegacy_important_outputs # Can significantly reduce the payload size of the uploaded build event stream by eliminating duplicate file references
 build:ci --remote_timeout=3600
-build:ci --experimental_remote_cache_compression
-build:ci --experimental_remote_build_event_upload=minimal
+build:ci --experimental_remote_cache_compression # Improve remote cache throughput
+build:ci --experimental_remote_build_event_upload=minimal # Reduce the number of unnecessary cache uploads that Bazel might perform during a build
 build:ci --noslim_profile # For a more detailed timing profile
 build:ci --experimental_profile_include_target_label
 build:ci --experimental_profile_include_primary_output
