@@ -25,6 +25,9 @@ build:remote --define=EXECUTOR=remote
 
 
 build:ci --build_metadata=ROLE=CI
+build:ci --host_platform=@buildbuddy_toolchain//:platform
+build:ci --platforms=@buildbuddy_toolchain//:platform
+build:ci --extra_execution_platforms=@buildbuddy_toolchain//:platform
 build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
 build:ci --bes_backend=grpcs://remote.buildbuddy.io
 build:ci --remote_executor=grpcs://remote.buildbuddy.io

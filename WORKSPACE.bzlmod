@@ -23,7 +23,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # BuildBuddy
 #
 
-# See: https://github.com/buildbuddy-io/buildbuddy-toolchain
+# See: 
+# - https://www.buildbuddy.io/docs/rbe-setup#configuring-your-workspace
+# - https://github.com/buildbuddy-io/buildbuddy-toolchain
 
 http_archive(
     name = "io_buildbuddy_buildbuddy_toolchain",

@@ -22,7 +22,6 @@ build_remote:
 
 .PHONY: test
 test:
-	#bazel test //... --config=remote
 	bazel test //...
 
 .PHONY: test_remote
