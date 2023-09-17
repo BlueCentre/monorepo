@@ -18,3 +18,7 @@ Validation done using the same Pull Request:
 |------------|-------------------|------------|
 | Without Remote Executors | 90 | 4m 38s |
 | With 50 Remote Executors | 90 | 2m 21s |
+
+## Reference
+
+- https://www.buildbuddy.io/docs/rbe-setup
