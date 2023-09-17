@@ -115,7 +115,15 @@ container_structure_test(
     configs = ["tests/test.yaml"],
     # Use the image built for the exec platform rather than the target platform
     image = ":app_image",
-    timeout = "short"
+    timeout = "short",
+    exec_properties = {
+        # Tell BuildBuddy to run this test using a Firecracker microVM.
+        "test.workload-isolation-type": "firecracker",
+        # Tell BuildBuddy to ensure that the Docker daemon is started
+        # inside the microVM before the test starts, so that we don't
+        # have to worry about starting it ourselves.
+        "test.init-dockerd": "true",
+    },
 )
 
 # oci_push(
