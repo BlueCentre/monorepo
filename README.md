@@ -1,10 +1,10 @@
 # Monorepo Blueprints
 
-A place to develop [monorepo](https://monorepo.tools/#what-is-a-monorepo) patterns.
+A place to develop [monorepo](https://monorepo.tools/#what-is-a-monorepo) patterns, but can also be used for polyrepos!
 
 ## Overview
 
-Unlike other examples and demos out in the wild, we have loftier goals. If you don't see the following objectives being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience was while looking for best practices and more indepth examples that can be used as blueprints rather than a one time presentation.
+Unlike other examples and demos out in the wild, we have loftier goals. If you don't see your goals being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience has been while looking for best practices and more indepth examples that can be used as on-going blueprints rather than for one time presentations and shallow demos.
 
 ## Quickstart
 
@@ -29,8 +29,8 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
     - [x] Local build and test
     - [x] Local build and test cache
     - [x] CI build and test
-    - [ ] CI build and test cache
-    - [ ] CI remote workers
+    - [x] CI build and test remote cache
+    - [x] CI remote build executor (RBE)
 - [ ] [Pants]()
 
 ### Continuous Integration
@@ -97,13 +97,13 @@ Unlike other examples and demos out in the wild, we have loftier goals. If you d
     - [x] Make sure we are not regressing to using [Dockerfile](https://tinyurl.com/29wvdf4e) image builds
 - [ ] Define promotion strategy supporting multi-release cadance
 - [ ] Research and setup container & kubernetes development with Skaffold
-- [ ] Research build systems like Cloud Build, Harness.io, etc
+- [ ] Research build systems like GitHub Actions, Cloud Build, Harness.io, etc
 - [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc
 - [ ] Research testing best practice
 - [ ] Document VSCode and PyCharm IDE development environment
 - [ ] Tooling for boilerplate project creation
     - [ ] CookieCutter or Copier
-- [ ] Port [microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo)
+- [ ] Port example into this code base [microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo)
 
 ## Directory Convention
 

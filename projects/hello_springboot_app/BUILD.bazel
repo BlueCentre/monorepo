@@ -1,0 +1,52 @@
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+#load("@container_structure_test//:defs.bzl", "container_structure_test")
+
+pkg_tar(
+    name = "tar",
+    # Bring the java_binary
+    srcs = ["//projects/hello_springboot_app/src/main/java/hello:app_deploy.jar"],
+    include_runfiles = True,
+    strip_prefix = ".",
+)
+
+oci_image(
+    name = "java_image",
+    base = "@distroless_java",
+    entrypoint = [
+        "java",
+        "-jar",
+        "src/main/java/hello/app_deploy.jar",
+    ],
+    tars = [":tar"],
+)
+
+# $ bazel build //projects/hello_springboot_app:tarball
+# $ docker load --input $(bazel cquery --output=files //projects/hello_springboot_app:tarball)
+# $ docker run --rm flyr.io/bazel/hello-springboot-app:latest
+# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
+oci_tarball(
+    name = "tarball",
+    image = ":java_image",
+    repo_tags = [
+        "flyr.io/bazel/hello-springboot-app:latest",
+    ],
+)
+
+# See:
+# - https://bazel.build/reference/be/common-definitions#common-attributes-tests
+# - 
+# container_structure_test(
+#     name = "container_test",
+#     configs = ["tests/container_test.yaml"],
+#     image = ":app_image",
+#     timeout = "short",
+#     exec_properties = {
+#         # Tell BuildBuddy to run this test using a Firecracker microVM.
+#         "test.workload-isolation-type": "firecracker",
+#         # Tell BuildBuddy to ensure that the Docker daemon is started
+#         # inside the microVM before the test starts, so that we don't
+#         # have to worry about starting it ourselves.
+#         "test.init-dockerd": "true",
+#     },
+# )

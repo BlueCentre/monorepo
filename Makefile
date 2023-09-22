@@ -33,8 +33,14 @@ clean:
 	bazel clean --async
 
 .PHONY: update
-update: update_aspect_bazelrc update_python_requirements
-	echo "Running update..."
+update: update_aspect_bazelrc update_python_requirements update_maven_pojo update_maven_springboot
+	###########################################################################
+	# Ran updates...
+	# - update_aspect_bazelrc
+	# - update_python_requirements
+	# - update_maven_pojo
+	# - update_maven_springboot
+	###########################################################################
 
 update_aspect_bazelrc:
 	bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
@@ -53,9 +59,9 @@ update_maven_springboot:
 	# bazel run @maven//:pin
 	bazel run @unpinned_maven_springboot//:pin
 	# To repin everything:
-	# REPIN=1 bazel run @unpinned_maven//:pin
+	# REPIN=1 bazel run @unpinned_maven_springboot//:pin
 	# To only repin rules_jvm_external:
-	# RULES_JVM_EXTERNAL_REPIN=1 bazel run @unpinned_maven//:pin
+	# RULES_JVM_EXTERNAL_REPIN=1 bazel run @unpinned_maven_springboot//:pin
 
 
 
@@ -64,6 +70,18 @@ query_libs:
 
 query_projects:
 	bazel query //projects/...
+
+query_maven_pojo:
+	###########################################################################
+	# Refer to /MODULE.bazel
+	###########################################################################
+	bazel query @maven_pojo//...
+
+query_maven_springboot:
+	###########################################################################
+	# Refer to /MODULE.bazel
+	###########################################################################
+	bazel query @maven_springboot//...
 
 query_base_fastapi_app:
 	bazel query //projects/base_fastapi_app/...
@@ -123,7 +141,10 @@ build_helloworld_py_app:
 	bazel build //projects/helloworld_py_app/...
 
 build_hello_springboot_app:
-	bazel build //projects/hello_springboot_app/src/main/java/hello:app
+	bazel build //projects/hello_springboot_app:tarball
+
+build_hello_springboot_app_remote:
+	bazel build //projects/hello_springboot_app:tarball --config=remote
 
 
 
@@ -232,15 +253,21 @@ skaffold_render_devops_fastapi_app:
 docker_clean:
 	./tools/scripts/make_docker_cleanup.sh
 
+docker_load_hello_springboot_app:
+	docker load --input $$(bazel cquery --output=files //projects/hello_springboot_app:tarball)
+
+docker_run_hello_springboot_app:
+	docker run --rm flyr.io/bazel/hello-springboot-app:latest
+
 
 
 minikube_start: minikube_eval
 	minikube start --mount --mount-string "${HOME}:${HOME}"
 
 minikube_eval:
-	#[!! NOTICE !!] 
+	#[!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!]
 	# Run this command in your SHELL: eval $$(minikube -p minikube docker-env)
-	#[!! NOTICE !!]
+	#[!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!]
 
 minikube_images:
 	minikube image ls --format='table'
