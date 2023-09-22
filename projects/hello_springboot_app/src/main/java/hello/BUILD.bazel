@@ -1,3 +1,5 @@
+# See: https://bazel.build/reference/be/java
+
 java_library(
     name = "lib",
     srcs = glob(["*.java"]),
@@ -13,6 +15,7 @@ java_library(
 
 java_binary(
     name = "app",
+    visibility = ["//visibility:public"],
     main_class = "hello.Application",
     runtime_deps = [
         ":lib",
