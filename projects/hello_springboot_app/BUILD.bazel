@@ -2,23 +2,49 @@ load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 #load("@container_structure_test//:defs.bzl", "container_structure_test")
 
+# See: 
+# - https://github.com/bazelbuild/rules_pkg
+# - https://bazelbuild.github.io/rules_pkg/0.9.1/reference.html#pkg_tar
+# pkg_tar(
+#     name = "lib_tar",
+#     # Bring the java_binary
+#     srcs = ["//projects/hello_springboot_app/src/main/java/hello:lib_deploy.jar"],
+#     include_runfiles = True,
+#     strip_prefix = ".",
+# )
+
+# FIX
 pkg_tar(
-    name = "tar",
+    name = "app_tar",
     # Bring the java_binary
     srcs = ["//projects/hello_springboot_app/src/main/java/hello:app_deploy.jar"],
     include_runfiles = True,
-    strip_prefix = ".",
+    # strip_prefix = ".",
+    # deps = [
+    #     "//projects/hello_springboot_app/src/main/java/hello:lib",
+    #     "//projects/hello_springboot_app/src/main/java/hello:app",
+    # ],
 )
 
+# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
 oci_image(
     name = "java_image",
     base = "@distroless_java",
-    entrypoint = [
-        "java",
-        "-jar",
-        "src/main/java/hello/app_deploy.jar",
+    # env = {"JAVA_HOME": "/"},
+    tars = [":app_tar"],
+    # tars = [
+    #     ":lib_tar",
+    #     ":app_tar",
+    # ],
+    # entrypoint = [
+    #     "java",
+    #     "-jar",
+    #     # "/src/main/java/hello/app_deploy.jar",
+    #     "app_deploy.jar",
+    # ],
+    cmd = [
+        "app_deploy.jar",
     ],
-    tars = [":tar"],
 )
 
 # $ bazel build //projects/hello_springboot_app:tarball

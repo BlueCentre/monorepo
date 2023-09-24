@@ -1,0 +1,47 @@
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@container_structure_test//:defs.bzl", "container_structure_test")
+
+pkg_tar(
+    name = "tar",
+    # Bring the java_binary
+    srcs = ["//projects/example2_java_app/src/main/java/com/example:JavaLoggingClient_deploy.jar"],
+    include_runfiles = True,
+    # strip_prefix = ".",
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_java",
+    entrypoint = [
+        "java",
+        "-jar",
+        # "/src/main/java/com/example/JavaLoggingClient_deploy.jar",
+        "JavaLoggingClient_deploy.jar",
+    ],
+    tars = [":tar"],
+)
+
+# Run a local container with:
+# $ bazel run :tarball
+# $ docker run --rm bazel/example:latest
+oci_tarball(
+    name = "tarball",
+    image = ":image",
+    repo_tags = ["bazel/example2-java-app:latest"],
+)
+
+container_structure_test(
+    name = "test",
+    configs = ["test.yaml"],
+    image = ":image",
+    timeout = "short",
+    exec_properties = {
+        # Tell BuildBuddy to run this test using a Firecracker microVM.
+        "test.workload-isolation-type": "firecracker",
+        # Tell BuildBuddy to ensure that the Docker daemon is started
+        # inside the microVM before the test starts, so that we don't
+        # have to worry about starting it ourselves.
+        "test.init-dockerd": "true",
+    },
+)
