@@ -112,7 +112,7 @@ oci_tarball(
     name = "tarball",
     image = ":app_image",
     repo_tags = [
-        "flyr.io/bazel/devops-fastapi-app:latest",
+        "bazel/devops-fastapi-app:latest",
     ],
 )
 

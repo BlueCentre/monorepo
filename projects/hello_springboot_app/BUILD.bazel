@@ -49,13 +49,13 @@ oci_image(
 
 # $ bazel build //projects/hello_springboot_app:tarball
 # $ docker load --input $(bazel cquery --output=files //projects/hello_springboot_app:tarball)
-# $ docker run --rm flyr.io/bazel/hello-springboot-app:latest
+# $ docker run --rm bazel/hello-springboot-app:latest
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
 oci_tarball(
     name = "tarball",
     image = ":java_image",
     repo_tags = [
-        "flyr.io/bazel/hello-springboot-app:latest",
+        "bazel/hello-springboot-app:latest",
     ],
 )
 

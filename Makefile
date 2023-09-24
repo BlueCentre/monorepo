@@ -264,7 +264,7 @@ run_helloworld_py_app:
 	bazel run //projects/helloworld_py_app:hello_world_bin
 	# bazel build //projects/helloworld_py_app:tarball
 	# docker load --input `bazel cquery --output=files //projects/helloworld_py_app:tarball`
-	# docker run --rm flyr.io/bazel/helloworld_py_app:latest
+	# docker run --rm bazel/helloworld_py_app:latest
 
 run_example1_java_app:
 	bazel run //projects/example1_java_app:java-maven
@@ -322,11 +322,17 @@ debug_jar_hello_springboot_app_run:
 docker_clean:
 	./tools/scripts/make_docker_cleanup.sh
 
+docker_load_example2_java_app:
+	docker load --input $$(bazel cquery --output=files //projects/example2_java_app:tarball)
+
+docker_run_example2_java_app:
+	docker run --rm bazel/example2-java-app:latest
+
 docker_load_hello_springboot_app:
 	docker load --input $$(bazel cquery --output=files //projects/hello_springboot_app:tarball)
 
 docker_run_hello_springboot_app:
-	docker run --rm flyr.io/bazel/hello-springboot-app:latest
+	docker run --rm bazel/hello-springboot-app:latest
 
 
 
