@@ -1,22 +1,36 @@
-# See: https://bazel.build/reference/be/java
+# See: 
+# - https://bazel.build/reference/be/java
+# - https://github.com/bazelbuild/rules_java/blob/master/java/defs.bzl
 
 java_library(
     name = "lib",
     srcs = glob(["*.java"]),
-    visibility = ["//projects/hello_springboot_app/src/test:__subpackages__"],
+    # visibility = ["//projects/hello_springboot_app/src/test:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
+        # artifact("org.springframework.boot:spring-boot"),
+        # artifact("org.springframework.boot:spring-boot-autoconfigure"),
+        # artifact("org.springframework.boot:spring-boot-starter-web"),
+        # artifact("org.springframework:spring-context"),
+        # artifact("org.springframework:spring-web"),
         "@maven_springboot//:org_springframework_boot_spring_boot",
         "@maven_springboot//:org_springframework_boot_spring_boot_autoconfigure",
         "@maven_springboot//:org_springframework_boot_spring_boot_starter_web",
+        "@maven_springboot//:org_springframework_boot_spring_boot_starter_parent",
+        "@maven_springboot//:org_springframework_spring_beans",
         "@maven_springboot//:org_springframework_spring_context",
         "@maven_springboot//:org_springframework_spring_web",
     ],
+    # runtime_deps = [
+    #     "@maven_springboot//:org_springframework_boot_spring_boot_starter_tomcat",
+    # ],
 )
 
+# See: https://docs.bazel.build/versions/master/be/java.html#java_binary
 java_binary(
     name = "app",
-    visibility = ["//visibility:public"],
     main_class = "hello.Application",
+    visibility = ["//visibility:public"],
     runtime_deps = [
         ":lib",
     ],

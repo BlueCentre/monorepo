@@ -65,23 +65,51 @@ update_maven_springboot:
 
 
 
+# See:
+# - https://earthly.dev/blog/build-java-projects-with-bazel/
+# - http://www.webgraphviz.com/
+
+query_all:
+	# bazel query --notool_deps --noimplicit_deps "deps(//...)"
+	bazel query //...
+
+query_all_graph:
+	# bazel query --notool_deps --noimplicit_deps "deps(//...)" --output=graph
+	bazel query //... --output=graph
+
 query_libs:
 	bazel query //libs/...
 
+query_libs_graph:
+	bazel query //libs/... --output=graph
+
 query_projects:
 	bazel query //projects/...
+
+query_projects_graph:
+	bazel query //projects/... --output=graph
 
 query_maven_pojo:
 	###########################################################################
 	# Refer to /MODULE.bazel
 	###########################################################################
+	# bazel query @maven_pojo//:all --output=build
+	# bazel query "@maven_pojo//:*"
 	bazel query @maven_pojo//...
+
+query_maven_pojo_outdated:
+	bazel run @maven_pojo//:outdated
 
 query_maven_springboot:
 	###########################################################################
 	# Refer to /MODULE.bazel
 	###########################################################################
+	# bazel query @maven_springboot//:all --output=build
+	# bazel query @maven_springboot//:org_springframework_boot_spring_boot --output=build
 	bazel query @maven_springboot//...
+
+query_maven_springboot_outdated:
+	bazel run @maven_springboot//:outdated
 
 query_base_fastapi_app:
 	bazel query //projects/base_fastapi_app/...
@@ -105,8 +133,23 @@ query_echo_fastapi_app:
 query_helloworld_py_app:
 	bazel query //projects/helloworld_py_app/...
 
+query_example1_java_app:
+	bazel query //projects/example1_java_app/...
+
+query_example2_java_app:
+	bazel query //projects/example2_java_app/...
+
 query_hello_springboot_app:
 	bazel query //projects/hello_springboot_app/...
+
+query_hello_springboot_app_graph:
+	bazel query //projects/hello_springboot_app/... --output=graph
+
+query_hello_springboot_app_image:
+	bazel query //projects/hello_springboot_app:java_image --output=build
+
+query_hello_springboot_app_image_graph:
+	bazel query //projects/hello_springboot_app:java_image --output=graph
 
 
 
@@ -139,6 +182,12 @@ build_echo_fastapi_app:
 
 build_helloworld_py_app:
 	bazel build //projects/helloworld_py_app/...
+
+build_example1_java_app:
+	bazel build //projects/example1_java_app/...
+
+build_example2_java_app:
+	bazel build //projects/example2_java_app:tarball
 
 build_hello_springboot_app:
 	bazel build //projects/hello_springboot_app:tarball
@@ -178,6 +227,12 @@ test_echo_fastapi_app:
 test_helloworld_py_app:
 	bazel test //projects/helloworld_py_app/...
 
+test_example1_java_app:
+	bazel test //projects/example1_java_app/src/test/...
+
+test_example2_java_app:
+	bazel test //projects/example2_java_app/src/test/...
+
 test_hello_springboot_app:
 	bazel test //projects/hello_springboot_app/src/test/...
 
@@ -210,6 +265,12 @@ run_helloworld_py_app:
 	# bazel build //projects/helloworld_py_app:tarball
 	# docker load --input `bazel cquery --output=files //projects/helloworld_py_app:tarball`
 	# docker run --rm flyr.io/bazel/helloworld_py_app:latest
+
+run_example1_java_app:
+	bazel run //projects/example1_java_app:java-maven
+
+run_example2_java_app:
+	bazel run //projects/example2_java_app/src/main/java/com/example:JavaLoggingClient
 
 run_hello_springboot_app:
 	bazel run //projects/hello_springboot_app/src/main/java/hello:app
@@ -247,6 +308,14 @@ skaffold_render_devops_go_app:
 
 skaffold_render_devops_fastapi_app:
 	skaffold render -m devops-fastapi-app-config
+
+
+
+debug_jar_hello_springboot_app_view:
+	jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
+
+debug_jar_hello_springboot_app_run:
+	java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
 
 
 
