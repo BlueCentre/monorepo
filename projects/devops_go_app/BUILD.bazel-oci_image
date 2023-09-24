@@ -57,7 +57,7 @@ platform_transition_filegroup(
 
 # $ bazel build projects/devops_go_app:tarball
 # $ docker load --input $(bazel cquery --output=files projects/devops_go_app:tarball)
-# $ docker run --rm flyr.io/devops-go-app:latest
+# $ docker run --rm bazel/devops-go-app:latest
 #   string(
 # -       "Hello World",
 # +       "Hello Go",
@@ -67,7 +67,7 @@ oci_tarball(
     # Use the image built for the exec platform rather than the target platform
     image = ":app_image",
     repo_tags = [
-        "flyr.io/bazel/devops-go-app:latest",
+        "bazel/devops-go-app:latest",
     ],
 )
 
@@ -79,7 +79,7 @@ oci_tarball(
 #     image = ":app_image",
 #     # repo_tags = ["tarball"],
 #     repo_tags = [
-#         "flyr.io/bazel/tarball:latest",
+#         "bazel/tarball:latest",
 #     ],
 # )
 
@@ -129,6 +129,6 @@ container_structure_test(
 # oci_push(
 #     name = "app_image_push",
 #     image = ":app_image",
-#     repository = "flyr.io/bazel/devops-go-app",
+#     repository = "bazel/devops-go-app",
 #     remote_tags = ["latest"]
 # )
