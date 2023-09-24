@@ -5,4 +5,4 @@ metadata:
 spec:
   containers:
   - name: devops-go-app
-    image: flyr.io/bazel/devops-go-app
+    image: bazel/devops-go-app

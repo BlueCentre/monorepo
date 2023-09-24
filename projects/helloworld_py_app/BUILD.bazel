@@ -70,7 +70,7 @@ platform_transition_filegroup(
 oci_tarball(
     name = "tarball",
     image = ":py_helloworld_image",
-    repo_tags = ["flyr.io/bazel/helloworld_py_app:latest"],
+    repo_tags = ["bazel/helloworld_py_app:latest"],
 )
 
 # See:

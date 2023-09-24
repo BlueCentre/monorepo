@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: devops-fastapi-app
-        image: flyr.io/bazel/devops-fastapi-app
+        image: bazel/devops-fastapi-app
         ports:
         - containerPort: 5000
           name: http

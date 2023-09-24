@@ -17,7 +17,7 @@ metadata:
 #   # tagPolicy:
 #   #   sha256: {}
 #   artifacts:
-#   - image: flyr.io/bazel/tarball
+#   - image: bazel/tarball
 #     context: .
 #     bazel:
 #       target: //projects/go_devops_cli_app:tarball.tar
@@ -31,7 +31,7 @@ build:
   local:
     push: false
   artifacts:
-    - image: flyr.io/bazel/devops-go-app
+    - image: bazel/devops-go-app
       custom:
         buildCommand: ./scripts/build.sh
         dependencies:

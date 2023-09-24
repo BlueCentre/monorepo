@@ -19,7 +19,7 @@ bazel build //projects/devops_go_app:tarball || exit 1
 # docker load --input ${TAR_FILE}
 TAR_PATH="$(bazel info bazel-bin)/projects/devops_go_app/tarball"
 docker load -i ${TAR_PATH}/tarball.tar
-docker tag flyr.io/bazel/devops-go-app ${IMAGE}
+docker tag bazel/devops-go-app ${IMAGE}
 
 if ${PUSH_IMAGE}
 then

@@ -10,7 +10,7 @@ chartManagedNS: true
 replicaCount: 1
 
 image:
-  repository: flyr.io/bazel/devops-fastapi-app
+  repository: bazel/devops-fastapi-app
   pullPolicy: IfNotPresent
   tag: "latest" # appset override 
 

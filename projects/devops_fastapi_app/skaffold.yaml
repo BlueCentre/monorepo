@@ -9,7 +9,7 @@ build:
   local:
     push: false
   artifacts:
-  - image: flyr.io/bazel/devops-fastapi-app
+  - image: bazel/devops-fastapi-app
     custom:
       buildCommand: ./scripts/build.sh
       dependencies:
@@ -43,7 +43,7 @@ manifests:
   #   - name: devops-fastapi-app-chart
   #     chartPath: ./helm-charts
   #     overrides:
-  #       image: flyr.io/bazel/devops-fastapi-app
+  #       image: bazel/devops-fastapi-app
 
 # deploy:
 #   helm:
@@ -51,7 +51,7 @@ manifests:
 #     - name: devops-fastapi-app-chart
 #       chartPath: ./helm-charts
 #       overrides:
-#         image: flyr.io/bazel/devops-fastapi-app
+#         image: bazel/devops-fastapi-app
 
 # TODO: Should we use this approach instead of forwarding? (https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
 portForward:
