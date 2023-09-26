@@ -311,27 +311,29 @@ skaffold_render_devops_fastapi_app:
 
 
 
-debug_jar_hello_springboot_app_view:
-	jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
+debug_jar_hello_springboot_app_view: build_hello_springboot_app
+	# jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
+	jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app.jar
 
-debug_jar_hello_springboot_app_run:
-	java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
+debug_jar_hello_springboot_app_run: build_hello_springboot_app
+	# java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
+	java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app.jar
 
 
 
 docker_clean:
 	./tools/scripts/make_docker_cleanup.sh
 
-docker_load_example2_java_app:
+docker_load_example2_java_app: build_example2_java_app
 	docker load --input $$(bazel cquery --output=files //projects/example2_java_app:tarball)
 
-docker_run_example2_java_app:
+docker_run_example2_java_app: docker_load_example2_java_app
 	docker run --rm bazel/example2-java-app:latest
 
-docker_load_hello_springboot_app:
+docker_load_hello_springboot_app: build_hello_springboot_app
 	docker load --input $$(bazel cquery --output=files //projects/hello_springboot_app:tarball)
 
-docker_run_hello_springboot_app:
+docker_run_hello_springboot_app: docker_load_hello_springboot_app
 	docker run --rm bazel/hello-springboot-app:latest
 
 

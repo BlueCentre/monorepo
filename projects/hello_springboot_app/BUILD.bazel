@@ -17,7 +17,8 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 pkg_tar(
     name = "app_tar",
     # Bring the java_binary
-    srcs = ["//projects/hello_springboot_app/src/main/java/hello:app_deploy.jar"],
+    # srcs = ["//projects/hello_springboot_app/src/main/java/hello:app_deploy.jar"],
+    srcs = ["//projects/hello_springboot_app/src/main/java/hello:app.jar"],
     include_runfiles = True,
     # strip_prefix = ".",
     # deps = [
@@ -43,7 +44,8 @@ oci_image(
     #     "app_deploy.jar",
     # ],
     cmd = [
-        "app_deploy.jar",
+        # "app_deploy.jar",
+        "app.jar",
     ],
 )
 
