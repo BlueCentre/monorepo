@@ -46,6 +46,20 @@ buildbuddy(name = "buildbuddy_toolchain", container_image = UBUNTU20_04_IMAGE)
 
 
 #
+# Salesforce rules_spring
+#
+
+# See:
+# - https://github.com/salesforce/rules_spring/issues/153
+
+http_archive(
+    name = "rules_spring",
+    sha256 = "01426d0a67c32ba0de0b0f3baa2b0810087789c6260c0c06741c1733956158a3",
+    urls = ["https://github.com/salesforce/rules_spring/releases/download/2.2.4/rules-spring-2.2.4.zip"],
+)
+
+
+#
 # Deprecate everything below!
 #
 
