@@ -32,7 +32,7 @@ py_image_layer(
 # TODO: Use a custom base to include cross-cutting concerns
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
 oci_image(
-    name = "py_helloworld_image",
+    name = "app_image",
     base = "@distroless_python",
     entrypoint = ["/opt/projects/helloworld_py_app/hello_world_bin"],
     tars = [":hello_world_layer"],
@@ -56,7 +56,7 @@ platform(
 
 platform_transition_filegroup(
     name = "transitioned_image",
-    srcs = [":py_helloworld_image"],
+    srcs = [":app_image"],
     target_platform = select({
         "@platforms//cpu:arm64": ":aarch64_linux",
         "@platforms//cpu:x86_64": ":x86_64_linux",
@@ -69,7 +69,7 @@ platform_transition_filegroup(
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
 oci_tarball(
     name = "tarball",
-    image = ":py_helloworld_image",
+    image = ":app_image",
     repo_tags = ["bazel/helloworld_py_app:latest"],
 )
 
@@ -78,8 +78,8 @@ oci_tarball(
 # - 
 container_structure_test(
     name = "test",
-    configs = ["tests/container_test.yaml"],
-    image = ":py_helloworld_image",
+    configs = ["oci/container_test.yaml"],
+    image = ":app_image",
     timeout = "short",
     exec_properties = {
         # Tell BuildBuddy to run this test using a Firecracker microVM.

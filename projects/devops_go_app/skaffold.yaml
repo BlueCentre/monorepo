@@ -37,12 +37,13 @@ build:
         dependencies:
           paths:
             - src/**
-            - tests/**
+            # - tests/**
+            - oci/**
             - kubernetes/**
             - ./BUILD.bazel
             - ./scripts/build.sh
           ignore:
-            - README*
+            - ./**.md
             - tmp/**
 
 manifests:

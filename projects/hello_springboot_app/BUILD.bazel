@@ -29,7 +29,7 @@ pkg_tar(
 
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
 oci_image(
-    name = "java_image",
+    name = "app_image",
     base = "@distroless_java",
     # env = {"JAVA_HOME": "/"},
     tars = [":app_tar"],
@@ -55,7 +55,7 @@ oci_image(
 # See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
 oci_tarball(
     name = "tarball",
-    image = ":java_image",
+    image = ":app_image",
     repo_tags = [
         "bazel/hello-springboot-app:latest",
     ],
@@ -67,7 +67,7 @@ oci_tarball(
 container_structure_test(
     name = "container_test",
     configs = ["oci/container_test.yaml"],
-    image = ":java_image",
+    image = ":app_image",
     timeout = "short",
     exec_properties = {
         # Tell BuildBuddy to run this test using a Firecracker microVM.

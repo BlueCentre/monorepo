@@ -98,12 +98,47 @@ dev_hello_springboot_app: skaffold_dev_hello_springboot_app
 
 
 
+test_calculator_cli_py_app: bazel_test_calculator_cli_py_app
+	###########################################################################
+	# Default: Bazel TODO
+	###########################################################################
+
+test_calculator_flask_app: bazel_test_calculator_flask_app
+	###########################################################################
+	# Default: Bazel TODO
+	###########################################################################
+
+test_devops_fastapi_app: bazel_test_devops_fastapi_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+test_devops_go_app: bazel_test_devops_go_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+test_helloworld_py_app: bazel_test_helloworld_py_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
 test_hello_springboot_app: bazel_test_hello_springboot_app
 	###########################################################################
 	# Default: Bazel
 	###########################################################################
 
 
+
+build_devops_fastapi_app: skaffold_build_devops_fastapi_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
+
+build_devops_go_app: skaffold_build_devops_go_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
 
 build_hello_springboot_app: skaffold_build_hello_springboot_app
 	###########################################################################
@@ -198,10 +233,10 @@ bazel_query_hello_springboot_app_graph:
 	bazel query //projects/hello_springboot_app/... --output=graph
 
 bazel_query_hello_springboot_app_image:
-	bazel query //projects/hello_springboot_app:java_image --output=build
+	bazel query //projects/hello_springboot_app:app_image --output=build
 
 bazel_query_hello_springboot_app_image_graph:
-	bazel query //projects/hello_springboot_app:java_image --output=graph
+	bazel query //projects/hello_springboot_app:app_image --output=graph
 
 
 
@@ -276,6 +311,12 @@ bazel_test_projects_remote:
 bazel_test_base_fastapi_app:
 	bazel test //projects/base_fastapi_app/...
 
+bazel_test_calculator_cli_py_app:
+	# echo "TODO"
+
+bazel_test_calculator_flask_app:
+	# echo "TODO"
+
 bazel_test_devops_fastapi_app:
 	bazel test //projects/devops_fastapi_app/...
 
@@ -300,12 +341,6 @@ bazel_test_example2_java_app:
 bazel_test_hello_springboot_app:
 	bazel test //projects/hello_springboot_app/...
 
-bazel_test_py_calculator:
-	echo "TODO"
-
-bazel_test_flask_calculator:
-	echo "TODO"
-
 
 
 bazel_run_devops_fastapi_app:
@@ -314,11 +349,11 @@ bazel_run_devops_fastapi_app:
 bazel_run_devops_go_app:
 	bazel run //projects/devops_go_app:run_bin
 
-bazel_run_py_calculator:
-	bazel run //projects/py_calculator_cli_app:app
+bazel_run_calculator_cli_py_app:
+	bazel run //projects/calculator_cli_py_app:app
 
-bazel_run_flask_calculator:
-	bazel run //projects/py_calculator_flask_app:app
+bazel_run_calculator_flask_app:
+	bazel run //projects/calculator_flask_app:app
 
 bazel_run_echo_fastapi_app:
 	bazel run //projects/echo_fastapi_app:run_bin
@@ -436,15 +471,17 @@ minikube_ingress:
 watch:
 	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table" | grep -v "registry.k8s.io"; docker ps | grep -v "registry.k8s.io"; kubectl get all --all-namespaces | column -t; kubectl get configmaps; helm list'
 
-watch_images:
-	# watch -n 5 'clear; docker images'
-	watch -n 5 'clear; minikube image ls --format="table" | grep flyr'
+watch_images_minikube:
+	watch -n 5 'clear; minikube image ls --format="table" | grep bazel'
 
-watch_docker:
-	watch -n 5 'clear; docker ps | grep -v "registry.k8s.io"'
+watch_images_docker:
+	watch -n 5 'clear; docker images | grep bazel'
 
-watch_k8s:
+watch_k8s_minikube:
 	watch -n 5 'clear; kubectl get all --all-namespaces'
+
+watch_ps_docker:
+	watch -n 5 'clear; docker ps'
 
 
 
