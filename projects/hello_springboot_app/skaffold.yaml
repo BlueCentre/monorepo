@@ -1,5 +1,5 @@
 # See: https://skaffold.dev/docs/references/yaml/
-apiVersion: skaffold/v4beta5
+apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
   # skaffold build -m devops-fastapi-app-config
@@ -10,6 +10,8 @@ build:
     push: false
   artifacts:
   - image: bazel/hello-springboot-app
+    # bazel:
+    #   target: //projects/hello_springboot_app:app_tar
     custom:
       buildCommand: ./scripts/build.sh
       dependencies:
@@ -66,7 +68,7 @@ portForward:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/structure-tests/skaffold.yaml
 
-# NOTE: Only works with the old rules_docker approach
+# NOTE: Only works with the old rules_docker vs rules_oci approach
 # apiVersion: skaffold/v4beta5
 # kind: Config
 # build:
