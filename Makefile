@@ -292,6 +292,9 @@ dev_devops_fastapi_app:
 	skaffold dev -m devops-fastapi-app-config
 	# ./tools/scripts/skaffold_container.sh dev -m devops-fastapi-app-config
 
+dev_hello_springboot_app:
+	skaffold dev -m hello-springboot-app-config
+
 
 
 skaffold_build_devops_go_app:

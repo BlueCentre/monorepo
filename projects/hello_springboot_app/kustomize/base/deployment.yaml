@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-springboot-app
+  labels:
+    app: hello-springboot-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-springboot-app
+  template:
+    metadata:
+      labels:
+        app: hello-springboot-app
+    spec:
+      containers:
+      - name: hello-springboot-app
+        image: bazel/hello-springboot-app
+        ports:
+        - containerPort: 8080
+          name: http
