@@ -18,6 +18,7 @@ build:
           - app/**
           - bin/**
           - tests/**
+          - oci/**
           - kubernetes/**
           - kustomize/overlays/dev**
           - helm-charts/**

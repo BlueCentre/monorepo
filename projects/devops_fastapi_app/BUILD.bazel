@@ -121,7 +121,7 @@ oci_tarball(
 # - 
 container_structure_test(
     name = "container_test",
-    configs = ["tests/container_test.yaml"],
+    configs = ["oci/container_test.yaml"],
     image = ":app_image",
     timeout = "short",
     exec_properties = {

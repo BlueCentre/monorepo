@@ -111,8 +111,8 @@ oci_tarball(
 # - https://github.com/GoogleContainerTools/container-structure-test
 # - https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
 container_structure_test(
-    name = "test",
-    configs = ["tests/test.yaml"],
+    name = "container_test",
+    configs = ["oci/container_test.yaml"],
     # Use the image built for the exec platform rather than the target platform
     image = ":app_image",
     timeout = "short",
