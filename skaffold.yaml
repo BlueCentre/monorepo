@@ -6,6 +6,7 @@ requires:
 # - path: ./projects/base_springboot_app # Nothing to skaffold here!
 - path: ./projects/devops_fastapi_app
 - path: ./projects/devops_go_app
+- path: ./projects/hello_springboot_app
 
 
 
