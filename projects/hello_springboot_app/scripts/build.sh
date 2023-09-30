@@ -19,7 +19,7 @@ bazel build //projects/hello_springboot_app:tarball || exit 1
 # docker load --input ${TAR_FILE}
 TAR_PATH="$(bazel info bazel-bin)/projects/hello_springboot_app/tarball"
 docker load -i ${TAR_PATH}/tarball.tar
-docker tag bazel/devops-fastapi-app ${IMAGE}
+docker tag bazel/hello-springboot-app ${IMAGE}
 
 if ${PUSH_IMAGE}
 then
