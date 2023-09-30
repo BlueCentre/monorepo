@@ -1,4 +1,4 @@
-apiVersion: skaffold/v4beta5
+apiVersion: skaffold/v4beta6
 kind: Config
 requires:
 # - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
@@ -11,6 +11,7 @@ requires:
 
 
 # See:
+# - https://skaffold.dev/docs/references/yaml/
 # - https://www.youtube.com/watch?v=qS_4Qf8owc0
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/multi-config-microservices
 # - https://github.com/GoogleContainerTools/skaffold/tree/main/examples/microservices
