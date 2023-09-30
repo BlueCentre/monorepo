@@ -1,0 +1,76 @@
+# See: https://skaffold.dev/docs/references/yaml/
+apiVersion: skaffold/v4beta5
+kind: Config
+metadata:
+  # skaffold build -m devops-fastapi-app-config
+  name: hello-springboot-app-config
+
+build:
+  local:
+    push: false
+  artifacts:
+  - image: bazel/hello-springboot-app
+    custom:
+      buildCommand: ./scripts/build.sh
+      dependencies:
+        paths:
+          # - ../base_springboot_app/**
+          - src/main/**
+          - src/test/**
+          - kustomize/overlays/dev**
+          # - ../../scripts/build_tag_docker.sh
+          - scripts/**
+          - ./BUILD.bazel
+          - ./skaffold.yaml   # TODO: Likely not needed since skaffold does not apply changes on reload
+        ignore:
+          - ./**.md
+          - tmp/**
+
+manifests:
+  # rawYaml:
+  #   - kubernetes/*
+  kustomize:
+    paths:
+    # - "./kustomize/base"
+    - "./kustomize/overlays/dev"
+    # - "./kustomize/overlays/stg"
+    # - "./kustomize/overlays/int"
+    # - "./kustomize/overlays/prd"
+  # helm: # Does not work
+  #   releases:
+  #   - name: devops-fastapi-app-chart
+  #     chartPath: ./helm-charts
+  #     overrides:
+  #       image: bazel/devops-fastapi-app
+
+# deploy:
+#   helm:
+#     releases:
+#     - name: devops-fastapi-app-chart
+#       chartPath: ./helm-charts
+#       overrides:
+#         image: bazel/devops-fastapi-app
+
+# TODO: Should we use this approach instead of forwarding? (https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
+portForward:
+- resourceType: deployment
+  # resourceName: devops-fastapi-app       # rawYaml
+  resourceName: dev-hello-springboot-app   # kustomize
+  # resourceName: devops-fastapi-app-chart # helm
+  port: 8080
+  localPort: 8080
+
+
+
+# See:
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml
+# - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/structure-tests/skaffold.yaml
+
+# NOTE: Only works with the old rules_docker approach
+# apiVersion: skaffold/v4beta5
+# kind: Config
+# build:
+#   artifacts:
+#   - image: skaffold-bazel
+#     bazel:
+#       target: //:skaffold_example.tar
