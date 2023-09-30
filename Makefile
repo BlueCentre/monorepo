@@ -98,6 +98,13 @@ dev_hello_springboot_app: skaffold_dev_hello_springboot_app
 
 
 
+test_hello_springboot_app: bazel_test_hello_springboot_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+
+
 build_hello_springboot_app: skaffold_build_hello_springboot_app
 	###########################################################################
 	# Default: Skaffold
@@ -198,6 +205,12 @@ bazel_query_hello_springboot_app_image_graph:
 
 
 
+bazel_build:
+	bazel build //...
+
+bazel_build_remote:
+	bazel build //... --config=remote
+
 bazel_build_libs:
 	bazel build //libs/...
 
@@ -242,6 +255,12 @@ bazel_build_hello_springboot_app_remote:
 
 
 
+bazel_test:
+	bazel test //...
+
+bazel_test_remote:
+	bazel test //... --config=remote
+
 bazel_test_libs:
 	bazel test //libs/...
 
@@ -279,7 +298,7 @@ bazel_test_example2_java_app:
 	bazel test //projects/example2_java_app/src/test/...
 
 bazel_test_hello_springboot_app:
-	bazel test //projects/hello_springboot_app/src/test/...
+	bazel test //projects/hello_springboot_app/...
 
 bazel_test_py_calculator:
 	echo "TODO"
