@@ -1,0 +1,37 @@
+# See https://bazel.build/concepts/build-files
+
+load("@pip_deps//:requirements.bzl", "requirement")
+load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
+# load("//tools/pytest:defs.bzl", "pytest_test")
+
+py_library(
+    name = "web_lib",
+    srcs = ["app/web_app.py"],
+    deps = [requirement("fastapi")],
+)
+
+# to add additionals parameters place them after "--" in bazel call, like:
+# `bazel run //webapp:run -- --reload`
+py_binary(
+    name = "run_bin",
+    srcs = ["bin/run_bin.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("uvicorn"),
+        ":web_lib",
+    ],
+)
+
+py_test(
+    name = "test",
+    srcs = glob(["tests/*.py"]),
+    timeout = "short",
+    deps = [
+        requirement("requests"),
+        requirement("httpx"),
+        requirement("fastapi"),
+        ":web_lib",
+        ":run_bin",
+    ],
+)

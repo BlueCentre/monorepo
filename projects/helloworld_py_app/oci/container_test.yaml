@@ -1,8 +1,0 @@
-# See https://github.com/GoogleContainerTools/container-structure-test#command-tests
-schemaVersion: 2.0.0
-metadataTest:
-  entrypoint: ['/opt/projects/helloworld_py_app/hello_world_bin']
-commandTests:
-  - name: run
-    command: /opt/projects/helloworld_py_app/hello_world_bin
-    expectedOutput: ['Hello Jane!']
