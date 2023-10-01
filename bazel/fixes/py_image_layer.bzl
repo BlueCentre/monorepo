@@ -1,6 +1,6 @@
 "Simple macro to create tar files from a Python binary."
 
-load("//fixes/workaround_rules_pkg_153:runfiles.bzl", "runfiles")
+load("//bazel/fixes/workaround_rules_pkg_153:runfiles.bzl", "runfiles")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 def py_image_layer(name, binary, root = None, **kwargs):

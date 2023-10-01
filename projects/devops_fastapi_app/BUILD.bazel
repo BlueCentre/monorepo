@@ -2,14 +2,11 @@
 
 load("@pip_deps//:requirements.bzl", "requirement")
 load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-# load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
-# load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
-# load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 # load("//tools/pytest:defs.bzl", "pytest_test")
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
-load("//fixes:py_image_layer.bzl", "py_image_layer")
+load("//bazel/fixes:py_image_layer.bzl", "py_image_layer")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 
 
