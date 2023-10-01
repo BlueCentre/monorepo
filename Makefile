@@ -9,24 +9,24 @@ quickstart: minikube_start
 	#    to configure docker to use the minikube docker session
 
 .PHONY: query
-query:
-	bazel query //...
+query: bazel_query_all
+	# bazel query //...
 
 .PHONY: build
-build:
-	bazel build //...
+build: build_all
+	# bazel build //...
 
 .PHONY: build_remote
-build_remote:
-	bazel build //... --config=remote
+build_remote: build_all_remote
+	# bazel build //... --config=remote
 
 .PHONY: test
-test:
-	bazel test //...
+test: test_all
+	# bazel test //...
 
 .PHONY: test_remote
-test_remote:
-	bazel test //... --config=remote
+test_remote: test_all_remote
+	# bazel test //... --config=remote
 
 .PHONY: clean
 clean: bazel_clean docker_clean
@@ -37,10 +37,10 @@ clean: bazel_clean docker_clean
 	###########################################################################
 
 .PHONY: update
-update: update_aspect_bazelrc update_python_requirements update_maven_pojo update_maven_springboot
+update: update_python_requirements update_maven_pojo update_maven_springboot update_rules_pkg_fixes
 	###########################################################################
 	# Ran updates...
-	# - update_aspect_bazelrc
+	# - update_aspect_bazelrc [x]
 	# - update_python_requirements
 	# - update_maven_pojo
 	# - update_maven_springboot
@@ -60,12 +60,14 @@ update_maven_pojo:
 	bazel run @unpinned_maven_pojo//:pin
 
 update_maven_springboot:
-	# bazel run @maven//:pin
 	bazel run @unpinned_maven_springboot//:pin
 	# To repin everything:
 	# REPIN=1 bazel run @unpinned_maven_springboot//:pin
 	# To only repin rules_jvm_external:
 	# RULES_JVM_EXTERNAL_REPIN=1 bazel run @unpinned_maven_springboot//:pin
+
+update_rules_pkg_fixes:
+	bazel run //bazel/fixes:requirements.update
 
 
 
@@ -98,6 +100,63 @@ dev_hello_springboot_app: skaffold_dev_hello_springboot_app
 
 
 
+build_all: bazel_build
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+build_all_remote: bazel_build_remote
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+build_libs: bazel_build_libs
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+build_projects: bazel_build_projects
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+build_devops_fastapi_app: skaffold_build_devops_fastapi_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
+
+build_devops_go_app: skaffold_build_devops_go_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
+
+build_hello_springboot_app: skaffold_build_hello_springboot_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
+
+
+
+test_all: bazel_test
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+test_all_remote: bazel_test_remote
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+test_libs: bazel_test_libs
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+test_projects: bazel_test_projects
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
 test_calculator_cli_py_app: bazel_test_calculator_cli_py_app
 	###########################################################################
 	# Default: Bazel TODO
@@ -126,23 +185,6 @@ test_helloworld_py_app: bazel_test_helloworld_py_app
 test_hello_springboot_app: bazel_test_hello_springboot_app
 	###########################################################################
 	# Default: Bazel
-	###########################################################################
-
-
-
-build_devops_fastapi_app: skaffold_build_devops_fastapi_app
-	###########################################################################
-	# Default: Skaffold
-	###########################################################################
-
-build_devops_go_app: skaffold_build_devops_go_app
-	###########################################################################
-	# Default: Skaffold
-	###########################################################################
-
-build_hello_springboot_app: skaffold_build_hello_springboot_app
-	###########################################################################
-	# Default: Skaffold
 	###########################################################################
 
 
@@ -472,16 +514,16 @@ watch:
 	watch -n 5 'clear; echo "WATCH INFO"; docker images --all --format="table" | grep -v "registry.k8s.io"; docker ps | grep -v "registry.k8s.io"; kubectl get all --all-namespaces | column -t; kubectl get configmaps; helm list'
 
 watch_images_minikube:
-	watch -n 5 'clear; minikube image ls --format="table" | grep bazel'
+	watch -n 5 'clear; echo MINIKUBE; minikube image ls --format="table" | grep bazel'
 
 watch_images_docker:
-	watch -n 5 'clear; docker images | grep bazel'
+	watch -n 5 'clear; echo DOCKER; docker images | grep bazel'
 
 watch_k8s_minikube:
-	watch -n 5 'clear; kubectl get all --all-namespaces'
+	watch -n 5 'clear; echo MINIKUBE; kubectl get all --all-namespaces'
 
 watch_ps_docker:
-	watch -n 5 'clear; docker ps'
+	watch -n 5 'clear; echo DOCKER; docker ps'
 
 
 
@@ -521,6 +563,9 @@ git_new:
 
 git_push: test
 	git push origin `git rev-parse --abbrev-ref HEAD`
+
+git_log_oneline:
+	git log --oneline
 
 # Must have git-extras installed or
 # See: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/How-to-use-the-git-log-graph-command
