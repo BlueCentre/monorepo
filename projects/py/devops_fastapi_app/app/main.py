@@ -2,7 +2,7 @@ import random
 
 from libs.py.devops.models.devops import DevOps, InfrastructureEngineer, DeveloperExperienceEngineer, DataEngineer, MachineLearningEngineer, WebEngineer, ReliabilityEngineer, PlatformEngineer, PlatformOrganization
 
-from projects.py.base_fastapi_app.app.main import app, logging
+from projects.base.base_fastapi_app.app.main import app, logging
 
 logging.getLogger(__name__)
 

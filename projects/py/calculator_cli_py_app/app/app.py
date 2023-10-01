@@ -1,6 +1,6 @@
 from random import randint
 
-from libs.calculator.models.calculator import Calculator
+from libs.py.calculator.models.calculator import Calculator
 
 my_calculator = Calculator()
 

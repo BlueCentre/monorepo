@@ -13,11 +13,11 @@ echo "SKIP_TEST: ${SKIP_TEST}"
 echo "===[DEBUG] build.sh==="
 
 # If we can't build, fail quick and exit
-bazel build //projects/devops_go_app:tarball || exit 1
+bazel build //projects/go/devops_go_app:tarball || exit 1
 
-# TAR_FILE=$(bazel cquery --output=files //projects/devops_go_app:tarball)
+# TAR_FILE=$(bazel cquery --output=files //projects/go/devops_go_app:tarball)
 # docker load --input ${TAR_FILE}
-TAR_PATH="$(bazel info bazel-bin)/projects/devops_go_app/tarball"
+TAR_PATH="$(bazel info bazel-bin)/projects/go/devops_go_app/tarball"
 docker load -i ${TAR_PATH}/tarball.tar
 docker tag bazel/devops-go-app ${IMAGE}
 
