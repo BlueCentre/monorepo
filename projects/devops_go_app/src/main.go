@@ -8,8 +8,8 @@ import (
 
 func main() {
 	for {
-		fmt.Println("Hello FLYR!")
-		fmt.Println(cmp.Diff("Hello FLYR!", "Hello Platform!"))
+		fmt.Println("Hello Application!")
+		fmt.Println(cmp.Diff("Hello Application!", "Hello Platform!"))
 		time.Sleep(time.Second * 2)
 	}	
 }

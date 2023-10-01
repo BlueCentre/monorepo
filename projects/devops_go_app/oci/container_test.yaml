@@ -26,7 +26,8 @@ schemaVersion: 2.0.0
 fileExistenceTests:
 
 # check that the go app text file exists and has the correct permissions
-  - name: 'run_bin'
-    path: '/app/run_bin'
+  - name: 'app_binary'
+    # path: '/run_bin'
+    path: '/app_binary'
     shouldExist: true
     #permissions: '-rwxr-xr-x'
