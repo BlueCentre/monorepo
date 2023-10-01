@@ -389,6 +389,9 @@ bazel_test_example2_java_app:
 bazel_test_hello_springboot_app:
 	bazel test //projects/java/hello_springboot_app/...
 
+bazel_test_hello_springboot_app_remote:
+	bazel test //projects/java/hello_springboot_app/... --config=remote
+
 
 
 bazel_run_devops_fastapi_app:
@@ -398,10 +401,10 @@ bazel_run_devops_go_app:
 	bazel run //projects/go/devops_go_app:app_binary
 
 bazel_run_calculator_cli_py_app:
-	bazel run //projects/py/calculator_cli_py_app:app
+	bazel run //projects/py/calculator_cli_py_app:app_bin
 
 bazel_run_calculator_flask_app:
-	bazel run //projects/py/calculator_flask_app:app
+	bazel run //projects/py/calculator_flask_app:app_bin
 
 bazel_run_echo_fastapi_app:
 	bazel run //projects/py/echo_fastapi_app:run_bin
@@ -409,9 +412,6 @@ bazel_run_echo_fastapi_app:
 # Simple container app without k8s deployment
 bazel_run_helloworld_py_app:
 	bazel run //projects/py/helloworld_py_app:hello_world_bin
-	# bazel build //projects/py/helloworld_py_app:tarball
-	# docker load --input `bazel cquery --output=files //projects/py/helloworld_py_app:tarball`
-	# docker run --rm bazel/helloworld_py_app:latest
 
 bazel_run_example1_java_app:
 	bazel run //projects/java/example1_java_app:java-maven
@@ -420,7 +420,8 @@ bazel_run_example2_java_app:
 	bazel run //projects/java/example2_java_app/src/main/java/com/example:JavaLoggingClient
 
 bazel_run_hello_springboot_app:
-	bazel run //projects/java/hello_springboot_app/src/main/java/hello:app
+	# bazel run //projects/java/hello_springboot_app/src/main/java/hello:app
+	bazel run //projects/java/hello_springboot_app/src/main/java/hello:projects/java/hello_springboot_app/src/main/java/hello_apprun
 
 
 
@@ -436,8 +437,8 @@ skaffold_dev_devops_go_app_debug:
 # See: https://github.com/GoogleContainerTools/skaffold/issues/4033
 # TODO: bazel support in the container does not work so we stick with local skaffold
 skaffold_dev_devops_fastapi_app:
-	skaffold dev -m devops-fastapi-app-config
 	# ./tools/scripts/skaffold_container.sh dev -m devops-fastapi-app-config
+	skaffold dev -m devops-fastapi-app-config
 
 skaffold_dev_hello_springboot_app:
 	skaffold dev -m hello-springboot-app-config

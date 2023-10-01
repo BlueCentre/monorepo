@@ -13,11 +13,11 @@ echo "SKIP_TEST: ${SKIP_TEST}"
 echo "===[DEBUG] build.sh==="
 
 # If we can't build, fail quick and exit
-bazel build //projects/hello_springboot_app:tarball || exit 1
+bazel build //projects/java/hello_springboot_app:tarball || exit 1
 
-# TAR_FILE=$(bazel cquery --output=files //projects/hello_springboot_app:tarball)
+# TAR_FILE=$(bazel cquery --output=files //projects/java/hello_springboot_app:tarball)
 # docker load --input ${TAR_FILE}
-TAR_PATH="$(bazel info bazel-bin)/projects/hello_springboot_app/tarball"
+TAR_PATH="$(bazel info bazel-bin)/projects/java/hello_springboot_app/tarball"
 docker load -i ${TAR_PATH}/tarball.tar
 docker tag bazel/hello-springboot-app ${IMAGE}
 
