@@ -14,7 +14,7 @@ build:
       buildCommand: ./scripts/build.sh
       dependencies:
         paths:
-          - ../base_fastapi_app/**
+          - ../../base/base_fastapi_app/**
           - app/**
           - bin/**
           - tests/**

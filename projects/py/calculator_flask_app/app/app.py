@@ -1,7 +1,7 @@
 from flask import Flask
 from random import randint
 
-from libs.calculator.models.calculator import Calculator
+from libs.py.calculator.models.calculator import Calculator
 
 app = Flask(__name__)
 my_calculator = Calculator()
