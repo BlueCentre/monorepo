@@ -241,44 +241,44 @@ bazel_query_maven_springboot_outdated:
 	bazel run @maven_springboot//:outdated
 
 bazel_query_base_fastapi_app:
-	bazel query //projects/base_fastapi_app/...
+	bazel query //projects/base/base_fastapi_app/...
 
 bazel_query_devops_fastapi_app:
-	bazel query //projects/devops_fastapi_app/...
+	bazel query //projects/py/devops_fastapi_app/...
 
 bazel_query_devops_fastapi_app_artifact:
-	bazel cquery //projects/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+	bazel cquery //projects/py/devops_fastapi_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
 
 bazel_query_devops_go_app:
-	bazel query //projects/devops_go_app/...
+	bazel query //projects/go/devops_go_app/...
 
 # See: https://github.com/bazelbuild/rules_docker#using-with-docker-locally
 bazel_query_devops_go_app_artifact:
-	bazel cquery //projects/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
+	bazel cquery //projects/go/devops_go_app:tarball --output starlark --starlark:expr="target.files.to_list()[0].path"
 
 bazel_query_echo_fastapi_app:
-	bazel query //projects/echo_fastapi_app/...
+	bazel query //projects/py/echo_fastapi_app/...
 
 bazel_query_helloworld_py_app:
-	bazel query //projects/helloworld_py_app/...
+	bazel query //projects/py/helloworld_py_app/...
 
 bazel_query_example1_java_app:
-	bazel query //projects/example1_java_app/...
+	bazel query //projects/java/example1_java_app/...
 
 bazel_query_example2_java_app:
-	bazel query //projects/example2_java_app/...
+	bazel query //projects/java/example2_java_app/...
 
 bazel_query_hello_springboot_app:
-	bazel query //projects/hello_springboot_app/...
+	bazel query //projects/java/hello_springboot_app/...
 
 bazel_query_hello_springboot_app_graph:
-	bazel query //projects/hello_springboot_app/... --output=graph
+	bazel query //projects/java/hello_springboot_app/... --output=graph
 
 bazel_query_hello_springboot_app_image:
-	bazel query //projects/hello_springboot_app:app_image --output=build
+	bazel query //projects/java/hello_springboot_app:app_image --output=build
 
 bazel_query_hello_springboot_app_image_graph:
-	bazel query //projects/hello_springboot_app:app_image --output=graph
+	bazel query //projects/java/hello_springboot_app:app_image --output=graph
 
 
 
@@ -301,34 +301,40 @@ bazel_build_projects_remote:
 	bazel build //projects/... --config=remote
 
 bazel_build_base_fastapi_app:
-	bazel build //projects/base_fastapi_app/...
+	bazel build //projects/base/base_fastapi_app/...
 
 bazel_build_devops_fastapi_app:
-	bazel build //projects/devops_fastapi_app:tarball
+	# bazel build //projects/py/devops_fastapi_app:tarball
+	bazel build //projects/py/devops_fastapi_app/...
 
 bazel_build_devops_fastapi_app_remote:
-	bazel build //projects/devops_fastapi_app:tarball --config=remote
+	# bazel build //projects/py/devops_fastapi_app:tarball --config=remote
+	bazel build //projects/py/devops_fastapi_app/... --config=remote
 
 bazel_build_devops_go_app:
-	bazel build //projects/devops_go_app:tarball
+	# bazel build //projects/go/devops_go_app:tarball
+	bazel build //projects/go/devops_go_app/...
 
 bazel_build_echo_fastapi_app:
-	bazel build //projects/echo_fastapi_app/...
+	bazel build //projects/py/echo_fastapi_app/...
 
 bazel_build_helloworld_py_app:
-	bazel build //projects/helloworld_py_app/...
+	bazel build //projects/py/helloworld_py_app/...
 
 bazel_build_example1_java_app:
-	bazel build //projects/example1_java_app/...
+	bazel build //projects/java/example1_java_app/...
 
 bazel_build_example2_java_app:
-	bazel build //projects/example2_java_app:tarball
+	# bazel build //projects/java/example2_java_app:tarball
+	bazel build //projects/java/example2_java_app/...
 
 bazel_build_hello_springboot_app:
-	bazel build //projects/hello_springboot_app:tarball
+	# bazel build //projects/java/hello_springboot_app:tarball
+	bazel build //projects/java/hello_springboot_app/...
 
 bazel_build_hello_springboot_app_remote:
-	bazel build //projects/hello_springboot_app:tarball --config=remote
+	# bazel build //projects/java/hello_springboot_app:tarball --config=remote
+	bazel build //projects/java/hello_springboot_app/... --config=remote
 
 
 
@@ -351,7 +357,7 @@ bazel_test_projects_remote:
 	bazel test //projects/... --config=remote
 
 bazel_test_base_fastapi_app:
-	bazel test //projects/base_fastapi_app/...
+	bazel test //projects/base/base_fastapi_app/...
 
 bazel_test_calculator_cli_py_app:
 	# echo "TODO"
@@ -360,61 +366,61 @@ bazel_test_calculator_flask_app:
 	# echo "TODO"
 
 bazel_test_devops_fastapi_app:
-	bazel test //projects/devops_fastapi_app/...
+	bazel test //projects/py/devops_fastapi_app/...
 
 bazel_test_devops_fastapi_app_remote:
-	bazel test //projects/devops_fastapi_app/... --config=remote
+	bazel test //projects/py/devops_fastapi_app/... --config=remote
 
 bazel_test_devops_go_app:
-	bazel test //projects/devops_go_app/...
+	bazel test //projects/go/devops_go_app/...
 
 bazel_test_echo_fastapi_app:
-	bazel test //projects/echo_fastapi_app/...
+	bazel test //projects/py/echo_fastapi_app/...
 
 bazel_test_helloworld_py_app:
-	bazel test //projects/helloworld_py_app/...
+	bazel test //projects/py/helloworld_py_app/...
 
 bazel_test_example1_java_app:
-	bazel test //projects/example1_java_app/src/test/...
+	bazel test //projects/java/example1_java_app/...
 
 bazel_test_example2_java_app:
-	bazel test //projects/example2_java_app/src/test/...
+	bazel test //projects/java/example2_java_app/...
 
 bazel_test_hello_springboot_app:
-	bazel test //projects/hello_springboot_app/...
+	bazel test //projects/java/hello_springboot_app/...
 
 
 
 bazel_run_devops_fastapi_app:
-	bazel run //projects/devops_fastapi_app:run_bin
+	bazel run //projects/py/devops_fastapi_app:run_bin
 
 bazel_run_devops_go_app:
-	bazel run //projects/devops_go_app:run_bin
+	bazel run //projects/go/devops_go_app:app_binary
 
 bazel_run_calculator_cli_py_app:
-	bazel run //projects/calculator_cli_py_app:app
+	bazel run //projects/py/calculator_cli_py_app:app
 
 bazel_run_calculator_flask_app:
-	bazel run //projects/calculator_flask_app:app
+	bazel run //projects/py/calculator_flask_app:app
 
 bazel_run_echo_fastapi_app:
-	bazel run //projects/echo_fastapi_app:run_bin
+	bazel run //projects/py/echo_fastapi_app:run_bin
 
 # Simple container app without k8s deployment
 bazel_run_helloworld_py_app:
-	bazel run //projects/helloworld_py_app:hello_world_bin
-	# bazel build //projects/helloworld_py_app:tarball
-	# docker load --input `bazel cquery --output=files //projects/helloworld_py_app:tarball`
+	bazel run //projects/py/helloworld_py_app:hello_world_bin
+	# bazel build //projects/py/helloworld_py_app:tarball
+	# docker load --input `bazel cquery --output=files //projects/py/helloworld_py_app:tarball`
 	# docker run --rm bazel/helloworld_py_app:latest
 
 bazel_run_example1_java_app:
-	bazel run //projects/example1_java_app:java-maven
+	bazel run //projects/java/example1_java_app:java-maven
 
 bazel_run_example2_java_app:
-	bazel run //projects/example2_java_app/src/main/java/com/example:JavaLoggingClient
+	bazel run //projects/java/example2_java_app/src/main/java/com/example:JavaLoggingClient
 
 bazel_run_hello_springboot_app:
-	bazel run //projects/hello_springboot_app/src/main/java/hello:app
+	bazel run //projects/java/hello_springboot_app/src/main/java/hello:app
 
 
 
@@ -466,13 +472,21 @@ skaffold_render_hello_springboot_app:
 # DEBUG SECTION
 #
 
-debug_jar_hello_springboot_app_view: build_hello_springboot_app
-	# jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
-	jar -tf bazel-bin/projects/hello_springboot_app/src/main/java/hello/app.jar
+debug_jar_example2_java_app_view: bazel_build_example2_java_app
+	# jar -tf bazel-bin/projects/java/example2_java_app/src/main/java/hello/app_deploy.jar
+	jar -tf bazel-bin/projects/java/example2_java_app/src/main/java/com/example/JavaLoggingClient_deploy.jar
 
-debug_jar_hello_springboot_app_run: build_hello_springboot_app
-	# java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app_deploy.jar
-	java -jar bazel-bin/projects/hello_springboot_app/src/main/java/hello/app.jar
+debug_jar_example2_java_app_run: bazel_build_example2_java_app
+	# jar -tf bazel-bin/projects/java/example2_java_app/src/main/java/hello/app_deploy.jar
+	java -jar bazel-bin/projects/java/example2_java_app/src/main/java/com/example/JavaLoggingClient_deploy.jar
+
+debug_jar_hello_springboot_app_view: bazel_build_hello_springboot_app
+	# jar -tf bazel-bin/projects/java/hello_springboot_app/src/main/java/hello/app_deploy.jar
+	jar -tf bazel-bin/projects/java/hello_springboot_app/src/main/java/hello/app.jar
+
+debug_jar_hello_springboot_app_run: bazel_build_hello_springboot_app
+	# java -jar bazel-bin/projects/java/hello_springboot_app/src/main/java/hello/app_deploy.jar
+	java -jar bazel-bin/projects/java/hello_springboot_app/src/main/java/hello/app.jar
 
 
 
@@ -480,13 +494,13 @@ docker_clean:
 	./tools/scripts/make_docker_cleanup.sh
 
 docker_load_example2_java_app: build_example2_java_app
-	docker load --input $$(bazel cquery --output=files //projects/example2_java_app:tarball)
+	docker load --input $$(bazel cquery --output=files //projects/java/example2_java_app:tarball)
 
 docker_run_example2_java_app: docker_load_example2_java_app
 	docker run --rm bazel/example2-java-app:latest
 
 docker_load_hello_springboot_app: build_hello_springboot_app
-	docker load --input $$(bazel cquery --output=files //projects/hello_springboot_app:tarball)
+	docker load --input $$(bazel cquery --output=files //projects/java/hello_springboot_app:tarball)
 
 docker_run_hello_springboot_app: docker_load_hello_springboot_app
 	docker run --rm bazel/hello-springboot-app:latest

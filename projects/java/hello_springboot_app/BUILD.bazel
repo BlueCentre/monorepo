@@ -1,0 +1,76 @@
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@container_structure_test//:defs.bzl", "container_structure_test")
+
+# See: 
+# - https://github.com/bazelbuild/rules_pkg
+# - https://bazelbuild.github.io/rules_pkg/0.9.1/reference.html#pkg_tar
+# pkg_tar(
+#     name = "lib_tar",
+#     # Bring the java_binary
+#     srcs = ["//projects/java/hello_springboot_app/src/main/java/hello:lib_deploy.jar"],
+#     include_runfiles = True,
+#     strip_prefix = ".",
+# )
+
+# FIX
+pkg_tar(
+    name = "app_tar",
+    # Bring the java_binary
+    # srcs = ["//projects/java/hello_springboot_app/src/main/java/hello:app_deploy.jar"],
+    srcs = ["//projects/java/hello_springboot_app/src/main/java/hello:app.jar"],
+    include_runfiles = True,
+    # strip_prefix = ".",
+)
+
+# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
+oci_image(
+    name = "app_image",
+    base = "@distroless_java",
+    # env = {"JAVA_HOME": "/"},
+    tars = [":app_tar"],
+    # tars = [
+    #     ":lib_tar",
+    #     ":app_tar",
+    # ],
+    # entrypoint = [
+    #     "java",
+    #     "-jar",
+    #     # "/src/main/java/hello/app_deploy.jar",
+    #     "app_deploy.jar",
+    # ],
+    cmd = [
+        # "app_deploy.jar",
+        "app.jar",
+    ],
+)
+
+# $ bazel build //projects/java/hello_springboot_app:tarball
+# $ docker load --input $(bazel cquery --output=files //projects/java/hello_springboot_app:tarball)
+# $ docker run --rm bazel/hello-springboot-app:latest
+# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
+oci_tarball(
+    name = "tarball",
+    image = ":app_image",
+    repo_tags = [
+        "bazel/hello-springboot-app:latest",
+    ],
+)
+
+# See:
+# - https://bazel.build/reference/be/common-definitions#common-attributes-tests
+# - 
+container_structure_test(
+    name = "container_test",
+    configs = ["oci/container_test.yaml"],
+    image = ":app_image",
+    timeout = "short",
+    exec_properties = {
+        # Tell BuildBuddy to run this test using a Firecracker microVM.
+        "test.workload-isolation-type": "firecracker",
+        # Tell BuildBuddy to ensure that the Docker daemon is started
+        # inside the microVM before the test starts, so that we don't
+        # have to worry about starting it ourselves.
+        "test.init-dockerd": "true",
+    },
+)
