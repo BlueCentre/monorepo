@@ -8,9 +8,10 @@
 #
 
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("//bazel:go_image.bzl", "go_image")
 load("@rules_go//go:def.bzl", "go_binary", "go_library")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball", "oci_push")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball", "oci_push")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 
 go_library(
@@ -23,26 +24,34 @@ go_library(
     ],
 )
 
-go_binary(
-    name = "run_bin",
+# go_binary(
+#     name = "app_bin",
+#     embed = [":app_lib"],
+#     visibility = ["//visibility:public"],
+# )
+
+# # Put app go_binary into a tar layer.
+# pkg_tar(
+#     name = "app_layer",
+#     srcs = [":app_bin"],
+#     package_dir = "/"
+#     # If the binary depends on RUNFILES, uncomment the attribute below.
+#     # include_runfiles = True
+# )
+
+# oci_image(
+#     name = "app_image",
+#     base = "@distroless_base",
+#     entrypoint = ["/app_bin"],
+#     tars = [":app_layer"],
+# )
+
+# Single macro to replace go_binary, pkg_tar, and oci_image that produce "{}_image".format(name)
+# See: https://codilime.com/blog/bazel-build-system-build-containerized-applications/
+go_image(
+    name = "app",
     embed = [":app_lib"],
     visibility = ["//visibility:public"],
-)
-
-# Put app go_binary into a tar layer.
-pkg_tar(
-    name = "app_layer",
-    srcs = [":run_bin"],
-    package_dir = "/app"
-    # If the binary depends on RUNFILES, uncomment the attribute below.
-    # include_runfiles = True
-)
-
-oci_image(
-    name = "app_image",
-    base = "@distroless_base",
-    entrypoint = ["/app/run_bin"],
-    tars = [":app_layer"],
 )
 
 # This is the target that should be released to the target platform

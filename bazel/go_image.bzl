@@ -7,11 +7,11 @@
 #     srcs = ["app.go"],
 # )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@rules_go//go:def.bzl", "go_binary")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_oci//oci:defs.bzl", "oci_image")
 
-def go_image(name, base = "@go_base", tars = [], **kwargs):
+def go_image(name, base = "@distroless_base", tars = [], **kwargs):
     '''
     Creates a containerized binary from Go sources.
     Parameters:
@@ -22,6 +22,7 @@ def go_image(name, base = "@go_base", tars = [], **kwargs):
     '''
     binary_name = "{}_binary".format(name)
     layer_name = "{}_layer".format(name)
+    image_name = "{}_image".format(name)
 
     go_binary(
         name = binary_name,
@@ -35,7 +36,7 @@ def go_image(name, base = "@go_base", tars = [], **kwargs):
     )
 
     oci_image(
-        name = name,
+        name = image_name,
         tars = [layer_name] + tars,
         entrypoint = ["/{}".format(binary_name)],
         base = base,
