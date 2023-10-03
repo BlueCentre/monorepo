@@ -1,9 +1,15 @@
 # See:
+# - https://github.com/GoogleContainerTools/container-structure-test#metadata-test
 # - https://github.com/GoogleContainerTools/container-structure-test#command-tests
 # - https://github.com/GoogleContainerTools/container-structure-test#running-structure-tests-through-bazel
 schemaVersion: 2.0.0
 metadataTest:
-  # entrypoint: ['/opt/projects/devops_fastapi_app/run_bin']
+  envVars:
+    - key: "JAVA_VERSION"
+      value: "11.0.20"
+  entrypoint: ["/usr/bin/java","-jar"]
+  cmd: ["app.jar"]
+  workdir: "/"
   # exposedPorts: ["8080"]
 commandTests:
   # - name: "java installation"

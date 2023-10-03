@@ -32,8 +32,8 @@ test_remote: test_all_remote
 clean: bazel_clean docker_clean
 	###########################################################################
 	# Cleaned:
-	# - bazel build artifacts
-	# - docker build images
+	# - bazel build artifacts (prefix: bazel-*)
+	# - docker build images (prefix: bazel/*)
 	###########################################################################
 
 .PHONY: update
@@ -71,10 +71,19 @@ update_rules_pkg_fixes:
 
 
 
+#
+# MAIN MAKEFILE TARGETS SECTION
+#
+
 # dev_base_fastapi_app: skaffold_dev_base_fastapi_app
 #	# ##########################################################################
 #	# Default: Skaffold
 #	# ##########################################################################
+
+dev_devops_fastapi_app: skaffold_dev_devops_fastapi_app
+	###########################################################################
+	# Default: Skaffold
+	###########################################################################
 
 dev_devops_go_app: skaffold_dev_devops_go_app
 	###########################################################################
@@ -82,13 +91,6 @@ dev_devops_go_app: skaffold_dev_devops_go_app
 	###########################################################################
 
 dev_devops_go_app_debug: skaffold_dev_devops_go_app_debug
-	###########################################################################
-	# Default: Skaffold
-	###########################################################################
-
-# See: https://github.com/GoogleContainerTools/skaffold/issues/4033
-# TODO: bazel support in the container does not work so we stick with local skaffold
-dev_devops_fastapi_app: skaffold_dev_devops_fastapi_app
 	###########################################################################
 	# Default: Skaffold
 	###########################################################################
@@ -107,7 +109,7 @@ build_all: bazel_build
 
 build_all_remote: bazel_build_remote
 	###########################################################################
-	# Default: Bazel
+	# Default: Bazel + BuildBuddy
 	###########################################################################
 
 build_libs: bazel_build_libs
@@ -115,9 +117,19 @@ build_libs: bazel_build_libs
 	# Default: Bazel
 	###########################################################################
 
+build_libs_remote: bazel_build_libs_remote
+	###########################################################################
+	# Default: Bazel + BuildBuddy
+	###########################################################################
+
 build_projects: bazel_build_projects
 	###########################################################################
 	# Default: Bazel
+	###########################################################################
+
+build_projects_remote: bazel_build_projects_remote
+	###########################################################################
+	# Default: Bazel + BuildBuddy
 	###########################################################################
 
 build_devops_fastapi_app: skaffold_build_devops_fastapi_app
@@ -133,6 +145,11 @@ build_devops_go_app: skaffold_build_devops_go_app
 build_hello_springboot_app: skaffold_build_hello_springboot_app
 	###########################################################################
 	# Default: Skaffold
+	###########################################################################
+
+build_rs_springboot_app: bazel_build_rs_springboot_app
+	###########################################################################
+	# Default: Bazel
 	###########################################################################
 
 
@@ -187,16 +204,27 @@ test_hello_springboot_app: bazel_test_hello_springboot_app
 	# Default: Bazel
 	###########################################################################
 
+test_rs_springboot_app: bazel_test_rs_springboot_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
 
+
+
+run_rs_springboot_app: bazel_run_rs_springboot_app
+	###########################################################################
+	# Default: Bazel
+	###########################################################################
+
+
+
+#
+# BAZEL SECTION
+#
 
 # See:
 # - https://earthly.dev/blog/build-java-projects-with-bazel/
 # - http://www.webgraphviz.com/
-
-bazel_clean:
-	bazel clean --async
-
-
 
 bazel_query_all:
 	# bazel query --notool_deps --noimplicit_deps "deps(//...)"
@@ -280,6 +308,9 @@ bazel_query_hello_springboot_app_image:
 bazel_query_hello_springboot_app_image_graph:
 	bazel query //projects/java/hello_springboot_app:app_image --output=graph
 
+bazel_query_rs_springboot_app:
+	bazel query //projects/java/rs_springboot_app/...
+
 
 
 bazel_build:
@@ -335,6 +366,11 @@ bazel_build_hello_springboot_app:
 bazel_build_hello_springboot_app_remote:
 	# bazel build //projects/java/hello_springboot_app:tarball --config=remote
 	bazel build //projects/java/hello_springboot_app/... --config=remote
+
+# See: https://github.com/salesforce/rules_spring/tree/main/springboot#debugging-the-rule-execution
+bazel_build_rs_springboot_app:
+	# bazel build //projects/java/rs_springboot_app/... --action_env=debug_springboot_rule=1
+	bazel build //projects/java/rs_springboot_app/...
 
 
 
@@ -392,6 +428,9 @@ bazel_test_hello_springboot_app:
 bazel_test_hello_springboot_app_remote:
 	bazel test //projects/java/hello_springboot_app/... --config=remote
 
+bazel_test_rs_springboot_app:
+	bazel test //projects/java/rs_springboot_app/...
+
 
 
 bazel_run_devops_fastapi_app:
@@ -423,7 +462,19 @@ bazel_run_hello_springboot_app:
 	# bazel run //projects/java/hello_springboot_app/src/main/java/hello:app
 	bazel run //projects/java/hello_springboot_app/src/main/java/hello:projects/java/hello_springboot_app/src/main/java/hello_apprun
 
+bazel_run_rs_springboot_app:
+	bazel run //projects/java/rs_springboot_app:projects/java/rs_springboot_app_apprun
 
+
+
+bazel_clean:
+	bazel clean --async
+
+
+
+#
+# SKAFFOLD SECTION
+#
 
 # skaffold_dev_base_fastapi_app:
 # 	skaffold dev -m base-fastapi-app-config
@@ -435,7 +486,7 @@ skaffold_dev_devops_go_app_debug:
 	skaffold dev -m devops-go-app-config -v debug
 
 # See: https://github.com/GoogleContainerTools/skaffold/issues/4033
-# TODO: bazel support in the container does not work so we stick with local skaffold
+# TODO: bazel support in the skaffold container does not work currtnly so we stick with local skaffold
 skaffold_dev_devops_fastapi_app:
 	# ./tools/scripts/skaffold_container.sh dev -m devops-fastapi-app-config
 	skaffold dev -m devops-fastapi-app-config
@@ -569,6 +620,12 @@ env_setup_skaffold:
 # Analysis
 repo_stats:
 	docker run --rm -v "$(PWD):/tmp" aldanial/cloc .
+
+repo_view_tree:
+	tree --dirsfirst -F -A .
+
+repo_view_build_tree:
+	tree --dirsfirst -F -A -P 'BUILD*' .
 
 
 
