@@ -117,10 +117,12 @@ maven_pojo.install(
         # log4j deps are added only for https://github.com/bazelbuild/rules_jvm_external/issues/630
         "org.apache.logging.log4j:log4j-api:2.20.0",
         "org.apache.logging.log4j:log4j-to-slf4j:2.20.0",
+        "org.hamcrest:hamcrest-library:1.3",
+        "javax.annotation:javax.annotation-api:1.3.2",
         "junit:junit:4.13.2",
         "com.google.guava:guava:32.1.2-jre",
-        # "io.grpc:grpc-all:1.58.0",
         "io.grpc:grpc-all:1.51.1",
+        # "io.grpc:grpc-all:1.58.0",
     ],
     fetch_sources = True,
     # use_credentials_from_home_netrc_file = True,
@@ -146,7 +148,7 @@ maven_springboot.install(
     artifacts = [
         # This line is an example coordinate, you'd copy-paste your actual dependencies here
         # from your build.gradle or pom.xml file.
-        "org.seleniumhq.selenium:selenium-java:4.4.0",
+        # "org.seleniumhq.selenium:selenium-java:4.4.0",
         # log4j deps are added only for https://github.com/bazelbuild/rules_jvm_external/issues/630
         "org.apache.logging.log4j:log4j-api:2.20.0",
         "org.apache.logging.log4j:log4j-to-slf4j:2.20.0",
@@ -158,8 +160,10 @@ maven_springboot.install(
         "org.springframework.boot:spring-boot-test:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot-loader:2.3.9.RELEASE",
+        "org.springframework.boot:spring-boot-loader-tools:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot-starter:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot-starter-web:2.3.9.RELEASE",
+        "org.springframework.boot:spring-boot-starter-jetty:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot-starter-tomcat:2.3.9.RELEASE",
         "org.springframework.boot:spring-boot-starter-parent:2.3.9.RELEASE",
         "org.springframework:spring-aop:5.2.13.RELEASE",
@@ -169,16 +173,16 @@ maven_springboot.install(
         "org.springframework:spring-test:5.2.13.RELEASE",
         "org.springframework:spring-web:5.2.13.RELEASE",
     ],
-    # fetch_sources = True,
+    fetch_sources = True,
     # use_credentials_from_home_netrc_file = True,
     repositories = [
         # Private repositories are supported through HTTP Basic auth
         # "http://username:password@localhost:8081/artifactory/my-repository",
-        # "https://maven.google.com",
+        "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
     # maven_install_json = "//third_party/java:maven_install.json",
-    # version_conflict_policy = "pinned",
+    version_conflict_policy = "pinned",
     lock_file = "//third_party/java:maven_springboot_install.json",
 )
 # use_repo(maven, "maven")
