@@ -66,6 +66,9 @@ update_maven_springboot:
 	# To only repin rules_jvm_external:
 	# RULES_JVM_EXTERNAL_REPIN=1 bazel run @unpinned_maven_springboot//:pin
 
+update_maven_springboot_v2:
+	bazel run @unpinned_maven_springboot_v2//:pin
+
 update_rules_pkg_fixes:
 	bazel run //bazel/fixes:requirements.update
 
