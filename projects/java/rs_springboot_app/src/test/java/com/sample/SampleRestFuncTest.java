@@ -19,25 +19,16 @@ import org.junit.Test;
  * This test class starts the Spring Boot application. Because the Spring context is
  * created, you can autowire spring beans into the test.
  */
-// @RunWith(SpringRunner.class)
-// @SpringBootTest(classes = SampleMain.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-// @TestPropertySource(locations = {"classpath:/test.properties"})
-// public class SampleRestFuncTest {
-
-//     // @Autowired
-//     private SampleRest sampleRest;
-
-//     @Test
-//     public void apiTest() {
-//       assertEquals("Hello!", sampleRest.hello());
-//     }
-// }
-
-@SpringBootTest
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = SampleMain.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(locations = {"classpath:/test.properties"})
 public class SampleRestFuncTest {
 
-    @Test
-    public void contextLoads() {
-    }
+    @Autowired
+    private SampleRest sampleRest;
 
+    @Test
+    public void apiTest() {
+      assertEquals("Hello!", sampleRest.hello());
+    }
 }
