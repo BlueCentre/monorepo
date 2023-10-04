@@ -5,7 +5,6 @@ java_test(
     deps = [
         "//projects/java/hello_springboot_app/src/main/java/hello:lib",
         "@maven_springboot//:org_hamcrest_hamcrest",
-        # "@maven_springboot//:org_hamcrest_hamcrest_library",
         "@maven_springboot//:org_springframework_boot_spring_boot_test",
         "@maven_springboot//:org_springframework_boot_spring_boot_test_autoconfigure",
         "@maven_springboot//:org_springframework_boot_spring_boot_starter_web",
@@ -23,7 +22,6 @@ java_test(
     deps = [
         "//projects/java/hello_springboot_app/src/main/java/hello:lib",
         "@maven_springboot//:org_hamcrest_hamcrest",
-        # "@maven_springboot//:org_hamcrest_hamcrest_library",
         "@maven_springboot//:org_springframework_boot_spring_boot",
         "@maven_springboot//:org_springframework_boot_spring_boot_test",
         "@maven_springboot//:org_springframework_boot_spring_boot_test_autoconfigure",
