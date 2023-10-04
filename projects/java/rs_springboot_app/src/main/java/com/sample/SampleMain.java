@@ -8,6 +8,7 @@ package com.sample;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
+
 import com.bazel.demo.IntentionalDupedClass;
 
 @SpringBootApplication

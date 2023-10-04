@@ -41,16 +41,6 @@ java_library(
     deps = springboot_deps + lib_deps,
 )
 
-# See: https://docs.bazel.build/versions/master/be/java.html#java_binary
-# java_binary(
-#     name = "app",
-#     main_class = "hello.Application",
-#     visibility = ["//visibility:public"],
-#     runtime_deps = [
-#         ":lib",
-#     ],
-# )
-
 # Build the app as a Spring Boot executable jar
 springboot(
     name = "app",
