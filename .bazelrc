@@ -36,7 +36,7 @@ import %workspace%/.buildbuddy/remote.bazelrc
 
 ### YOUR PROJECT SPECIFIC OPTIONS GO HERE ###
 
-coverage --java_runtime_version=remotejdk_11
+coverage --java_runtime_version=remotejdk_17
 
 # https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
 try-import %workspace%/.bazelrc.user

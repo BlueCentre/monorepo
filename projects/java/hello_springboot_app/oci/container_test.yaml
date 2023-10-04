@@ -6,7 +6,7 @@ schemaVersion: 2.0.0
 metadataTest:
   envVars:
     - key: "JAVA_VERSION"
-      value: "11.0.20"
+      value: "17.0.6"
   entrypoint: ["/usr/bin/java","-jar"]
   cmd: ["app.jar"]
   workdir: "/"
