@@ -548,6 +548,14 @@ debug_jar_hello_springboot_app_run: bazel_build_hello_springboot_app
 docker_clean:
 	./tools/scripts/make_docker_cleanup.sh
 
+docker_run_amd64_debug:
+	# docker run -ti --rm --platform linux/amd64 alpine /bin/sh
+	docker run -ti --rm --platform linux/amd64 alpine uname -a
+
+docker_run_arm64_debug:
+	# docker run -ti --rm --platform linux/arm64 alpine /bin/sh
+	docker run -ti --rm --platform linux/arm64 alpine uname -a
+
 docker_load_example2_java_app: build_example2_java_app
 	docker load --input $$(bazel cquery --output=files //projects/java/example2_java_app:tarball)
 
@@ -562,20 +570,15 @@ docker_run_hello_springboot_app: docker_load_hello_springboot_app
 
 
 
-minikube_start: minikube_eval
-	minikube start --mount --mount-string "${HOME}:${HOME}"
+kubectl_get_all:
+	#  kubectl get all --all-namespaces | column -t
+	 kubectl get all --all-namespaces
 
-minikube_eval:
-	#[!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!]
-	# Run this command in your SHELL: eval $$(minikube -p minikube docker-env)
-	#[!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!]
+kubectl_get_pods_all:
+	kubectl get pods --all-namespaces
 
-minikube_images:
-	minikube image ls --format='table'
-
-# See: https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
-minikube_ingress:
-	minikube addons enable ingress
+kubectl_run_shell:
+	kubectl run -ti --rm debug --restart=Never --image alpine /bin/sh
 
 
 
@@ -600,6 +603,10 @@ watch_ps_docker:
 # ENVIRONMENT SECTION
 #
 
+#
+# Local Development (Laptop - amd64/arm64)
+#
+
 # Install tooling for quickstart
 # NOTE: Not needed if using Cloud Workstations
 env_setup:
@@ -610,10 +617,48 @@ env_setup_copier:
 	pipx install copier
 
 env_setup_bazel:
-	echo "Lets build something!"
+	# Lets build something!
+	# brew install bazelisk
 
 env_setup_skaffold:
-	echo "Continuous Development!"
+	# Let's develop something!
+	# brew install skaffold
+
+
+
+colima_start:
+	colima start
+
+colima_setup:
+	# See: https://github.com/abiosoft/colima
+	colima || brew install colima
+	colima start --cpu 8 --memory 8 --disk 100 --vm-type vz --runtime docker --kubernetes --activate --network-address
+
+colima_status:
+	colima status --extended
+
+colima_list:
+	colima list
+
+
+
+#
+# Cloud Workstations Development (GCP - amd64)
+#
+
+minikube_start:
+	minikube start --mount --mount-string "${HOME}:${HOME}"
+
+minikube_status:
+	minikube status
+
+minikube_images:
+	minikube image ls --format='table'
+
+# See: https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+minikube_ingress:
+	minikube addons enable ingress
+
 
 
 #
@@ -621,22 +666,25 @@ env_setup_skaffold:
 #
 
 # Analysis
-repo_stats:
+repo_view_stats:
 	docker run --rm -v "$(PWD):/tmp" aldanial/cloc .
 
 repo_view_tree:
 	tree --dirsfirst -F -A .
 
-repo_view_build_tree:
+repo_view_tree_build:
 	tree --dirsfirst -F -A -P 'BUILD*' .
 
+repo_view_tree_skaffold:
+	tree --dirsfirst -F -A -P 'skaffold.yaml' .
 
 
-git_new:
+
+git_new_master:
 	git fetch --all
 	git checkout -b master origin/master
 
-git_push: test
+git_push_branch_head: test
 	git push origin `git rev-parse --abbrev-ref HEAD`
 
 git_log_oneline:
