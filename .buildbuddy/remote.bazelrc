@@ -14,12 +14,19 @@ build:remote --platforms=@buildbuddy_toolchain//:platform
 build:remote --extra_execution_platforms=@buildbuddy_toolchain//:platform
 build:remote --crosstool_top=@buildbuddy_toolchain//:toolchain
 build:remote --extra_toolchains=@buildbuddy_toolchain//:cc_toolchain
-build:remote --bes_results_url=https://app.buildbuddy.io/invocation/
-build:remote --bes_backend=grpcs://remote.buildbuddy.io
-build:remote --remote_executor=grpcs://remote.buildbuddy.io
-build:remote --remote_cache=grpcs://remote.buildbuddy.io
+build:remote --bes_results_url=https://bluecentre.buildbuddy.io/invocation/
+build:remote --bes_backend=grpcs://bluecentre.buildbuddy.io
+build:remote --remote_executor=grpcs://bluecentre.buildbuddy.io
+build:remote --remote_cache=grpcs://bluecentre.buildbuddy.io
+build:remote --noremote_upload_local_results
+build:remote --nolegacy_important_outputs
 build:remote --remote_timeout=3600
-build:remote --remote_header=x-buildbuddy-api-key=M6xoyCQXGmbU7SyJx6GO
+build:remote --experimental_remote_cache_compression
+build:remote --experimental_remote_build_event_upload=minimal
+build:remote --noslim_profile
+build:remote --experimental_profile_include_target_label
+build:remote --experimental_profile_include_primary_output
+# build:remote --remote_header=x-buildbuddy-api-key=xxxxxxxxxxxxx
 # build:remote --remote_exec_header=x-buildbuddy-platform.container-registry-username=USERNAME
 # build:remote --remote_exec_header=x-buildbuddy-platform.container-registry-password="$(gcloud auth print-access-token)"
 build:remote --jobs=50
@@ -27,23 +34,31 @@ build:remote --define=EXECUTOR=remote
 
 
 build:ci --build_metadata=ROLE=CI
-build:ci --host_platform=@buildbuddy_toolchain//:platform
-build:ci --platforms=@buildbuddy_toolchain//:platform
-build:ci --extra_execution_platforms=@buildbuddy_toolchain//:platform
-build:ci --crosstool_top=@buildbuddy_toolchain//:toolchain
-build:ci --extra_toolchains=@buildbuddy_toolchain//:cc_toolchain
-build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
-build:ci --bes_backend=grpcs://remote.buildbuddy.io
-build:ci --remote_executor=grpcs://remote.buildbuddy.io
-build:ci --remote_cache=grpcs://remote.buildbuddy.io
-build:ci --noremote_upload_local_results
-build:ci --nolegacy_important_outputs
-build:ci --remote_timeout=3600
-build:ci --experimental_remote_cache_compression
-build:ci --experimental_remote_build_event_upload=minimal
-build:ci --noslim_profile
-build:ci --experimental_profile_include_target_label
-build:ci --experimental_profile_include_primary_output
-build:ci --jobs=50
-build:ci --define=EXECUTOR=remote
-#build:ci --config=remote # Uses remote config above if they match
+# build:ci --host_platform=@buildbuddy_toolchain//:platform
+# build:ci --platforms=@buildbuddy_toolchain//:platform
+# build:ci --extra_execution_platforms=@buildbuddy_toolchain//:platform
+# build:ci --crosstool_top=@buildbuddy_toolchain//:toolchain
+# build:ci --extra_toolchains=@buildbuddy_toolchain//:cc_toolchain
+# build:ci --bes_results_url=https://app.buildbuddy.io/invocation/
+# build:ci --bes_backend=grpcs://remote.buildbuddy.io
+# build:ci --remote_executor=grpcs://remote.buildbuddy.io
+# build:ci --remote_cache=grpcs://remote.buildbuddy.io
+# build:ci --noremote_upload_local_results
+# build:ci --nolegacy_important_outputs
+# build:ci --remote_timeout=3600
+# build:ci --experimental_remote_cache_compression
+# build:ci --experimental_remote_build_event_upload=minimal
+# build:ci --noslim_profile
+# build:ci --experimental_profile_include_target_label
+# build:ci --experimental_profile_include_primary_output
+# build:ci --jobs=50
+# build:ci --define=EXECUTOR=remote
+build:ci --config=remote # Uses remote config above if they match
+
+# See: https://bluecentre.buildbuddy.io/docs/setup
+# build --bes_results_url=https://bluecentre.buildbuddy.io/invocation/
+# build --bes_backend=grpcs://bluecentre.buildbuddy.io
+# build --remote_cache=grpcs://bluecentre.buildbuddy.io
+# build --remote_timeout=3600
+# build --remote_executor=grpcs://bluecentre.buildbuddy.io
+# build --remote_header=x-buildbuddy-api-key=xxxxxxxxxxxxx

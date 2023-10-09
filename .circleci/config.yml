@@ -1,0 +1,17 @@
+version: '2.1'
+
+setup: true
+
+jobs:
+  build:
+    machine:
+      # https://circleci.com/developer/machine/image/ubuntu-2204
+      image: ubuntu-2204:2023.07.2
+    # If running ARM, the resource class needs to be added. Omitting this defaults to amd64
+    # resource_class: arm.medium
+    steps:
+      - checkout
+      # Whatever you want to do
+      - run: sudo /bin/sh -c 'wget https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-amd64 -O /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel'
+      - run: bazel build //... --config=ci --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_ORG_API_KEY}
+      - run: bazel test //... --config=ci --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_ORG_API_KEY}
