@@ -18,6 +18,8 @@ build:remote --bes_results_url=https://bluecentre.buildbuddy.io/invocation/
 build:remote --bes_backend=grpcs://bluecentre.buildbuddy.io
 build:remote --remote_executor=grpcs://bluecentre.buildbuddy.io
 build:remote --remote_cache=grpcs://bluecentre.buildbuddy.io
+build:remote --noremote_upload_local_results
+build:remote --nolegacy_important_outputs
 build:remote --remote_timeout=3600
 build:remote --experimental_remote_cache_compression
 build:remote --experimental_remote_build_event_upload=minimal
