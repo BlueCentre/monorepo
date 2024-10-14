@@ -37,7 +37,8 @@ jobs:
       # the rest of the steps
       - name: Checkout code
         uses: actions/checkout@v4
-
+      # BB: https://bluecentre.buildbuddy.io/settings/org/api-keys
+      # GH: https://github.com/BlueCentre/monorepo/settings/secrets/actions
       # See: https://www.buildbuddy.io/docs/rbe-github-actions
       # Use remote build (BuildBuddy)
       - name: Build the code
