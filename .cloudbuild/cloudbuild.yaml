@@ -1,0 +1,27 @@
+# See:
+# - https://cloud.google.com/build/docs/build-config (cloud build schema)
+# - https://cloud.google.com/build/docs/cloud-builders
+# - https://github.com/GoogleCloudPlatform/cloud-builders/tree/master/bazel (not latest from upstream)
+# - https://bazel.build/install/docker-container
+# - https://console.cloud.google.com/gcr/images/bazel-public/GLOBAL/bazel (latest from upstream)
+
+steps:
+
+  - name: 'gcr.io/bazel-public/bazel:6.3.2'
+    id: 'build'
+    entrypoint: bazel
+    args: ['build', '//...', '--config=ci', '--remote_header=x-buildbuddy-api-key=${_BUILDBUDDY_ORG_API_KEY}']
+
+  - name: 'gcr.io/bazel-public/bazel:6.3.2'
+    id: 'test'
+    entrypoint: bazel
+    args: ['test', '//...', '--config=ci', '--remote_header=x-buildbuddy-api-key=${_BUILDBUDDY_ORG_API_KEY}']
+
+
+options:
+ logging: CLOUD_LOGGING_ONLY
+ machineType: E2_HIGHCPU_8
+
+
+# TODO:
+# * Switch to CFT Cloud Build; currently executes from lab project
