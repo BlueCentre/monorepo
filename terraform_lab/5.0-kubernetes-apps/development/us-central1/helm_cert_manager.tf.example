@@ -1,0 +1,25 @@
+resource "helm_release" "cert_manager" {
+  count            = var.cert_manager_enabled ? 1 : 0
+  name             = "cert-manager"
+  chart            = "cert-manager"
+  version          = "v1.11"
+  repository       = "https://charts.jetstack.io"
+  description      = "Terraform driven Helm release of cert-manager Helm chart"
+  namespace        = "cert-manager"
+  create_namespace = true
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+}
+
+resource "kubectl_manifest" "clusterissuer_letsencrypt" {
+  count              = var.cert_manager_enabled ? 1 : 0
+  yaml_body          = file("${path.module}/cert_manager_clusterissuer_letsencrypt_${var.environment}.yaml")
+  override_namespace = "cert-manager"
+  # depends_on = [
+  #   helm_release.ingress_nginx,
+  #   helm_release.cert_manager,
+  # ]
+}

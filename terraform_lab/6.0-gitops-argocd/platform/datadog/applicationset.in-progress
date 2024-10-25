@@ -1,0 +1,192 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: datadog-agents
+  labels:
+    environment: datadog
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+  - clusters: {}
+  # generators:
+  #   # ETL clusters
+  #   - matrix:
+  #       generators:
+  #         - list:
+  #             elements:
+  #               - client: fl
+  #                 env: prod
+  #               - client: ix
+  #                 env: prod
+  #         - clusters:
+  #             selector:
+  #               matchLabels:
+  #                 environment: '{{ .env }}'
+  #                 client: '{{ .client }}'
+  #                 purpose: etl
+  #             values:
+  #               environment: '{{ .env }}'
+  #               client: '{{ .client }}'
+  #               purpose: etl
+  #   - clusters:
+  #       selector:
+  #         matchLabels:
+  #           flyr_environment: flyr
+  #           client: vendor-common
+  #           purpose: common
+  #       values:
+  #         environment: prod
+  #         client: common
+  #         purpose: etl
+  #   # Application clusters
+  #   - matrix:
+  #       generators:
+  #         - list:
+  #             elements:
+  #               - client: fl
+  #                 env: dev
+  #                 puropose: autopilot
+  #               - client: fl
+  #                 env: staging
+  #               - client: fl
+  #                 env: non-prod
+  #               - client: fl
+  #                 env: prod
+  #               - client: ix
+  #                 env: sandbox
+  #               - client: ix
+  #                 env: staging
+  #               - client: ix
+  #                 env: non-prod
+  #               - client: ix
+  #                 env: prod
+  #         - clusters:
+  #             selector:
+  #               matchLabels:
+  #                 environment: '{{ .env }}'
+  #                 client: '{{ .client }}'
+  #                 purpose: application
+  #             values:
+  #               environment: '{{ .env }}'
+  #               client: '{{ .client }}'
+  #               purpose: application
+  #   # Data Composer clusters
+  #   - matrix:
+  #       generators:
+  #         - list:
+  #             elements:
+  #               - client: fl
+  #                 env_label: prd
+  #                 env: prod
+  #               - client: ix
+  #                 env_label: stg
+  #                 env: staging
+  #               - client: ix
+  #                 env_label: prd
+  #                 env: prod
+  #         - clusters:
+  #             selector:
+  #               matchLabels:
+  #                 flyr_environment: '{{ .env_label }}'
+  #                 flyr_tenant: '{{ .client }}'
+  #                 flyr_component: composer
+  #                 flyr_stack: data
+  #             values:
+  #               environment: '{{ .env }}'
+  #               client: '{{ .client }}'
+  #               purpose: composer
+  #   # Metrics Composer clusters
+  #   - matrix:
+  #       generators:
+  #         - list:
+  #             elements:
+  #               - client: fl
+  #                 env_label: int
+  #                 env: non-prod
+  #               - client: fl
+  #                 env_label: prd
+  #                 env: prod
+  #               - client: ix
+  #                 env_label: stg
+  #                 env: staging
+  #               - client: ix
+  #                 env_label: int
+  #                 env: non-prod
+  #               - client: ix
+  #                 env_label: prd
+  #                 env: prod
+  #         - clusters:
+  #             selector:
+  #               matchLabels:
+  #                 flyr_environment: '{{ .env_label }}'
+  #                 flyr_tenant: '{{ .client }}'
+  #                 flyr_component: composer
+  #                 flyr_stack: dpm
+  #             values:
+  #               environment: '{{ .env }}'
+  #               client: '{{ .client }}'
+  #               purpose: composer
+  #               optional_suffix: -metrics
+  #   # Order and Offer (aka CE) Commerce Engine clusters
+  #   - matrix:
+  #       generators:
+  #         - list:
+  #             elements:
+  #               - client: rx
+  #                 env_label: dev
+  #                 env: dev
+  #               - client: rx
+  #                 env_label: stg
+  #                 env: staging
+  #         - clusters:
+  #             selector:
+  #               matchLabels:
+  #                 flyr_environment: '{{ .env_label }}'
+  #                 flyr_tenant: '{{ .client }}'
+  #                 flyr_stack: ce
+  #             values:
+  #               environment: '{{ .env }}'
+  #               client: '{{ .client }}'
+  #               purpose: ce-app
+
+
+  template:
+    metadata:
+      # name: 'datadog-{{.values.client}}-{{.values.purpose}}-{{.values.environment}}{{.values.optional_suffix}}'
+      name: datadog
+      labels:
+        app: datadog
+        client: developers
+        # env: '{{.values.environment}}'
+        # purpose: '{{.values.purpose}}'
+        # client: '{{.values.client}}'
+    spec:
+      project: platform-project
+      revisionHistoryLimit: 3
+      sources:
+        # https://github.com/DataDog/helm-charts
+        - repoURL: https://helm.datadoghq.com
+          chart: datadog
+          targetRevision: '3.70.4'
+          helm:
+            version: v3
+            releaseName: datadog
+            valueFiles:
+              # - "$values/charts/datadog/{{.values.environment}}/{{.values.purpose}}/{{.values.client}}-values.yaml"
+              - "$values/6.1-gitops-artifact-registry/charts/datadog/values.yaml"
+        - repoURL: 'git@github.com:ipv1337/terraform-lab-project.git'
+          targetRevision: "HEAD"
+          ref: values
+        - repoURL: 'git@github.com:ipv1337/terraform-lab-project.git'
+          targetRevision: "HEAD"
+          path: 6.1-gitops-artifact-registry/manifests/datadog
+      destination:
+        server: '{{.server}}'
+        namespace: datadog
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

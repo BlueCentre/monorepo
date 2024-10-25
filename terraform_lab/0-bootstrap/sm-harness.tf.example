@@ -1,0 +1,47 @@
+module "secret_manager" {
+  count      = var.harness_enabled ? 1 : 0
+  source     = "../modules/secret_manager"
+  project_id = var.project_id
+  secrets = {
+    upper("harness_account_id")                    = null
+    upper("harness_platform_api_key")              = null
+    upper("harness_platform_terraform_account_id") = null
+    upper("harness_platform_terraform_api_key")    = null
+  }
+  versions = {
+    # upper("cloudflare_api_token") = {
+    #   v1 = { enabled = true, data = "Manually created in cloud console" }
+    # },
+    # upper("iap_client_id") = {
+    #   v1 = { enabled = true, data = google_iap_client.project_client.client_id }
+    # },
+    # upper("iap_client_secret") = {
+    #   v1 = { enabled = true, data = google_iap_client.project_client.secret }
+    # }
+    upper("harness_platform_terraform_account_id") = {
+      v1 = { enabled = true, data = harness_platform_service_account.terraform.id }
+    },
+    upper("harness_platform_terraform_api_key") = {
+      v1 = { enabled = true, data = harness_platform_token.terraform.value }
+    }
+  }
+  depends_on = [module.project_services]
+}
+
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/secret_manager_secret_version_access
+data "google_secret_manager_secret_version_access" "harness_account_id" {
+  count   = var.harness_enabled ? 1 : 0
+  project = var.project_id
+  secret  = upper("harness_account_id")
+  # version = "latest" # Uncomment for specific version
+  depends_on = [module.project_services]
+}
+
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/secret_manager_secret_version_access
+data "google_secret_manager_secret_version_access" "harness_platform_api_key" {
+  count   = var.harness_enabled ? 1 : 0
+  project = var.project_id
+  secret  = upper("harness_platform_api_key")
+  # version = "latest" # Uncomment for specific version
+  depends_on = [module.project_services]
+}

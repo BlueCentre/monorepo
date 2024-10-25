@@ -1,0 +1,70 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: crossplane
+spec:
+  # generators:
+  # - clusters:
+  #     selector:
+  #       matchLabels:
+  #         environment: sandbox
+  #         client: fl
+  # - clusters:
+  #     selector:
+  #       matchLabels:
+  #         environment: staging
+  #         client: fl
+  # - clusters:
+  #     selector:
+  #       matchLabels:
+  #         environment: sandbox
+  #         client: nz
+  # - clusters:
+  #     selector:
+  #       matchLabels:
+  #         environment: dev
+  #         client: fl  
+  #         purpose: etl        
+  template:
+    metadata:
+      name: '{{name}}-crossplane'
+      labels:
+        app: crossplane
+        client: '{{metadata.labels.client}}'
+    spec:
+      project: platform-project
+      source:
+        repoURL: https://charts.crossplane.io/stable
+        targetRevision: "1.16.0"
+        chart: crossplane
+        helm:
+          version: v3
+          parameters:
+          - name: 'serviceAccount.customAnnotations.iam\\.gke\\.io/gcp-service-account'
+            value: 'crossplane@{{metadata.labels.project_id}}.iam.gserviceaccount.com'
+            forceString: true
+          # values: |
+          #   replicas: 3
+          #   resourcesCrossplane:
+          #     requests:
+          #       cpu: 150m
+          #       memory: 200Mi
+          #     limits:
+          #       cpu: 250m
+          #       memory: 1000Mi
+          #   resourcesRBACManager:
+          #     requests:
+          #       cpu: 50m
+          #       memory: 50Mi
+          #     limits:
+          #       cpu: 100m
+          #       memory: 200Mi
+      destination:
+        server: '{{server}}'
+        namespace: crossplane-system
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
