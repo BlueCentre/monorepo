@@ -3,3 +3,8 @@
 /bazel-*
 .bazelrc.user
 .vscode
+
+# terraform patterns
+.terraform/
+*.tfstate
+
