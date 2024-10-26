@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cnpg-cluster
+  labels:
+    environment: cnpg
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+  - clusters: {}
+
+
+  template:
+    metadata:
+      name: cnpg-cluster
+      labels:
+        app: cnpg
+        client: platform
+    spec:
+      project: platform-project
+      source:
+        repoURL: https://cloudnative-pg.github.io/charts
+        chart: cluster
+        targetRevision: "0.0.9"
+        helm:
+          version: v3
+          values: |
+            mode: standalone
+            cluster:
+              instances: 1
+            backups:
+              enabled: false
+      destination:
+        server: '{{.server}}'
+        namespace: cnpg-cluster
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

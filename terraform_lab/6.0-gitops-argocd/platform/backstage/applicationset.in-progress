@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: backstage
+  labels:
+    environment: backstage
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+  - clusters: {}
+
+
+  template:
+    metadata:
+      name: backstage
+      labels:
+        app: backstage
+        client: developers
+    spec:
+      project: platform-project
+      sources:
+      # - repoURL: https://backstage.github.io/charts
+      #   chart: backstage
+      #   targetRevision: "1.9.6"
+      #   helm:
+      #     valueFiles:
+      #     - $values/6.0-gitops-argocd/platform/backstage/values.yaml
+      - repoURL: https://platformerscommunity.github.io/backstage-helm-chart/
+        chart: backstage
+        targetRevision: "0.1.0"
+        helm:
+          version: v3
+          releaseName: backstage
+          valueFiles:
+          - $values/6.1-gitops-artifact-registry/charts/backstage/values.yaml
+      - repoURL: git@github.com:ipv1337/terraform-lab-project.git
+        targetRevision: HEAD
+        ref: values
+      - repoURL: 'git@github.com:ipv1337/terraform-lab-project.git'
+        path: 6.1-gitops-artifact-registry/manifests/backstage
+        targetRevision: "HEAD"
+      destination:
+        server: '{{.server}}'
+        namespace: backstage
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

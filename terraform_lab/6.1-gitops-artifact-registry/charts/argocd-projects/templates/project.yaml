@@ -1,0 +1,25 @@
+{{- $env := .Values.global.env -}}
+{{- range $client := .Values.clients -}}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: "{{ $client.iata }}-{{ $env }}-apps"
+  namespace: argocd-prod
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Project for internally developed apps and services
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - '*'
+  destinations:
+  - namespace: '*'
+    server: '*'
+{{ with $client.syncWindows }}
+  syncWindows:
+    {{- toYaml .| nindent 2 -}}
+{{ end }}
+---
+{{- end -}}
