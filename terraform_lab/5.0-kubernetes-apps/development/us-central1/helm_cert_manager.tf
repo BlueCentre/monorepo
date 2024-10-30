@@ -30,6 +30,16 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
+# resource "kubectl_manifest" "clusterissuer_letsencrypt" {
+#   count              = var.cert_manager_enabled ? 1 : 0
+#   yaml_body          = file("${path.module}/cert_manager_clusterissuer_letsencrypt_${var.environment}.yaml")
+#   override_namespace = "cert-manager"
+#   # depends_on = [
+#   #   helm_release.ingress_nginx,
+#   #   helm_release.cert_manager,
+#   # ]
+# }
+
 
 # https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd#gke-application-load-balancer
 # https://medium.com/@tharukam/configuring-argo-cd-on-gke-with-ingress-iap-and-google-oauth-for-rbac-a746fd009b78
