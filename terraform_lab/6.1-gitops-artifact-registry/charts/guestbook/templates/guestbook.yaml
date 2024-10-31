@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: guestbook
+  # finalizers:
+  # - resources-finalizer.argocd.argoproj.io
+spec:
+  project: applications-project
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    path: guestbook
+    targetRevision: HEAD
+  destination:
+    namespace: guestbook
+    server: {{ .Values.spec.destination.server }}
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

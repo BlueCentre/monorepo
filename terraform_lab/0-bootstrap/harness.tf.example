@@ -1,0 +1,251 @@
+# TODO: https://developer.harness.io/docs/platform/automation/terraform/automate-harness-onboarding
+
+# Create token for account level apikey
+# https://registry.terraform.io/providers/harness/harness/latest/docs/resources/platform_apikey
+# resource "harness_platform_apikey" "bootstrap" {
+#   provider    = harness.nextgen
+#   account_id  = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+#   identifier  = "bootstrap_apikey"
+#   name        = "bootstrap_apikey"
+#   parent_id   = "james.nguyen" # harness_platform_service_account.terraform.id
+#   apikey_type = "USER"
+# }
+
+
+# https://registry.terraform.io/providers/harness/harness/latest/docs/resources/platform_service_account
+resource "harness_platform_service_account" "terraform" {
+  count      = var.harness_enabled ? 1 : 0
+  provider   = harness.nextgen
+  account_id = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+  # org_id      = harness_platform_organization.org.id
+  # project_id  = harness_platform_project.prj.id
+  identifier  = "terraform"
+  name        = "terraform"
+  email       = "terraform@service.harness.io"
+  description = "Terraform Service Account"
+  tags        = ["iac:terraform"]
+}
+
+# To create a role binding in service account
+# https://registry.terraform.io/providers/harness/harness/latest/docs/resources/platform_role_assignments
+resource "harness_platform_role_assignments" "terraform" {
+  count    = var.harness_enabled ? 1 : 0
+  provider = harness.nextgen
+  # org_id     = "org_id"
+  # project_id = "project_id"
+  resource_group_identifier = "_all_resources_including_child_scopes"
+  role_identifier           = "_account_admin"
+  principal {
+    identifier = harness_platform_service_account.terraform.id
+    type       = "SERVICE_ACCOUNT"
+  }
+  disabled = false
+  managed  = false
+}
+
+# Create token for account level apikey
+# https://registry.terraform.io/providers/harness/harness/latest/docs/resources/platform_apikey
+resource "harness_platform_apikey" "terraform" {
+  count       = var.harness_enabled ? 1 : 0
+  provider    = harness.nextgen
+  account_id  = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+  parent_id   = harness_platform_service_account.terraform.id
+  identifier  = "terraform_apikey"
+  name        = "terraform apikey"
+  apikey_type = "SERVICE_ACCOUNT"
+}
+
+# Create token for org level apikey
+# resource "harness_platform_apikey" "test" {
+#   identifier   = "test_apikey"
+#   name        = "test_apikey"
+#   parent_id   = "parent_id"
+#   apikey_type = "USER"
+#   account_id  = "account_id"
+#   org_id      = "org_id"
+# }
+
+# Create token for project level apikey
+# resource "harness_platform_apikey" "test" {
+#   identifier   = "test_apikey"
+#   name        = "test_apikey"
+#   parent_id   = "parent_id"
+#   apikey_type = "USER"
+#   account_id  = "account_id"
+#   org_id      = "org_id"
+#   project_id  = "project_id"
+# }
+
+# Create token for account level apikey
+# https://registry.terraform.io/providers/harness/harness/latest/docs/resources/platform_token
+resource "harness_platform_token" "terraform" {
+  count       = var.harness_enabled ? 1 : 0
+  provider    = harness.nextgen
+  account_id  = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+  parent_id   = harness_platform_service_account.terraform.id
+  apikey_id   = harness_platform_apikey.terraform.id
+  identifier  = "terraform_token"
+  name        = "terraform token"
+  apikey_type = "SERVICE_ACCOUNT"
+}
+
+# Create token for org level apikey
+# resource "harness_platform_token" "test" {
+#   provider    = harness.nextgen
+#   account_id  = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+#   org_id      = harness_platform_organization.org.id
+#   identifier  = "test_token"
+#   name        = "test token"
+#   parent_id   = "apikey_parent_id"
+#   apikey_type = "USER"
+#   apikey_id   = "apikey_id"
+# }
+
+# Create token for project level apikey
+# resource "harness_platform_token" "test" {
+#   provider    = harness.nextgen
+#   account_id  = data.google_secret_manager_secret_version_access.harness_account_id[0].secret_data
+#   org_id      = harness_platform_organization.org.id
+#   identifier  = "test_token"
+#   name        = "test token"
+#   parent_id   = "apikey_parent_id"
+#   project_id  = "project_id"
+#   apikey_type = "USER"
+#   apikey_id   = "apikey_id"
+# }
+
+# terraform import harness_platform_organization.org default
+resource "harness_platform_organization" "org" {
+  count       = var.harness_enabled ? 1 : 0
+  provider    = harness.nextgen
+  name        = "default"
+  identifier  = "default"
+  description = "Default Organization"
+}
+
+resource "harness_platform_project" "prj" {
+  count      = var.harness_enabled ? 1 : 0
+  provider   = harness.nextgen
+  org_id     = harness_platform_organization.org.id
+  name       = "Lab Project"
+  identifier = "lab"
+}
+
+
+# If you do not provide the org_id and the project_id in the configuration, the Secret is created at the Account scope.
+# https://app.harness.io/ng/account/gSonylJNQh-mhULFDSstmQ/all/orgs/default/projects/lab/settings/secrets
+# https://app.harness.io/ng/account/gSonylJNQh-mhULFDSstmQ/all/orgs/default/projects/lab/settings/secrets/terraform_example_secret/overview
+resource "harness_platform_secret_text" "textsecret" {
+  count       = var.harness_enabled ? 1 : 0
+  provider    = harness.nextgen
+  org_id      = harness_platform_organization.org.id
+  project_id  = harness_platform_project.prj.id
+  identifier  = "terraform_example_secret"
+  name        = "Terraform Example Secret"
+  description = "This is a text Secret, generated through Terraform"
+  tags        = ["example:tags"]
+
+  secret_manager_identifier = "harnessSecretManager"
+  value_type                = "Inline"
+  value                     = "secret_value"
+
+  lifecycle {
+    ignore_changes = [
+      value,
+    ]
+  }
+}
+
+# Needs connector for GCP Secret Manager (gcpSecretManager)
+# resource "harness_platform_secret_text" "gcp_secret_manager_reference" {
+#   provider    = harness.nextgen
+#   org_id      = harness_platform_organization.org.id
+#   project_id  = harness_platform_project.prj.id
+#   identifier  = "identifier"
+#   name        = "name"
+#   description = "example"
+#   tags        = ["foo:bar"]
+
+#   secret_manager_identifier = "gcpSecretManager"
+#   value_type                = "Reference"
+#   value                     = "secret"
+
+#   additional_metadata {
+#     values {
+#       version = "1"
+#     }
+#   }
+# }
+
+
+# GitHub Connector
+# resource "harness_platform_source_repo_connector" "github" {
+#   provider    = harness.nextgen
+#   org_id      = harness_platform_organization.org.id
+#   project_id  = harness_platform_project.prj.id
+#   name        = "GitHub Connector"
+#   description = "GitHub Connector"
+#   tags        = ["example:tags"]
+
+#   url                = "https://github.com/account"
+#   connection_type    = "Account"
+#   validation_repo    = "terraform-lab-project"
+#   delegate_selectors = ["harness-delegate"]
+#   credentials {
+#     http {
+#       username  = "username"
+#       token_ref = "account.secret_id"
+#     }
+#   }
+#   api_authentication {
+#     token_ref = "account.secret_id"
+#   }
+# }
+
+
+### Importing Pipeline from Git
+# resource "harness_platform_pipeline" "test" {
+#   provider        = harness.nextgen
+#   org_id          = harness_platform_organization.org.id
+#   project_id      = harness_platform_project.prj.id
+#   identifier      = "gitx"
+#   name            = "gitx"
+#   import_from_git = true
+#   git_import_info {
+#     branch_name   = "main"
+#     file_path     = ".harness/gitx.yaml"
+#     connector_ref = "account.DoNotDeleteGithub"
+#     repo_name     = "terraform-lab-project"
+#   }
+#   pipeline_import_request {
+#     pipeline_name        = "gitx"
+#     pipeline_description = "Pipeline Description"
+#   }
+# }
+
+
+# resource "harness_application" "example" {
+#   name = "myapp"
+# }
+
+# resource "harness_environment" "qa" {
+#   name   = "qa"
+#   app_id = harness_application.example.id
+#   type   = "NON_PROD"
+# }
+
+# resource "harness_cloudprovider_kubernetes" "k8s" {
+#   name = "k8s"
+
+#   # Example of scoping to all non-prod environments of a specific application
+#   usage_scope {
+#     application_id          = harness_application.example.id
+#     environment_filter_type = "NON_PRODUCTION_ENVIRONMENTS"
+#   }
+
+#   # Example of scoping to a specific environment
+#   usage_scope {
+#     application_id = harness_application.example.id
+#     environment_id = harness_environment.qa.id
+#   }
+# }

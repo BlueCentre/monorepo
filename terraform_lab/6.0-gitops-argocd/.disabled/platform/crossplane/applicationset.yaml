@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: crossplane
+  labels:
+    environment: crossplane
+spec:
+  generators:
+  - clusters: {}
+  template:
+    metadata:
+      name: 'crossplane'
+      labels:
+        app: 'crossplane'
+        client: 'developers'
+    spec:
+      # https://medium.com/@williamwarley/a-complete-guide-to-deploy-main-services-in-gcp-with-crossplane-and-templates-bonus-c5b025bac22a
+      # https://blog.crossplane.io/gcp-secure-connectivity-for-gke-cloudsql/
+      project: platform-project
+      source:
+        repoURL: https://charts.crossplane.io/stable
+        chart: crossplane
+        targetRevision: "1.16.0"
+        helm:
+          version: v3
+          # values: |
+          #   resourcesCrossplane:
+          #     requests:
+          #       cpu: 250m
+          #       memory: 512Mi
+          #     limits:
+          #       cpu: 250m
+          #       memory: 512Mi
+          #   resourcesRBACManager:
+          #     requests:
+          #       cpu: 250m
+          #       memory: 512Mi
+          #     limits:
+          #       cpu: 250m
+          #       memory: 512Mi
+      destination:
+        server: https://kubernetes.default.svc
+        # server: {{ .server }}
+        namespace: crossplane-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

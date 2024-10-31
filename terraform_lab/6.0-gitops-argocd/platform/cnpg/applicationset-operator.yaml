@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cnpg-operator
+  labels:
+    environment: cnpg
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+  - clusters: {}
+
+
+  template:
+    metadata:
+      name: cnpg-operator
+      labels:
+        app: cnpg
+        client: developers
+    spec:
+      project: platform-project
+      source:
+        repoURL: https://cloudnative-pg.github.io/charts
+        chart: cloudnative-pg
+        targetRevision: "0.22.0"
+        helm:
+          version: v3
+      destination:
+        server: '{{.server}}'
+        namespace: cnpg-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ServerSideApply=true

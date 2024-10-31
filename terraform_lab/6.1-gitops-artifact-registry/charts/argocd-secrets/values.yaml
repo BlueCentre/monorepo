@@ -1,0 +1,8 @@
+environment: production
+
+clusterSecretStore: external-secret-cluster-lab-secrets
+
+secretsRefreshInterval: "1h"
+
+repositories:
+  - terraform-lab-project
