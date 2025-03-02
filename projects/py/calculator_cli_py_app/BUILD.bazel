@@ -1,4 +1,4 @@
-load("@pip_deps//:requirements.bzl", "requirement")
+# load("@pip_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 # load("@io_bazel_rules_docker//python3:image.bzl", py_image = "py3_image")
 # load("@io_bazel_rules_docker//container:container.bzl", "container_push")
@@ -8,6 +8,10 @@ py_library(
     srcs = ["app/app.py"],
     deps = [
         "//libs/py/calculator:calculator_lib",
+        # requirement("click"),
+        # requirement("colorama"),
+        # requirement("pytest"),
+        # requirement("pytest-cov"),
     ],
 )
 

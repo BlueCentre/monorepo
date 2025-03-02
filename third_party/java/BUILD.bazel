@@ -1,0 +1,53 @@
+# Java external dependencies configuration for Bazel 8.x
+# See: https://github.com/bazelbuild/rules_jvm_external
+
+# This empty BUILD file is necessary for legacy WORKSPACE support.
+# When migrating fully to Bzlmod (MODULE.bazel), this file will no longer be needed.
+
+# The maven_install.json files are used to lock the maven dependency versions.
+exports_files([
+    "maven_pojo_install.json",
+    "maven_springboot_install.json",
+    "maven_springboot_v2_install.json",
+])
+
+# These targets can be used to update the maven lock files
+# Example: bazel run //third_party/java:update_maven_pojo
+genrule(
+    name = "update_maven_pojo",
+    outs = ["update_maven_pojo.sh"],
+    cmd = """
+cat > $@ << 'EOF'
+#!/bin/bash
+bazel run @unpinned_maven_pojo//:pin
+EOF
+chmod +x $@
+    """,
+    executable = True,
+)
+
+genrule(
+    name = "update_maven_springboot",
+    outs = ["update_maven_springboot.sh"],
+    cmd = """
+cat > $@ << 'EOF'
+#!/bin/bash
+bazel run @unpinned_maven_springboot//:pin
+EOF
+chmod +x $@
+    """,
+    executable = True,
+)
+
+genrule(
+    name = "update_maven_springboot_v2",
+    outs = ["update_maven_springboot_v2.sh"],
+    cmd = """
+cat > $@ << 'EOF'
+#!/bin/bash
+bazel run @unpinned_maven_springboot_v2//:pin
+EOF
+chmod +x $@
+    """,
+    executable = True,
+)
