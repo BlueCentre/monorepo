@@ -4,7 +4,7 @@ resource "helm_release" "opentelemetry_operator" {
   count            = var.opentelemetry_enabled ? 1 : 0
   name             = "opentelemetry-operator"
   chart            = "opentelemetry-operator"
-  version          = "0.71.0"
+  version          = "0.79.0"
   repository       = "https://open-telemetry.github.io/opentelemetry-helm-charts"
   description      = "Terraform driven Helm release of the OpenTelemetry Operator Helm chart"
   namespace        = "opentelemetry"
@@ -31,7 +31,7 @@ resource "helm_release" "opentelemetry_collector" {
   count            = var.opentelemetry_enabled ? 1 : 0
   name             = "opentelemetry-collector"
   chart            = "opentelemetry-collector"
-  version          = "0.71.0"
+  version          = "0.79.0"
   repository       = "https://open-telemetry.github.io/opentelemetry-helm-charts"
   description      = "Terraform driven Helm release of the OpenTelemetry Operator Helm chart"
   namespace        = "opentelemetry"
