@@ -32,6 +32,7 @@ module "naming" {
 }
 
 # https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master
+# https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/beta-autopilot-private-cluster
 # https://console.cloud.google.com/kubernetes/workload/overview?project=prj-lab-james-nguyen&supportedpurview=project
 module "gke_autopilot_private" {
   for_each = {
@@ -67,6 +68,8 @@ module "gke_autopilot_private" {
   network_tags                    = var.network_tags
   horizontal_pod_autoscaling      = true
   enable_vertical_pod_autoscaling = true
+  # https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-security
+  allow_net_admin                 = true
   gcs_fuse_csi_driver             = true
   deletion_protection             = false
 }

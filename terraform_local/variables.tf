@@ -140,3 +140,10 @@ variable "teardown" {
   type        = bool
   default     = false
 }
+
+
+variable "kubernetes_context" {
+  description = "Set to kubernetes context"
+  type        = string
+  default     = "colima"
+}

@@ -2,7 +2,8 @@
 # - https://blog.aspect.dev/bazelrc-flags
 # - https://docs.aspect.build/guides/bazelrc
 
-common --enable_bzlmod
+# Default start from >=7.0
+# common --enable_bzlmod
 
 # #build --@io_bazel_rules_docker//transitions:enable=no
 # build --incompatible_strict_action_env
@@ -21,7 +22,7 @@ common --enable_bzlmod
 
 # Update bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
 # Import Aspect bazelrc presets
-import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+import %workspace%/.aspect/bazelrc/bazel7.bazelrc
 import %workspace%/.aspect/bazelrc/convenience.bazelrc
 import %workspace%/.aspect/bazelrc/correctness.bazelrc
 import %workspace%/.aspect/bazelrc/debug.bazelrc
@@ -29,6 +30,22 @@ import %workspace%/.aspect/bazelrc/java.bazelrc
 import %workspace%/.aspect/bazelrc/javascript.bazelrc
 import %workspace%/.aspect/bazelrc/docker.bazelrc
 import %workspace%/.aspect/bazelrc/performance.bazelrc
+
+# As an alternative to using Aspect CLI to get the 'bazel lint' command,
+# users could run 'bazel build --config=lint' to produce the linter reports.
+build:lint --aspects=//tools/lint:linters.bzl%buf
+build:lint --aspects=//tools/lint:linters.bzl%clang_tidy
+build:lint --aspects=//tools/lint:linters.bzl%eslint
+build:lint --aspects=//tools/lint:linters.bzl%shellcheck
+build:lint --aspects=//tools/lint:linters.bzl%ruff
+# Request linters produce human-readable output rather than machine-readable
+build:lint --output_groups=+rules_lint_human
+
+# for speed, passes an argument `--skipLibCheck` to *every* spawn of tsc
+common --@aspect_rules_ts//ts:skipLibCheck=always
+# use `tsc` for transpiling, even though it's slow.
+# TODO(alex): change to SWC by default
+common --@aspect_rules_ts//ts:default_to_tsc_transpiler
 
 # See: https://app.buildbuddy.io/docs/setup
 # Buildbuddy support for remote builds
