@@ -5,13 +5,13 @@ java_library(
     srcs = ["LoggerGrpc.java"],
     deps = [
         "//projects/java/example2_java_app/schema/logger:logger_java_proto",
-        artifact("com.google.guava:guava", repository_name="maven_pojo"),
-        artifact("com.google.protobuf:protobuf-java", repository_name="maven_pojo"),
-        artifact("io_grpc:grpc-api", repository_name="maven_pojo"),
-        artifact("io_grpc:grpc-core", repository_name="maven_pojo"),
-        artifact("io_grpc:grpc-netty-shaded", repository_name="maven_pojo"),
-        artifact("io_grpc:grpc-protobuf", repository_name="maven_pojo"),
-        artifact("io_grpc:grpc-stub", repository_name="maven_pojo"),
+        # artifact("com.google.guava:guava", repository_name="maven_pojo"),
+        # artifact("com.google.protobuf:protobuf-java", repository_name="maven_pojo"),
+        # artifact("io_grpc:grpc-api", repository_name="maven_pojo"),
+        # artifact("io_grpc:grpc-core", repository_name="maven_pojo"),
+        # artifact("io_grpc:grpc-netty-shaded", repository_name="maven_pojo"),
+        # artifact("io_grpc:grpc-protobuf", repository_name="maven_pojo"),
+        # artifact("io_grpc:grpc-stub", repository_name="maven_pojo"),
     ],
 )
 
@@ -21,8 +21,8 @@ java_library(
     deps = [
         ":logger_java_grpc",
         "//projects/java/example2_java_app/schema/logger:logger_java_proto",
-        artifact("io.grpc:grpc-stub", repository_name="maven_pojo"),
-        artifact("io.grpc:grpc-api", repository_name="maven_pojo"),
+        # artifact("io.grpc:grpc-stub", repository_name="maven_pojo"),
+        # artifact("io.grpc:grpc-api", repository_name="maven_pojo"),
     ],
 )
 

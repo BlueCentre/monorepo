@@ -1,0 +1,13 @@
+# See: https://github.com/bazelbuild/rules_python/blob/main/docs/pip.md
+
+################################################################################
+# rules_python - Python pip dependencies
+################################################################################
+
+# Set up pip_deps repository for Python dependencies
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    name = "pip_deps",
+    requirements_lock = "//third_party/python:requirements_lock_3_11.txt",
+)
+use_repo(pip, "pip_deps")
