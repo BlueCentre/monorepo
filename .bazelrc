@@ -21,7 +21,7 @@ common --enable_bzlmod
 
 # Update bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
 # Import Aspect bazelrc presets
-import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+#import %workspace%/.aspect/bazelrc/bazel6.bazelrc
 import %workspace%/.aspect/bazelrc/convenience.bazelrc
 import %workspace%/.aspect/bazelrc/correctness.bazelrc
 import %workspace%/.aspect/bazelrc/debug.bazelrc
