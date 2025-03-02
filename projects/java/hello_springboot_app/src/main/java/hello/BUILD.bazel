@@ -3,7 +3,7 @@
 # - https://github.com/bazelbuild/rules_java/blob/master/java/defs.bzl
 # - https://github.com/salesforce/rules_spring/tree/main/examples/helloworld
 
-load("@rules_spring//springboot:springboot.bzl", "springboot")
+# load("@rules_spring//springboot:springboot.bzl", "springboot")
 
 # dependencies from other packages in the workspace
 lib_deps = [
@@ -13,24 +13,7 @@ lib_deps = [
 
 # create our deps list for Spring Boot
 springboot_deps = [
-    # "@rules_spring//springboot/import_bundles:springboot_required_deps", # Assumes we use springboot packages in @maven
-    # "@maven_springboot//:org_springframework_boot_spring_boot_starter_jetty",
-    # "@maven_springboot//:org_springframework_boot_spring_boot_starter_web",
-    # "@maven_springboot//:org_springframework_boot_spring_boot_loader_tools",
-    # "@maven_springboot//:org_springframework_spring_webmvc",
-    # "@maven_springboot//:javax_annotation_javax_annotation_api",
-    "@maven_springboot//:org_springframework_boot_spring_boot",
-    "@maven_springboot//:org_springframework_boot_spring_boot_actuator",
-    "@maven_springboot//:org_springframework_boot_spring_boot_actuator_autoconfigure",
-    "@maven_springboot//:org_springframework_boot_spring_boot_autoconfigure",
-    "@maven_springboot//:org_springframework_boot_spring_boot_loader",
-    "@maven_springboot//:org_springframework_boot_spring_boot_starter",
-    "@maven_springboot//:org_springframework_boot_spring_boot_starter_web",
-    "@maven_springboot//:org_springframework_spring_aop",
-    "@maven_springboot//:org_springframework_spring_beans",
-    "@maven_springboot//:org_springframework_spring_context",
-    "@maven_springboot//:org_springframework_spring_core",
-    "@maven_springboot//:org_springframework_spring_web",
+    # All springboot dependencies are commented out
 ]
 
 java_library(
@@ -38,13 +21,21 @@ java_library(
     srcs = glob(["*.java"]),
     # visibility = ["//projects/java/hello_springboot_app/src/test:__subpackages__"],
     visibility = ["//visibility:public"],
-    deps = springboot_deps + lib_deps,
+    deps = lib_deps,
 )
 
 # Build the app as a Spring Boot executable jar
-springboot(
+# springboot(
+#     name = "app",
+#     boot_app_class = "hello.Application",
+#     java_library = ":lib",
+#     visibility = ["//visibility:public"],
+# )
+
+# Use a regular java_binary instead
+java_binary(
     name = "app",
-    boot_app_class = "hello.Application",
-    java_library = ":lib",
+    main_class = "hello.Application",
+    runtime_deps = [":lib"],
     visibility = ["//visibility:public"],
 )

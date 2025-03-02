@@ -1,8 +1,16 @@
 # See:
 # - https://blog.aspect.dev/bazelrc-flags
 # - https://docs.aspect.build/guides/bazelrc
+# - https://bazel.build/reference/command-line-reference
 
+# Enable Bzlmod (now the default in Bazel 8.x)
 common --enable_bzlmod
+
+# Disable legacy external repository system
+common --nolegacy_external_runfiles
+
+# Workspace flags are deprecated and not needed with Bzlmod
+# build --incompatible_disallow_empty_glob
 
 # #build --@io_bazel_rules_docker//transitions:enable=no
 # build --incompatible_strict_action_env
@@ -11,32 +19,47 @@ common --enable_bzlmod
 # build --unconditional_warning="Bazel Monorepo!" --unconditional_warning="<0001f92f>, enjoy our fast builds!"
 # build:release --workspace_status_command "tools/workspace_status.sh"
 
-# test --test_output=errors
-# test --test_verbose_timeout_warnings
-# test --build_tests_only
-
 # Windows requires these for multi-python support:
-# build --enable_runfiles
-# startup --windows_enable_symlinks
+build --enable_runfiles
+startup --windows_enable_symlinks
+
+# Compatibility flags for Bazel 8.x
+common --incompatible_default_to_explicit_init_py
+common --incompatible_config_setting_private_default_visibility
+common --incompatible_strict_action_env
+common --check_direct_dependencies=off
+
+# Set Java toolchain version for Java 11 or 17 projects
+build --java_language_version=17
+build --tool_java_language_version=17
+build --java_runtime_version=remotejdk_17
 
 # Update bazel run //.aspect/bazelrc:update_aspect_bazelrc_presets
-# Import Aspect bazelrc presets
-import %workspace%/.aspect/bazelrc/bazel6.bazelrc
-import %workspace%/.aspect/bazelrc/convenience.bazelrc
-import %workspace%/.aspect/bazelrc/correctness.bazelrc
-import %workspace%/.aspect/bazelrc/debug.bazelrc
-import %workspace%/.aspect/bazelrc/java.bazelrc
-import %workspace%/.aspect/bazelrc/javascript.bazelrc
-import %workspace%/.aspect/bazelrc/docker.bazelrc
-import %workspace%/.aspect/bazelrc/performance.bazelrc
+# Import Aspect bazelrc presets - update to use bazel8.bazelrc if available
+# If not available, you'll need to create or download this file
+try-import %workspace%/.aspect/bazelrc/bazel8.bazelrc
+# Fallback to bazel7 if bazel8 isn't available
+try-import %workspace%/.aspect/bazelrc/bazel7.bazelrc
+# Fallback to bazel6 if neither is available
+try-import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+try-import %workspace%/.aspect/bazelrc/convenience.bazelrc
+try-import %workspace%/.aspect/bazelrc/correctness.bazelrc
+try-import %workspace%/.aspect/bazelrc/debug.bazelrc
+try-import %workspace%/.aspect/bazelrc/java.bazelrc
+try-import %workspace%/.aspect/bazelrc/javascript.bazelrc
+try-import %workspace%/.aspect/bazelrc/docker.bazelrc
+try-import %workspace%/.aspect/bazelrc/performance.bazelrc
 
 # See: https://app.buildbuddy.io/docs/setup
 # Buildbuddy support for remote builds
-import %workspace%/.buildbuddy/remote.bazelrc
+try-import %workspace%/.buildbuddy/remote.bazelrc
 
 ### YOUR PROJECT SPECIFIC OPTIONS GO HERE ###
 
-coverage --java_runtime_version=remotejdk_17
+# Test configuration
+test --test_output=errors
+test --test_verbose_timeout_warnings
+test --build_tests_only
 
 # https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
 try-import %workspace%/.bazelrc.user

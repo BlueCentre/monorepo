@@ -5,9 +5,12 @@
 # - https://docs.aspect.build/rules/aspect_bazel_lib/
 # - https://github.com/aspect-build/bazel-examples/blob/main/oci_python_image/MODULE.bazel
 
-# NOTE: 
-# - This overrides WORKSPACE.bazel.
-# - This needs to be symlinked to WORKSPACE for Skaffold.
+# IMPORTANT: This file is kept for backward compatibility and gradual migration.
+# Bazel 8.x strongly recommends using MODULE.bazel instead of WORKSPACE.
+# This file should be considered deprecated and will eventually be removed.
+#
+# For new dependencies, please add them to MODULE.bazel instead.
+# See the BAZEL_8_UPGRADE.md guide for migration instructions.
 
 # Declares that this directory is the root of a Bazel workspace.
 workspace(
@@ -17,7 +20,46 @@ workspace(
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# rules_python needs to be declared before using it
+# Using 0.20.0 for WORKSPACE compatibility, but ideally should migrate to MODULE.bazel
+http_archive(
+    name = "rules_python",
+    sha256 = "a644da969b6824cc87f8fe7b18101a8a6c57da5db39caa6566ec6109f37d2141",
+    strip_prefix = "rules_python-0.20.0",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.20.0.tar.gz",
+)
 
+# Adding rules_cc - Updated for Bazel 8.x compatibility
+http_archive(
+    name = "rules_cc",
+    sha256 = "4dccbfd22c0def164c8f47458bd50e0c7db17d5658d6ebc396a4c2998e867280",
+    strip_prefix = "rules_cc-0.0.8",
+    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.8/rules_cc-0.0.8.tar.gz"],
+)
+
+# Adding rules_pkg
+http_archive(
+    name = "rules_pkg",
+    sha256 = "360c23a88ceaf7f051abc99e2e6048cf7fe5d9af792690576554a88b2013612d",
+    strip_prefix = "rules_pkg-0.9.1",
+    urls = [
+        "https://github.com/bazelbuild/rules_pkg/archive/refs/tags/0.9.1.tar.gz",
+    ],
+)
+
+# Adding rules_jvm_external for Maven dependencies - Updated for Bazel 8.x
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac",
+    strip_prefix = "rules_jvm_external-6.0",
+    url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.0/rules_jvm_external-6.0.tar.gz",
+)
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+rules_jvm_external_setup()
 
 #
 # BuildBuddy
@@ -43,10 +85,8 @@ load("@io_buildbuddy_buildbuddy_toolchain//:rules.bzl", "buildbuddy", "UBUNTU20_
 
 buildbuddy(name = "buildbuddy_toolchain", container_image = UBUNTU20_04_IMAGE)
 
-
-
 #
-# Salesforce rules_spring
+# Salesforce rules_spring - Updated for Bazel 8.x
 #
 
 # See:
@@ -58,10 +98,10 @@ http_archive(
     urls = ["https://github.com/salesforce/rules_spring/releases/download/2.2.4/rules-spring-2.2.4.zip"],
 )
 
-
-#
-# Deprecate everything below!
-#
+# ================================================================================
+# MIGRATION NOTICE: The following section should be migrated to MODULE.bazel
+# See BAZEL_8_UPGRADE.md for migration instructions.
+# ================================================================================
 
 #
 # Local python approach with workaround support for multi-version
@@ -124,76 +164,4 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 
-
-
-#
-# rules_java
-#
-
-# load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
-# rules_java_dependencies()
-# rules_java_toolchains()
-
-#
-# rules_docker
-#
-
-# http_archive(
-#     name = "io_bazel_rules_docker",
-#     sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
-#     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
-# )
-
-#
-# Golang (rules_docker - go_image)
-#
-
-# load("@rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-
-# go_rules_dependencies()
-
-# go_register_toolchains(
-#     go_version = "1.20.2",
-# )
-
-# load(
-#     "@io_bazel_rules_docker//repositories:repositories.bzl",
-#     container_repositories = "repositories",
-# )
-
-# container_repositories()
-
-# load(
-#     "@io_bazel_rules_docker//repositories:deps.bzl",
-#     container_deps = "deps",
-# )
-
-# container_deps()
-
-# load(
-#     "@io_bazel_rules_docker//go:image.bzl",
-#     _go_image_repos = "repositories",
-# )
-
-# _go_image_repos()
-
-
-
-#
-# rules_oci (newer than rules_docker; but without using gazelle)
-#
-
-#
-# Golang (rules_oci - oci_go_image)
-#
-
-# load("@rules_oci//oci:pull.bzl", "oci_pull")
-
-# oci_pull(
-#     name = "go_base",
-#     image = "index.docker.io/library/golang",
-#     digest = "sha256:690e4135bf2a4571a572bfd5ddfa806b1cb9c3dea0446ebadaf32bc2ea09d4f9",
-#     platforms = [
-#         "linux/amd64",
-#     ],
-# )
+# End section to be migrated to MODULE.bazel

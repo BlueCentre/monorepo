@@ -1,0 +1,2 @@
+# Bazel 8.x specific settings
+common --enable_bzlmod
