@@ -50,9 +50,9 @@ build:
       context: src/adservice
   tagPolicy:
     gitCommit: {}
-  #local:
-  #  useDockerCLI: true
-  #useBuildkit: true
+  local:
+    useDockerCLI: true
+    useBuildkit: true
 manifests:
   kustomize:
     paths:
