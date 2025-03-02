@@ -24,6 +24,16 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      # Install & configure Bazel
+      - uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          # Avoid downloading Bazel every time.
+          bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
+          repository-cache: true
+
       # Caches and restores the bazelisk download directory, the bazel build directory.
       - name: Cache bazel
         uses: actions/cache@v4.2.1
@@ -41,6 +51,7 @@ jobs:
       # GH: https://github.com/BlueCentre/monorepo/settings/secrets/actions
       # See: https://www.buildbuddy.io/docs/rbe-github-actions
       # Use remote build (BuildBuddy)
+
       - name: Build the code
         run: |
           bazel build \
