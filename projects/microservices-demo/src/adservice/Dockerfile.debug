@@ -1,0 +1,45 @@
+# FROM --platform=$BUILDPLATFORM eclipse-temurin:21.0.5_11-jdk@sha256:a20cfa6afdbf57ff2c4de77ae2d0e3725a6349f1936b5ad7c3d1b06f6d1b840a AS builder
+FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk AS builder
+#FROM --platform=$BUILDPLATFORM gradle:8.12.1-jdk21 AS builder
+# FROM openjdk:21-jdk AS builder
+
+WORKDIR /app
+
+# Install Maven
+ENV MAVEN_VERSION=3.9.6
+ENV MAVEN_HOME=/usr/share/maven
+ENV MAVEN_CONFIG=/root/.m2
+ENV PATH="${MAVEN_HOME}/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y curl \
+    && mkdir -p /usr/share/maven /usr/share/maven/ref \
+    && curl -fsSL -o /tmp/apache-maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+    && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+    && rm -f /tmp/apache-maven.tar.gz \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy pom.xml first for dependency resolution
+COPY pom.xml ./
+#RUN mvn dependency:go-offline
+
+# Copy the rest of the source code
+COPY src ./src
+#RUN mvn package
+
+# FROM eclipse-temurin:21.0.5_11-jre-alpine@sha256:4300bfe1e11f3dfc3e3512f39939f9093cf18d0e581d1ab1ccd0512f32fe33f0
+#FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jre-alpine
+
+# @TODO: https://github.com/GoogleCloudPlatform/microservices-demo/issues/2517
+# Download Stackdriver Profiler Java agent
+# RUN mkdir -p /opt/cprof && \
+#     wget -q -O- https://storage.googleapis.com/cloud-profiler/java/latest/profiler_java_agent_alpine.tar.gz \
+#     | tar xzv -C /opt/cprof && \
+#     rm -rf profiler_java_agent.tar.gz
+
+#WORKDIR /app
+#COPY --from=builder /app/target/appassembler ./
+
+#EXPOSE 9555
+#ENTRYPOINT ["/app/bin/AdService"]
+CMD ["/bin/bash"]
