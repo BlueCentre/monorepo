@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      # https://github.com/bazel-contrib/setup-bazel
       # Install & configure Bazel
       - uses: bazel-contrib/setup-bazel@0.14.0
         with:
