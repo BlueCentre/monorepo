@@ -1,14 +1,13 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 requires:
-# - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
-# - path: ./projects/base_gin_app        # Nothing to skaffold here!
-# - path: ./projects/base_springboot_app # Nothing to skaffold here!
-- path: ./projects/py/devops_fastapi_app
-- path: ./projects/go/devops_go_app
-- path: ./projects/java/hello_springboot_app
-
-
+  # - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
+  # - path: ./projects/base_gin_app        # Nothing to skaffold here!
+  # - path: ./projects/base_springboot_app # Nothing to skaffold here!
+  # - path: ./projects/py/devops_fastapi_app
+  # - path: ./projects/go/devops_go_app
+  # - path: ./projects/java/hello_springboot_app
+  - path: ./projects/microservices-demo
 
 # See:
 # - https://skaffold.dev/docs/references/yaml/
