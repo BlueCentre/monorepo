@@ -1,14 +1,25 @@
-import sys
-import http.server
-import socketserver
-import json
-import random
+#!/usr/bin/env python3
+"""
+DevOps FastAPI App Runner.
+
+This script runs the DevOps FastAPI application using uvicorn.
+"""
+
 import logging
-from urllib.parse import urlparse, parse_qs
+import sys
+import os
+import uvicorn
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: (%(module)s) %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 logger = logging.getLogger(__name__)
+
+# Add the parent directory to sys.path to allow importing the app module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import the DevOps models directly
 try:
@@ -88,55 +99,21 @@ class DevOpsApp:
 # Create a singleton instance
 app = DevOpsApp()
 
-class DevOpsHandler(http.server.SimpleHTTPRequestHandler):
-    """Simple HTTP request handler for DevOps App."""
+def main() -> None:
+    """
+    Main function to run the FastAPI application using uvicorn.
+    """
+    logger.info("Starting DevOps FastAPI app with uvicorn...")
     
-    def do_GET(self):
-        """Handle GET requests."""
-        parsed_path = urlparse(self.path)
-        path = parsed_path.path
-        
-        if path == '/':
-            self.send_response_json(app.get_root())
-        elif path == '/status':
-            self.send_response_json(app.get_status())
-        elif path == '/healthcheck':
-            self.send_response_json(app.get_healthcheck())
-        elif path.startswith('/devops/'):
-            parts = path.split('/')
-            if len(parts) >= 3:
-                if parts[2] == 'random' and len(parts) >= 4:
-                    name = parts[3]
-                    response = app.get_devops_random_item(name)
-                    self.send_response_json(response)
-                else:
-                    devops_id = parts[2]
-                    response = app.get_devops(devops_id)
-                    self.send_response_json(response)
-            else:
-                self.send_error(404, "Not Found")
-        else:
-            self.send_error(404, "Not Found")
-    
-    def send_response_json(self, data):
-        """Send a JSON response."""
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode('utf-8'))
-
-def main():
-    """Run the server."""
-    port = 9090
-    handler = DevOpsHandler
-    
-    with socketserver.TCPServer(("", port), handler) as httpd:
-        print(f"Server started at http://localhost:{port}")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("Server stopped.")
-            httpd.server_close()
+    # Configure and run uvicorn server
+    uvicorn.run(
+        "app.web_app:app",
+        host="0.0.0.0",
+        port=9090,
+        reload=False,
+        log_level="info",
+        access_log=True
+    )
 
 if __name__ == "__main__":
     main()

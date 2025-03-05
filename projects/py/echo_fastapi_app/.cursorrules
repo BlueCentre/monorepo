@@ -1,49 +1,121 @@
-// Python Echo App - Rules for AI
-// This file provides guidance for working with the Python Echo App project
+// Echo FastAPI App - Rules for AI
+// This file provides guidance for working with the Echo FastAPI App project
 
 // Project Structure
-// - projects/py/echo_fastapi_app/app/web_app.py: Contains the mock FastAPI implementation
-// - projects/py/echo_fastapi_app/bin/run_bin.py: Simple HTTP server implementation
-// - projects/py/echo_fastapi_app/tests/test.py: Test file for the application
+// - projects/py/echo_fastapi_app/app/web_app.py: Main FastAPI application file
+// - projects/py/echo_fastapi_app/app/models.py: Pydantic models for the application
+// - projects/py/echo_fastapi_app/app/routes.py: Route handlers for the application
+// - projects/py/echo_fastapi_app/bin/run_bin.py: Server runner using uvicorn
+// - projects/py/echo_fastapi_app/tests/test.py: Test file using FastAPI TestClient
 
 // General Guidelines
-// 1. This project intentionally avoids external dependencies like FastAPI and uvicorn
-// 2. Use only Python standard library modules for all functionality
-// 3. Maintain backward compatibility with the existing API endpoints
-// 4. Keep the code simple and well-documented
+// 1. This project uses FastAPI for API development
+// 2. Pydantic is used for data validation and serialization
+// 3. Uvicorn is used as the ASGI server
+// 4. The application follows a modular structure with separate files for models, routes, and the main app
+// 5. Maintain backward compatibility with the existing API endpoints
+// 6. Keep the code simple, well-documented, and follow FastAPI best practices
 
 // Implementation Details
-// - The application implements a simple HTTP server using Python's built-in http.server module
-// - It provides two endpoints: "/" and "/status"
-// - The server runs on port 5678 by default
-// - The MockFastAPI class in web_app.py simulates FastAPI functionality without the dependency
-// - All responses should be JSON-formatted
+// - The application is built using FastAPI framework
+// - It provides four main endpoints: "/", "/status", "/health", and "/echo/{message}"
+// - Models are defined using Pydantic BaseModel
+// - Routes are organized using FastAPI's APIRouter
+// - Error handling is implemented using FastAPI's exception handlers
+// - CORS middleware is configured to allow cross-origin requests
 
-// Testing
-// - Tests should not rely on external testing libraries when possible
-// - Use Python's built-in unittest module for testing
-// - The test suite starts and stops the server automatically
-// - Tests check both the root endpoint and the status endpoint
-// - Ensure tests can run in the Bazel build environment
+// Testing Strategy
+// - The project uses a comprehensive testing approach with both unit and integration tests
+// - FastAPI's TestClient is used to simulate HTTP requests without starting a real server
+// - Tests are organized in the TestEchoApp class which inherits from unittest.TestCase
+// - Each endpoint has dedicated test methods to verify functionality
+// - Tests verify both HTTP status codes and response content/structure
+// - Error scenarios are explicitly tested to ensure proper error handling
+// - Test fixtures are used to set up the test environment and clean up after tests
+// - The TestClient is initialized once and reused across test methods for efficiency
+
+// Test Coverage
+// - Root endpoint (/): Verifies the server is alive and returns the expected message
+// - Status endpoint (/status): Checks that the application status and version are correctly reported
+// - Health endpoint (/health): Validates the health check response including detailed component statuses
+// - Echo endpoint (/echo/{message}): Tests parameter passing and response formatting
+// - Error handling: Tests 404 responses for non-existent endpoints
+// - Response structure: Verifies that all responses follow the defined Pydantic models
+// - Content types: Ensures all responses use the correct Content-Type header (application/json)
+
+// Running Tests
+// - Local development: Run `python -m unittest discover tests` from the project root
+// - With Bazel: Run `bazel test //projects/py/echo_fastapi_app:test`
+// - CI/CD pipeline: Tests are automatically run as part of the build process
+// - Test output includes detailed information about passing/failing tests
+// - Failed tests show clear error messages with expected vs. actual values
+// - Tests are designed to be fast and independent of each other
+// - No external services or databases are required to run the tests
 
 // Build System
 // - The project uses Bazel for building and testing
-// - All Python dependencies are commented out in BUILD.bazel files
+// - Dependencies are specified in the BUILD.bazel file
 // - Use py_library, py_binary, and py_test rules for defining targets
-// - The application should be runnable with: bazel run //projects/py/echo_fastapi_app:run_bin
+// - The application can be run with: bazel run //projects/py/echo_fastapi_app:run_bin
 
 // Code Style
 // - Follow PEP 8 guidelines for Python code
-// - Use docstrings for all functions and classes
+// - Use type hints for all function parameters and return values
+// - Use docstrings for all functions, classes, and modules
 // - Prefer explicit imports over wildcard imports
 // - Keep functions small and focused on a single responsibility
 
 // Error Handling
 // - Use appropriate HTTP status codes for error responses
 // - Log errors and important events using the logging module
-// - Handle exceptions gracefully to prevent server crashes
+// - Handle exceptions gracefully using FastAPI's exception handlers
+// - Return structured error responses using the ErrorResponse model
 
 // Performance Considerations
 // - The server should handle multiple concurrent requests
 // - Keep response times minimal
-// - Avoid unnecessary computation in request handlers 
+// - Use async/await for I/O-bound operations
+// - Avoid unnecessary computation in request handlers
+
+// API Documentation
+// - API documentation is available at the "/docs" endpoint using Swagger UI
+// - Alternative documentation is available at the "/redoc" endpoint using ReDoc
+// - Each endpoint has a clear description and response model
+// - Response models include examples and descriptions with proper Pydantic V2 configuration
+// - Model examples use the model_config with json_schema_extra property
+
+// Development Environment
+// - A Python virtual environment is recommended for local development
+// - Required packages: fastapi, uvicorn, pydantic, httpx (for testing)
+// - Run the server locally with: uvicorn app.web_app:app --reload
+// - Default server port is 8000, configurable through command-line arguments
+
+// Test Implementation Details
+// - tests/test.py contains the TestEchoApp class with the following test methods:
+//   - setUp(): Initializes the TestClient for use in all test methods
+//   - test_root_endpoint(): Tests the root endpoint (/) returns status 200 and {"message": "I am alive"}
+//   - test_status_endpoint(): Tests the /status endpoint returns status 200 and includes "status" and "version" fields
+//   - test_health_endpoint(): Tests the /health endpoint returns status 200 and includes "status" and "details" fields
+//   - test_echo_endpoint(): Tests the /echo/{message} endpoint returns the provided message
+//   - test_not_found(): Tests that accessing a non-existent endpoint returns a 404 status code
+// - The TestClient is imported from fastapi.testclient and initialized with the FastAPI app instance
+// - Each test method follows the Arrange-Act-Assert pattern for clarity
+// - Assertions use the unittest.TestCase assertion methods (assertEqual, assertIn, etc.)
+// - JSON responses are automatically parsed by the TestClient for easy assertion checking
+
+You are an expert in Python, FastAPI, and scalable API development.
+
+Write concise, technical responses with accurate Python examples. Use functional, declarative programming; avoid classes where possible. Prefer iteration and modularization over code duplication. Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission). Use lowercase with underscores for directories and files (e.g., routers/user_routes.py). Favor named exports for routes and utility functions. Use the Receive an Object, Return an Object (RORO) pattern. Use def for pure functions and async def for asynchronous operations. Use type hints for all function signatures. Prefer Pydantic models over raw dictionaries for input validation.
+
+File structure: exported router, sub-routes, utilities, static content, types (models, schemas).
+
+Avoid unnecessary curly braces in conditional statements. For single-line statements in conditionals, omit curly braces. Use concise, one-line syntax for simple conditional statements (e.g., if condition: do_something()).
+
+Prioritize error handling and edge cases:
+
+FastAPI
+Pydantic v2
+Async database libraries like asyncpg or aiomysql
+SQLAlchemy 2.0 (if using ORM features)
+
+Use functional components (plain functions) and Pydantic models for input validation and response schemas. Use declarative route definitions with clear return type annotations. Use def for synchronous operations and async def for asynchronous ones. Minimize @app.on_event("startup") and @app.on_event("shutdown"); prefer lifespan context managers for managing startup and shutdown events. Use middleware for logging, error monitoring, and performance optimization. Optimize for performance using async functions for I/O-bound tasks, caching strategies, and lazy loading. Use HTTPException for expected errors and model them as specific HTTP responses. Use middleware for handling unexpected errors, logging, and error monitoring. Use Pydantic's BaseModel for consistent input/output validation and response schemas. Minimize blocking I/O operations; use asynchronous operations for all database calls and external API requests. Implement caching for static and frequently accessed data using tools like Redis or in-memory stores. Optimize data serialization and deserialization with Pydantic. Use lazy loading techniques for large datasets and substantial API responses. Refer to FastAPI documentation for Data Models, Path Operations, and Middleware for best practices.

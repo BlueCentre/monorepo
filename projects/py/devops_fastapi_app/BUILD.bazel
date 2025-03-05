@@ -2,54 +2,60 @@
 
 load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@pip//:requirements.bzl", "requirement")
+
+package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "base_lib",
-    srcs = glob(["app/*.py", "app/__init__.py"]),
-    imports = ["."],
+    srcs = glob(["app/**/*.py"]),
     deps = [
         "//libs/py/devops:devops_lib",
-        # Removed FastAPI dependency
-        # "//projects/base/base_fastapi_app:fastapi_lib",
+        requirement("fastapi"),
+        requirement("pydantic"),
+        requirement("uvicorn"),
     ],
+    imports = ["."],
 )
 
 # to add additionals parameters place them after "--" in bazel call, like:
 # `bazel run //webapp:run -- --reload`
 py_binary(
     name = "run_bin",
-    srcs = glob(["bin/*.py", "bin/__init__.py", "__init__.py"]),
-    main = "bin/run_bin.py",
+    srcs = glob(["bin/**/*.py"]),
     imports = ["."],
-    visibility = ["//visibility:public"],
+    main = "bin/run_bin.py",
     deps = [
         ":base_lib",
+        requirement("fastapi"),
+        requirement("pydantic"),
+        requirement("uvicorn"),
     ],
 )
 
 py_test(
     name = "main_test",
-    srcs = glob(["tests/*.py"]),
-    timeout = "short",
-    imports = ["."],
+    srcs = glob(["tests/**/*.py"]),
     deps = [
         ":base_lib",
         ":run_bin",
+        requirement("fastapi"),
+        requirement("httpx"),  # Required for TestClient
     ],
 )
 
 platform(
     name = "aarch64_linux",
     constraint_values = [
-        "@platforms//os:linux",
         "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
     ],
 )
 
 platform(
     name = "x86_64_linux",
     constraint_values = [
-        "@platforms//os:linux",
         "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
     ],
 )
