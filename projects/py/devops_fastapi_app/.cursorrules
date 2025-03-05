@@ -1,0 +1,59 @@
+// Python DevOps App - Rules for AI
+// This file provides guidance for working with the Python DevOps App project
+
+// Project Structure
+// - projects/py/devops_fastapi_app/app/main.py: Contains the DevOpsApp implementation
+// - projects/py/devops_fastapi_app/bin/run_bin.py: Simple HTTP server implementation
+// - projects/py/devops_fastapi_app/tests/main_test.py: Test file for the application
+// - libs/py/devops/models/devops.py: Contains the DevOps model classes
+
+// General Guidelines
+// 1. This project avoids external dependencies like FastAPI and uvicorn
+// 2. Use only Python standard library modules for HTTP server functionality
+// 3. Maintain backward compatibility with the existing API endpoints
+// 4. Keep the code simple and well-documented
+
+// Implementation Details
+// - The application implements a simple HTTP server using Python's built-in http.server module
+// - It provides endpoints: "/", "/status", "/healthcheck", and "/devops/"
+// - The DevOpsHandler class in run_bin.py handles HTTP requests
+// - The DevOpsApp class in app/main.py contains the business logic
+// - All responses are JSON-formatted
+
+// Known Issues
+// - The import from app.main may fail if the module structure doesn't match expectations
+// - Fix by ensuring app.main.py exports an 'app' object with the required methods
+// - The server may have port conflicts - use a different port if 8080 or 9090 are in use
+
+// Testing
+// - Tests should not rely on external testing libraries when possible
+// - Use Python's built-in unittest module for testing
+// - Use unittest.mock for mocking dependencies
+// - Test each endpoint and business logic method separately
+// - Focus on testing the DevOpsApp class directly rather than through HTTP requests
+// - Run tests with: bazel test //projects/py/devops_fastapi_app:main_test
+// - Ensure tests can run in the Bazel build environment
+
+// Build System
+// - The project uses Bazel for building and testing
+// - All Python dependencies are commented out in BUILD.bazel files
+// - Use py_library, py_binary, and py_test rules for defining targets
+// - The application should be runnable with: bazel run //projects/py/devops_fastapi_app:run_bin
+
+// Code Style
+// - Follow PEP 8 guidelines for Python code
+// - Use docstrings for all functions and classes
+// - Prefer explicit imports over wildcard imports
+// - Keep functions small and focused on a single responsibility
+
+// Error Handling
+// - Use appropriate HTTP status codes for error responses
+// - Log errors and important events using the logging module
+// - Handle exceptions gracefully to prevent server crashes
+// - Use try-except blocks for operations that might fail
+
+// API Guidelines
+// - All endpoints should return JSON responses
+// - Use consistent response formats across all endpoints
+// - Include appropriate status codes and error messages
+// - Document the API endpoints and their expected inputs/outputs 

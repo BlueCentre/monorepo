@@ -562,8 +562,8 @@
     },
     "@@aspect_rules_js+//npm:extensions.bzl%pnpm": {
       "general": {
-        "bzlTransitiveDigest": "0lI59RMUuEYavUxPr35K9l5MtYyOvKJ/U50KmOB2Hew=",
-        "usagesDigest": "jsDkt9sKV4/VnbJRIGML1fW9IvMrS1mjD+GZSs3p8vw=",
+        "bzlTransitiveDigest": "2fzrVmSVj7DTte9yZiHej0U1C5DZpw+mgs1B2xqBtYE=",
+        "usagesDigest": "AZS4DnnEnRs0j2ZDwQN9Zp/FJ2ssPrC/9KmufcxTj+8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -608,11 +608,13 @@
               "lifecycle_hooks_execution_requirements": [
                 "no-sandbox"
               ],
+              "lifecycle_hooks_use_default_shell_env": false,
               "bins": {},
               "npm_translate_lock_repo": "",
               "package_visibility": [
                 "//visibility:public"
-              ]
+              ],
+              "replace_package": ""
             }
           }
         },
@@ -792,14 +794,12 @@
     "@@gazelle+//:extensions.bzl%go_deps": {
       "general": {
         "bzlTransitiveDigest": "NRDE4UnZ6cmBs0uVATEd/eqkiMmHHYRSG7MGPgcsxcY=",
-        "usagesDigest": "MujEUQIBRas5FvAH28LOlXXVHG6wRJ9h1Q2e482kDko=",
+        "usagesDigest": "asfaYjizPQr2WPRxmiBYHX4BGYWyJDirwKpExkYpmTo=",
         "recordedFileInputs": {
           "@@gazelle+//go.mod": "48dc6e771c3028ee1c18b9ffc81e596fd5f6d7e0016c5ef280e30f2821f60473",
           "@@gazelle+//go.sum": "7c4460e8ecb5dd8691a51d4fa2e9e4751108b933636497ce46db499fc2e7a88d",
           "@@rules_go+//go.mod": "de22304b720f7f61350ec1c9739de6c0a1b1103fd22bfeb6e92c6c843ddc6d6e",
-          "@@rules_go+//go.sum": "d56fdb19b21a5f12bcf625c49432371ac39c2def0f564098fbda107f7c080f40",
-          "@@rules_python_gazelle_plugin+//go.mod": "9130dcd6d4428c99df11ad5a5cca2ad8f6392f240442842cfb8396162bfe7a3f",
-          "@@rules_python_gazelle_plugin+//go.sum": "3fb54fe8f7444afc4b826a2027de14993adcdd7a00b1fdc0c960c8feb122ef25"
+          "@@rules_go+//go.sum": "d56fdb19b21a5f12bcf625c49432371ac39c2def0f564098fbda107f7c080f40"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1074,62 +1074,6 @@
               "version": "v0.1.0-deprecated"
             }
           },
-          "com_github_bmatcuk_doublestar": {
-            "repoRuleId": "@@gazelle+//internal:go_repository.bzl%go_repository",
-            "attributes": {
-              "importpath": "github.com/bmatcuk/doublestar",
-              "build_directives": [],
-              "build_file_generation": "auto",
-              "build_extra_args": [],
-              "patches": [],
-              "patch_args": [],
-              "sum": "h1:gPypJ5xD31uhX6Tf54sDPUOBXTqKH4c9aPY66CyQrS0=",
-              "replace": "",
-              "version": "v1.3.4"
-            }
-          },
-          "com_github_emirpasic_gods": {
-            "repoRuleId": "@@gazelle+//internal:go_repository.bzl%go_repository",
-            "attributes": {
-              "importpath": "github.com/emirpasic/gods",
-              "build_directives": [],
-              "build_file_generation": "auto",
-              "build_extra_args": [],
-              "patches": [],
-              "patch_args": [],
-              "sum": "h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=",
-              "replace": "",
-              "version": "v1.18.1"
-            }
-          },
-          "com_github_ghodss_yaml": {
-            "repoRuleId": "@@gazelle+//internal:go_repository.bzl%go_repository",
-            "attributes": {
-              "importpath": "github.com/ghodss/yaml",
-              "build_directives": [],
-              "build_file_generation": "auto",
-              "build_extra_args": [],
-              "patches": [],
-              "patch_args": [],
-              "sum": "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
-              "replace": "",
-              "version": "v1.0.0"
-            }
-          },
-          "in_gopkg_yaml_v2": {
-            "repoRuleId": "@@gazelle+//internal:go_repository.bzl%go_repository",
-            "attributes": {
-              "importpath": "gopkg.in/yaml.v2",
-              "build_directives": [],
-              "build_file_generation": "auto",
-              "build_extra_args": [],
-              "patches": [],
-              "patch_args": [],
-              "sum": "h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=",
-              "replace": "",
-              "version": "v2.4.0"
-            }
-          },
           "bazel_gazelle_go_repository_config": {
             "repoRuleId": "@@gazelle+//internal/bzlmod:go_deps.bzl%_go_repository_config",
             "attributes": {
@@ -1153,18 +1097,12 @@
                 "com_github_pmezard_go_difflib": "github.com/pmezard/go-difflib",
                 "org_golang_x_sync": "golang.org/x/sync",
                 "org_golang_x_tools_go_vcs": "golang.org/x/tools/go/vcs",
-                "com_github_bmatcuk_doublestar": "github.com/bmatcuk/doublestar",
-                "com_github_emirpasic_gods": "github.com/emirpasic/gods",
-                "com_github_ghodss_yaml": "github.com/ghodss/yaml",
-                "in_gopkg_yaml_v2": "gopkg.in/yaml.v2",
                 "@rules_go+": "github.com/bazelbuild/rules_go",
-                "@gazelle+": "github.com/bazelbuild/bazel-gazelle",
-                "@rules_python_gazelle_plugin+": "github.com/bazelbuild/rules_python/gazelle"
+                "@gazelle+": "github.com/bazelbuild/bazel-gazelle"
               },
               "module_names": {
                 "@rules_go+": "rules_go",
-                "@gazelle+": "gazelle",
-                "@rules_python_gazelle_plugin+": "rules_python_gazelle_plugin"
+                "@gazelle+": "gazelle"
               },
               "build_naming_conventions": {}
             }

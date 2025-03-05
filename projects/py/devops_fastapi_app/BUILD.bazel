@@ -1,23 +1,16 @@
 # See https://bazel.build/concepts/build-files
 
-# load("@pip_deps//:requirements.bzl", "requirement")
-# load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
-# load("//tools/pytest:defs.bzl", "pytest_test")
-# load("//bazel/fixes:py_image_layer.bzl", "py_image_layer")
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
-# load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
-# load("@container_structure_test//:defs.bzl", "container_structure_test")
-
 
 py_library(
     name = "base_lib",
-    srcs = glob(["app/*.py"]),
-    # srcs_version = "PY3",
+    srcs = glob(["app/*.py", "app/__init__.py"]),
+    imports = ["."],
     deps = [
-        # requirement("fastapi"),
-        # requirement("asyncpg"),
-        # "//libs/devops:devops_lib"
+        "//libs/py/devops:devops_lib",
+        # Removed FastAPI dependency
+        # "//projects/base/base_fastapi_app:fastapi_lib",
     ],
 )
 
@@ -25,12 +18,11 @@ py_library(
 # `bazel run //webapp:run -- --reload`
 py_binary(
     name = "run_bin",
-    srcs = ["bin/run_bin.py"],
-    # python_version = "PY3",
-    # srcs_version = "PY3",
+    srcs = glob(["bin/*.py", "bin/__init__.py", "__init__.py"]),
+    main = "bin/run_bin.py",
+    imports = ["."],
     visibility = ["//visibility:public"],
     deps = [
-        # requirement("uvicorn"),
         ":base_lib",
     ],
 )
@@ -39,42 +31,12 @@ py_test(
     name = "main_test",
     srcs = glob(["tests/*.py"]),
     timeout = "short",
+    imports = ["."],
     deps = [
-        # requirement("requests"),
-        # requirement("httpx"),
-        # requirement("fastapi"),
         ":base_lib",
         ":run_bin",
     ],
 )
-
-# pytest_test(
-#     name = "webapp_test",
-#     srcs = glob(["tests/*.py"]),
-#     timeout = "short",
-#     deps = [
-#         requirement("requests"),
-#         requirement("httpx"),
-#         requirement("fastapi"),
-#         ":webapp",
-#         ":run",
-#     ],
-# )
-
-# py_image_layer(
-#     name = "app_layer",
-#     binary = ":run_bin",
-#     root = "/opt",
-# )
-
-# TODO: Use a custom base to include cross-cutting concerns
-# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
-# oci_image(
-#     name = "app_image",
-#     base = "@distroless_python",
-#     entrypoint = ["/opt/projects/py/devops_fastapi_app/run_bin"],
-#     tars = [":app_layer"],
-# )
 
 platform(
     name = "aarch64_linux",
@@ -91,42 +53,3 @@ platform(
         "@platforms//cpu:x86_64",
     ],
 )
-
-# platform_transition_filegroup(
-#     name = "transitioned_image",
-#     srcs = [":app_image"],
-#     target_platform = select({
-#         "@platforms//cpu:arm64": ":aarch64_linux",
-#         "@platforms//cpu:x86_64": ":x86_64_linux",
-#     }),
-# )
-
-# $ bazel build //projects/devops_fastapi_app:tarball
-# $ docker load --input $(bazel cquery --output=files //projects/devops_fastapi_app:tarball)
-# $ docker run --rm local/devops_fastapi_app:latest
-# See: https://github.com/bazel-contrib/rules_oci/blob/main/docs/tarball.md
-# oci_tarball(
-#     name = "tarball",
-#     image = ":app_image",
-#     repo_tags = [
-#         "bazel/devops-fastapi-app:latest",
-#     ],
-# )
-
-# See:
-# - https://bazel.build/reference/be/common-definitions#common-attributes-tests
-# - 
-# container_structure_test(
-#     name = "container_test",
-#     configs = ["oci/container_test.yaml"],
-#     image = ":app_image",
-#     timeout = "short",
-#     exec_properties = {
-#         # Tell BuildBuddy to run this test using a Firecracker microVM.
-#         "test.workload-isolation-type": "firecracker",
-#         # Tell BuildBuddy to ensure that the Docker daemon is started
-#         # inside the microVM before the test starts, so that we don't
-#         # have to worry about starting it ourselves.
-#         "test.init-dockerd": "true",
-#     },
-# )
