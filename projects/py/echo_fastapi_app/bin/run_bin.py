@@ -40,10 +40,16 @@ class SimpleHandler(http.server.SimpleHTTPRequestHandler):
         # Convert to JSON and encode as bytes
         response = json.dumps(data).encode('utf-8')
         self.wfile.write(response)
+        
+    # Override the default directory listing behavior
+    def list_directory(self, path):
+        """Override to prevent directory listing."""
+        self.send_error(403, "Directory listing forbidden")
+        return None
 
 def main():
     """Run the server."""
-    port = 5001
+    port = 5678
     handler = SimpleHandler
     
     print(f"=== Starting server on port {port} ===")
