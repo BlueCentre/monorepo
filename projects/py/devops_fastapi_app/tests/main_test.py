@@ -1,72 +1,149 @@
-### pytest_test approach ###
-# from fastapi.testclient import TestClient
+#!/usr/bin/env python3
+"""
+Tests for the DevOps FastAPI Application using FastAPI's TestClient.
 
-# from projects.echo_fastapi_app.src import run
+These tests verify the functionality of the DevOps FastAPI application endpoints.
+"""
 
-# client = TestClient(run)
-
-# def test_read_main():
-#     response = client.get("/status")
-#     assert response.status_code == 200
-#     assert response.json() == {"status": "UP", "version": "0.1.2"}
-
-
-### py_test approach ###
 import unittest
-import json
-import io
 import sys
+import os
+import json
 from unittest.mock import patch, MagicMock
 
-# Import the app directly
-from projects.py.devops_fastapi_app.bin.run_bin import DevOpsApp
+# Add the parent directory to sys.path to allow importing from app
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from fastapi.testclient import TestClient
+from app.web_app import app
+
 
 class TestDevOpsApp(unittest.TestCase):
-    def setUp(self):
-        self.app = DevOpsApp()
-    
-    def test_get_root(self):
-        response = self.app.get_root()
-        self.assertEqual(response, {"message": "I am alive!!!"})
-    
-    def test_get_status(self):
-        response = self.app.get_status()
-        self.assertEqual(response, {"status": "UP", "version": "0.1.2"})
-    
-    def test_get_healthcheck(self):
-        response = self.app.get_healthcheck()
-        self.assertEqual(response, {"status": "UP", "msg": "degraded"})
-    
-    @patch('projects.py.devops_fastapi_app.bin.run_bin.PlatformOrganization')
-    def test_get_devops(self, mock_platform_org):
-        # Setup mock
-        mock_devops = MagicMock()
-        mock_devops.__str__.return_value = "InfrastructureEngineer<TestUser>"
-        mock_platform_instance = MagicMock()
-        mock_platform_instance.request_devops.return_value = mock_devops
-        mock_platform_org.return_value = mock_platform_instance
-        
-        # Test
-        response = self.app.get_devops("TestUser")
-        self.assertEqual(response, {"devops": "InfrastructureEngineer<TestUser>"})
-        mock_platform_org.assert_called_once()
-        mock_platform_instance.request_devops.assert_called_once_with("TestUser")
-    
-    @patch('projects.py.devops_fastapi_app.bin.run_bin.PlatformOrganization')
-    @patch('projects.py.devops_fastapi_app.bin.run_bin.random')
-    def test_get_devops_random_item(self, mock_random, mock_platform_org):
-        # Setup mocks
-        mock_devops = MagicMock()
-        mock_devops.__str__.return_value = "WebEngineer<RandomUser>"
-        mock_platform_instance = MagicMock()
-        mock_platform_instance.request_devops.return_value = mock_devops
-        mock_platform_org.return_value = mock_platform_instance
-        
-        # Test
-        response = self.app.get_devops_random_item("RandomUser")
-        self.assertEqual(response, {"random_devops": "WebEngineer<RandomUser>"})
-        mock_platform_org.assert_called_once()
-        mock_platform_instance.request_devops.assert_called_once_with("RandomUser")
+    """Test cases for the DevOps FastAPI application."""
 
-if __name__ == '__main__':
+    def setUp(self) -> None:
+        """
+        Set up the test environment before each test.
+        
+        Initializes the TestClient for the FastAPI app.
+        """
+        self.client = TestClient(app)
+
+    def test_root_endpoint(self) -> None:
+        """
+        Test the root endpoint.
+        
+        Verifies that the root endpoint returns a status code of 200
+        and the expected message.
+        """
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"message": "I am alive"})
+
+    def test_status_endpoint(self) -> None:
+        """
+        Test the status endpoint.
+        
+        Verifies that the status endpoint returns a status code of 200
+        and the expected status and version.
+        """
+        response = self.client.get("/status")
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("status", data)
+        self.assertIn("version", data)
+        self.assertEqual(data["status"], "UP")
+        self.assertEqual(data["version"], "0.1.0")
+
+    def test_healthcheck_endpoint(self) -> None:
+        """
+        Test the healthcheck endpoint.
+        
+        Verifies that the healthcheck endpoint returns a status code of 200
+        and the expected health status.
+        """
+        response = self.client.get("/healthcheck")
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("status", data)
+        self.assertIn("details", data)
+        self.assertEqual(data["status"], "UP")
+        self.assertIsInstance(data["details"], dict)
+        
+        # Check that details has the expected components
+        details = data["details"]
+        self.assertIn("database", details)
+        self.assertIn("cache", details)
+        self.assertIn("storage", details)
+
+    @patch("app.routes.PlatformOrganization")
+    def test_devops_endpoint(self, mock_platform_organization) -> None:
+        """
+        Test the devops endpoint.
+        
+        Verifies that the devops endpoint returns a status code of 200
+        and the expected DevOps role information.
+        """
+        # Set up the mock
+        mock_devops = MagicMock()
+        mock_devops.name = "TestDevOps"
+        mock_devops.__class__.__name__ = "InfrastructureEngineer"
+        mock_devops.speak.return_value = None  # The speak method prints, doesn't return
+        
+        mock_platform_instance = MagicMock()
+        mock_platform_instance.request_devops.return_value = mock_devops
+        
+        mock_platform_organization.return_value = mock_platform_instance
+        
+        # Test the endpoint
+        response = self.client.get("/devops/TestDevOps")
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("name", data)
+        self.assertIn("type", data)
+        self.assertIn("message", data)
+        self.assertEqual(data["name"], "TestDevOps")
+        self.assertEqual(data["type"], "InfrastructureEngineer")
+
+    @patch("app.routes.random_platform")
+    def test_devops_random_endpoint(self, mock_random_platform) -> None:
+        """
+        Test the devops random endpoint.
+        
+        Verifies that the devops random endpoint returns a status code of 200
+        and the expected random DevOps role information.
+        """
+        # Set up the mock
+        mock_devops = MagicMock()
+        mock_devops.name = "RandomDevOps"
+        mock_devops.__class__.__name__ = "DataEngineer"
+        mock_devops.speak.return_value = None  # The speak method prints, doesn't return
+        
+        mock_random_platform.return_value = mock_devops
+        
+        # Test the endpoint
+        response = self.client.get("/devops/random/RandomDevOps")
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("name", data)
+        self.assertIn("type", data)
+        self.assertIn("message", data)
+        self.assertEqual(data["name"], "RandomDevOps")
+        self.assertEqual(data["type"], "DataEngineer")
+
+    def test_not_found(self) -> None:
+        """
+        Test accessing a non-existent endpoint.
+        
+        Verifies that accessing a non-existent endpoint returns a 404 status code.
+        """
+        response = self.client.get("/non-existent-endpoint")
+        self.assertEqual(response.status_code, 404)
+
+
+if __name__ == "__main__":
     unittest.main()

@@ -1,71 +1,70 @@
 #!/usr/bin/env python3
 """
-Simple HTTP server that mimics the FastAPI echo app functionality.
+FastAPI Echo App runner using uvicorn.
 """
 
-import http.server
-import socketserver
-import json
+import uvicorn
 import sys
 import os
+import logging
+from typing import Optional
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # Add the parent directory to the path to allow importing from app
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import the app module if needed, but don't rely on it for core functionality
-try:
-    from app import web_app
-    has_web_app = True
-except ImportError:
-    has_web_app = False
-
-class SimpleHandler(http.server.SimpleHTTPRequestHandler):
-    """Simple HTTP request handler that returns JSON responses."""
+def run_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
+    """
+    Run the FastAPI application using uvicorn.
     
-    def do_GET(self):
-        """Handle GET requests."""
-        if self.path == '/':
-            self.send_json("I am alive")
-        elif self.path == '/status':
-            self.send_json({"status": "UP", "version": "0.1.0"})
-        else:
-            self.send_error(404, "Not found")
-    
-    def send_json(self, data):
-        """Send a JSON response."""
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
+    Args:
+        host: Host to bind the server to
+        port: Port to bind the server to
+        reload: Whether to enable auto-reload
+    """
+    try:
+        logger.info(f"=== Starting server on {host}:{port} ===")
+        logger.info(f"Visit http://localhost:{port}/ or http://localhost:{port}/status")
+        logger.info(f"API documentation available at http://localhost:{port}/docs")
         
-        # Convert to JSON and encode as bytes
-        response = json.dumps(data).encode('utf-8')
-        self.wfile.write(response)
-        
-    # Override the default directory listing behavior
-    def list_directory(self, path):
-        """Override to prevent directory listing."""
-        self.send_error(403, "Directory listing forbidden")
-        return None
+        # Run the server using uvicorn
+        uvicorn.run(
+            "app.web_app:app",
+            host=host,
+            port=port,
+            reload=reload,
+            log_level="info"
+        )
+    except KeyboardInterrupt:
+        logger.info("\n=== Server stopped ===")
+    except Exception as e:
+        logger.error(f"Error starting server: {e}")
+        sys.exit(1)
 
-def main():
-    """Run the server."""
-    port = 5678
-    handler = SimpleHandler
+def parse_args() -> tuple[str, int, bool]:
+    """
+    Parse command line arguments.
     
-    print(f"=== Starting server on port {port} ===")
-    print(f"Visit http://localhost:{port}/ or http://localhost:{port}/status")
+    Returns:
+        Tuple of (host, port, reload)
+    """
+    import argparse
     
-    # Log whether we have the web_app module
-    if has_web_app:
-        print("Web app module loaded successfully")
-    else:
-        print("Web app module not found, running standalone server")
+    parser = argparse.ArgumentParser(description="Run the Echo FastAPI App")
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind the server to")
+    parser.add_argument("--port", type=int, default=8000, help="Port to bind the server to")
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     
-    with socketserver.TCPServer(("", port), handler) as httpd:
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\n=== Server stopped ===")
+    args = parser.parse_args()
+    return args.host, args.port, args.reload
+
+def main() -> None:
+    """Run the server with command line arguments."""
+    host, port, reload = parse_args()
+    run_server(host, port, reload)
 
 if __name__ == "__main__":
     main()
