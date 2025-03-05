@@ -1,0 +1,43 @@
+// Python Calculator App - Rules for AI
+// This file provides guidance for working with the Python Calculator App project
+
+// Project Structure
+// - projects/py/calculator_flask_app/app/app.py: Contains the HTTP server implementation
+// - projects/py/calculator_flask_app/BUILD.bazel: Bazel build configuration
+// - libs/py/calculator/models/calculator.py: Contains the Calculator class implementation
+
+// General Guidelines
+// 1. This project intentionally avoids external dependencies like Flask
+// 2. Use only Python standard library modules for all functionality
+// 3. Maintain backward compatibility with the existing API endpoints
+// 4. Keep the code simple and well-documented
+
+// Implementation Details
+// - The application implements a simple HTTP server using Python's built-in http.server module
+// - It provides two endpoints: "/" and "/calculate"
+// - The server runs on port 8080 by default
+// - The Calculator class in calculator.py provides the core calculation functionality
+// - All responses are HTML-formatted for browser viewing
+
+// Build System
+// - The project uses Bazel for building and running
+// - All Python dependencies are commented out in BUILD.bazel files
+// - Use py_library and py_binary rules for defining targets
+// - The application should be runnable with: bazel run //projects/py/calculator_flask_app:app_bin
+
+// Code Style
+// - Follow PEP 8 guidelines for Python code
+// - Use docstrings for all functions and classes
+// - Prefer explicit imports over wildcard imports
+// - Keep functions small and focused on a single responsibility
+
+// Error Handling
+// - Use appropriate HTTP status codes for error responses
+// - Handle exceptions gracefully to prevent server crashes
+// - Provide user-friendly error messages
+
+// UI Guidelines
+// - Keep the UI simple and user-friendly
+// - Use semantic HTML for better accessibility
+// - Maintain consistent styling across the application
+// - Ensure the form is easy to use and provides clear feedback 
