@@ -8,6 +8,7 @@ load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 py_library(
     name = "web_lib",
     srcs = ["app/web_app.py"],
+    imports = ["."],  # Allow importing from the app directory
     deps = [
         # requirement("fastapi"),
         # requirement("asyncpg"),
@@ -20,11 +21,15 @@ py_library(
 py_binary(
     name = "run_bin",
     srcs = ["bin/run_bin.py"],
+    main = "bin/run_bin.py",
+    imports = ["."],  # Allow importing from the current directory
     visibility = ["//visibility:public"],
     deps = [
         # requirement("uvicorn"),
         ":web_lib",
     ],
+    # Legacy approach for imports
+    legacy_create_init = True,  # Create __init__.py files in directories
 )
 
 py_test(
