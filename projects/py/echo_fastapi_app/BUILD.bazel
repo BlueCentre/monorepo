@@ -1,16 +1,17 @@
 # See https://bazel.build/concepts/build-files
 
-# load("@pip_deps//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 # load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
 # load("//tools/pytest:defs.bzl", "pytest_test")
 
 py_library(
     name = "web_lib",
-    srcs = ["app/web_app.py"],
+    srcs = glob(["app/*.py"]),
     imports = ["."],  # Allow importing from the app directory
     deps = [
-        # requirement("fastapi"),
+        requirement("fastapi"),
+        requirement("pydantic"),
         # requirement("asyncpg"),
         # "//libs/devops:devops_lib"
     ],
@@ -25,7 +26,7 @@ py_binary(
     imports = ["."],  # Allow importing from the current directory
     visibility = ["//visibility:public"],
     deps = [
-        # requirement("uvicorn"),
+        requirement("uvicorn"),
         ":web_lib",
     ],
     # Legacy approach for imports
@@ -37,9 +38,9 @@ py_test(
     srcs = glob(["tests/*.py"]),
     timeout = "short",
     deps = [
-        # requirement("requests"),
-        # requirement("httpx"),
-        # requirement("fastapi"),
+        requirement("requests"),
+        requirement("httpx"),
+        requirement("fastapi"),
         ":web_lib",
         ":run_bin",
     ],
