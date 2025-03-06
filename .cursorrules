@@ -1,11 +1,12 @@
 // Awesome CursorRules
 // A curated list of awesome .cursorrules files for enhancing Cursor AI experience
+// https://github.com/PatrickJS/awesome-cursorrules/tree/main/rules
 
-// General guidelines
-// - Always use Markdown for documentation and README files
-// - Maintain the existing structure of the README.md file
-// - Follow consistent formatting for list items
-// - Use descriptive names for .cursorrules files and their folders
+General guidelines
+- Always use Markdown for documentation and README files
+- Maintain the existing structure of the README.md file
+- Follow consistent formatting for list items
+- Use descriptive names for .cursorrules files and their folders
 
 // README.md structure
 // The README.md file should maintain the following structure:
@@ -19,29 +20,29 @@
 // 8. Contributing section
 // 9. License section
 
-// Organization of rules
-// Rules are organized into the following main categories:
-// - Frontend Frameworks and Libraries
-// - Backend and Full-Stack
-// - Mobile Development
-// - CSS and Styling
-// - State Management
-// - Database and API
-// - Testing
-// - Build Tools and Development
-// - Language-Specific
-// - Other
+Organization of rules
+Rules are organized into the following main categories:
+- Frontend Frameworks and Libraries
+- Backend and Full-Stack
+- Mobile Development
+- CSS and Styling
+- State Management
+- Database and API
+- Testing
+- Build Tools and Development
+- Language-Specific
+- Other
 
-// File structure for .cursorrules files
-// Each .cursorrules file should follow this structure:
-// 1. Title and brief description
-// 2. Project structure information
-// 3. General guidelines
-// 4. Implementation details
-// 5. Example content
-// 6. How to use instructions
-// 7. Benefits of using the rules
-// 8. Additional resources
+File structure for .cursorrules files
+Each .cursorrules file should follow this structure:
+1. Title and brief description
+2. Project structure information
+3. General guidelines
+4. Implementation details
+5. Example content
+6. How to use instructions
+7. Benefits of using the rules
+8. Additional resources
 
 // Repository structure
 // - README.md: Main documentation file
@@ -50,77 +51,30 @@
 //   - [technology]-cursorrules.md: Individual rule files
 // - .cursorrules: This file, providing guidance for the repository itself
 
-// Best practices for .cursorrules files
-// - Focus on providing repo-level context and guidelines
-// - Include information about project structure and architectural decisions
-// - Document commonly used libraries or methods
-// - Include rules for handling specific file types or coding patterns
-// - Cover both code generation and code understanding aspects
-// - Keep rules concise and focused on practical use cases
-// - Use comments to explain complex rules or provide context
+Best practices for .cursorrules files
+- Focus on providing repo-level context and guidelines
+- Include information about project structure and architectural decisions
+- Document commonly used libraries or methods
+- Include rules for handling specific file types or coding patterns
+- Cover both code generation and code understanding aspects
+- Keep rules concise and focused on practical use cases
+- Use comments to explain complex rules or provide context
 
-// Contributing guidelines
-// When contributing new .cursorrules files:
-// 1. Follow the naming conventions
-// 2. Place the file in the appropriate category
-// 3. Include all the required sections
-// 4. Provide clear and concise guidance
-// 5. Focus on project-specific instructions and best practices
-// 6. Update the main README.md to include your new file
-// 7. Ensure your file follows the established structure and formatting
+Contributing guidelines
+When contributing new .cursorrules files:
+1. Follow the naming conventions
+2. Place the file in the appropriate category
+3. Include all the required sections
+4. Provide clear and concise guidance
+5. Focus on project-specific instructions and best practices
+6. Update the main README.md to include your new file
+7. Ensure your file follows the established structure and formatting
 
-// Python Echo App - Rules for AI
-// This file provides guidance for working with the Python Echo App project
-
-// Project Structure
-// - projects/py/echo_fastapi_app/app/web_app.py: Contains the mock FastAPI implementation
-// - projects/py/echo_fastapi_app/bin/run_bin.py: Simple HTTP server implementation
-// - projects/py/echo_fastapi_app/tests/test.py: Test file for the application
-
-// General Guidelines
-// 1. This project intentionally avoids external dependencies like FastAPI and uvicorn
-// 2. Use only Python standard library modules for all functionality
-// 3. Maintain backward compatibility with the existing API endpoints
-// 4. Keep the code simple and well-documented
-
-// Implementation Details
-// - The application implements a simple HTTP server using Python's built-in http.server module
-// - It provides two endpoints: "/" and "/status"
-// - The MockFastAPI class in web_app.py simulates FastAPI functionality without the dependency
-// - All responses should be JSON-formatted
-
-// Testing
-// - Tests should not rely on external testing libraries when possible
-// - Use Python's built-in unittest module for testing
-// - Ensure tests can run in the Bazel build environment
-
-// Build System
-// - The project uses Bazel for building and testing
-// - All Python dependencies are commented out in BUILD.bazel files
-// - Use py_library, py_binary, and py_test rules for defining targets
-// - The application should be runnable with: bazel run //projects/py/echo_fastapi_app:run_bin
-
-// Code Style
-// - Follow PEP 8 guidelines for Python code
-// - Use docstrings for all functions and classes
-// - Prefer explicit imports over wildcard imports
-// - Keep functions small and focused on a single responsibility
-
-// Error Handling
-// - Use appropriate HTTP status codes for error responses
-// - Log errors and important events using the logging module
-// - Handle exceptions gracefully to prevent server crashes
-
-// Performance Considerations
-// - The server should handle multiple concurrent requests
-// - Keep response times minimal
-// - Avoid unnecessary computation in request handlers
-
-// Additional insights
-// .cursorrules files are repo-specific "Rules for AI"
-// .cursorrules files should be placed in the root of the repository
-// The content of .cursorrules files will be appended to the global "Rules for AI" settings in Cursor
-// Focus on providing repo-level context and guidelines, not just general coding practices
-// .cursorrules can include information about project structure, architectural decisions, and commonly used libraries or methods
-// Consider including rules for handling specific file types or coding patterns unique to your project
-// Rules can cover both code generation and code understanding aspects for Cursor AI
+Additional insights
+.cursorrules files are repo-specific "Rules for AI"
+.cursorrules files should be placed in the root of the repository
+The content of .cursorrules files will be appended to the global "Rules for AI" settings in Cursor
+Focus on providing repo-level context and guidelines, not just general coding practices
+.cursorrules can include information about project structure, architectural decisions, and commonly used libraries or methods
+Consider including rules for handling specific file types or coding patterns unique to your project
+Rules can cover both code generation and code understanding aspects for Cursor AI

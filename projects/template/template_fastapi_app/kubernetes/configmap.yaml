@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: template-fastapi-app-config
+data:
+  PROJECT_NAME: "Template FastAPI App"
+  PORT: "8000"
+  RELOAD: "false"
+  API_V1_STR: "/api/v1"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  BACKEND_CORS_ORIGINS: '["http://localhost:3000","http://localhost:8080"]'
+  GCP_PROJECT_ID: "your-gcp-project-id"
+  PUBSUB_TOPIC_EXAMPLE: "example"
+  PUBSUB_SUBSCRIPTION_EXAMPLE: "example-subscription"
+  ENABLE_TELEMETRY: "true"
+  OTLP_EXPORTER_ENDPOINT: "http://opentelemetry-collector.istio-system.svc.cluster.local:4317"
+  OTLP_SERVICE_NAME: "template-fastapi-app"
+  ENVIRONMENT: "production" 
