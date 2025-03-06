@@ -68,6 +68,27 @@ This application uses Skaffold for development and deployment:
 ./skaffold.sh delete
 ```
 
+### Database Initialization
+
+The application automatically initializes the database after deployment using Skaffold's verification feature. This includes:
+
+- Creating all required database tables
+- Creating a default superuser (admin@example.com/admin)
+- Creating a sample item
+
+```bash
+# Run with automatic database initialization (default behavior)
+skaffold run
+
+# Skip database initialization if needed
+skaffold run -p skip-db-init
+
+# Run database initialization manually
+kubectl apply -f kubernetes/db-init-job.yaml
+```
+
+When running in development mode (`skaffold dev`), the database will be initialized automatically on the first deployment. If you make schema changes during development, you may need to manually rerun the initialization job.
+
 ### Accessing the Application
 
 After deployment, you can access the application at:
@@ -75,6 +96,178 @@ After deployment, you can access the application at:
 - API: http://localhost:8000/api/v1
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+### Testing the API
+
+You can test the API using either curl commands or the interactive Swagger UI. First, set up port forwarding to access the application:
+
+```bash
+# Set up port forwarding
+kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80
+```
+
+### API Credentials
+
+When the database is initialized, a default superuser is created with these credentials:
+- **Username**: `admin@example.com`
+- **Password**: `admin`
+
+#### Getting the Credentials
+
+You can retrieve or verify the default credentials in several ways:
+
+1. **From the Configuration**: 
+   ```bash
+   # View the default superuser settings
+   kubectl get configmap template-fastapi-app-config -n template-fastapi-app -o yaml | grep FIRST_SUPERUSER
+   ```
+
+2. **From the Database**:
+   ```bash
+   # Port-forward to the PostgreSQL service
+   kubectl port-forward service/postgres -n template-fastapi-app 5432:5432 &
+   
+   # Connect using the PostgreSQL password from the secret
+   PGPASSWORD=$(kubectl get secret postgres-secret -n template-fastapi-app -o jsonpath='{.data.password}' | base64 --decode) \
+   psql -h localhost -U postgres -d app -c 'SELECT email, is_superuser FROM "user";'
+   ```
+
+3. **From the API Logs**:
+   ```bash
+   # Check the database initialization job logs
+   kubectl get pods -n template-fastapi-app -l component=db-init -o name | xargs kubectl logs -n template-fastapi-app
+   ```
+
+#### Changing the Default Credentials
+
+For security in production environments, you should change the default credentials. You can do this:
+
+1. **Via the API**:
+   ```bash
+   # Login first to get a token
+   TOKEN=$(curl -s -X 'POST' 'http://localhost:8000/api/v1/login/access-token' \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     -d 'username=admin@example.com&password=admin' | jq -r '.access_token')
+   
+   # Update the password
+   curl -X 'PUT' 'http://localhost:8000/api/v1/users/me' \
+     -H "Authorization: Bearer $TOKEN" \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "password": "new-secure-password",
+       "full_name": "Updated Admin Name"
+     }'
+   ```
+
+2. **Via Configuration**:
+   To change the default superuser created during initialization, modify the `FIRST_SUPERUSER` and `FIRST_SUPERUSER_PASSWORD` values in the configuration.
+
+#### Using curl
+
+Here are some examples of common API operations using curl:
+
+**1. Authentication (Get Access Token)**
+
+```bash
+# Login with default superuser credentials
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/login/access-token' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=admin@example.com&password=admin'
+```
+
+**2. Get Current User Information**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/users/me' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**3. List Items**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/items/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**4. Create a New Item**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/items/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "title": "New Item",
+    "description": "This is a new item created via API",
+    "is_active": true
+  }'
+```
+
+#### Using Swagger UI
+
+The Swagger UI provides an interactive interface for exploring and testing the API:
+
+1. Open your browser and navigate to http://localhost:8000/docs
+2. You'll see all available API endpoints organized by category
+3. To authenticate:
+   - Click the "Authorize" button at the top of the page (the padlock icon)
+   - The OAuth2 authentication dialog will appear
+   - Enter `admin@example.com` for username and `admin` for password
+   - Leave client_id and client_secret fields empty
+   - Click "Authorize"
+   
+   **If you encounter "Auth Error TypeError: Failed to fetch" errors:**
+   
+   This is a known issue with Swagger UI's OAuth2 form. Since Swagger UI doesn't allow adding custom authorization headers to individual requests, you have these alternatives:
+
+   **Option 1: Use pre-acquired token with the Authorize button**
+   1. First, get a token using curl:
+      ```bash
+      TOKEN=$(curl -s -X 'POST' \
+        'http://localhost:8000/api/v1/login/access-token' \
+        -H 'Content-Type: application/x-www-form-urlencoded' \
+        -d 'username=admin@example.com&password=admin' | jq -r '.access_token')
+      echo $TOKEN  # Copy this token
+      ```
+   
+   2. In Swagger UI:
+      - Click the "Authorize" button (padlock icon)
+      - In the "Value" field, enter: `Bearer YOUR_TOKEN` (replacing YOUR_TOKEN with the copied token)
+      - Click "Authorize" and close the dialog
+
+   **Option 2: Use alternative tools**
+   - Use curl commands as shown in the previous section
+   - Try API tools like [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/)
+   - Use the ReDoc documentation at http://localhost:8000/redoc for reference
+
+4. Once authorized, you can test any endpoint by:
+   - Expanding the endpoint
+   - Clicking "Try it out"
+   - Filling in the required parameters
+   - Clicking "Execute"
+
+**Troubleshooting Swagger UI Issues:**
+
+If you encounter authentication issues in Swagger UI:
+1. Make sure port forwarding is active (`kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80`)
+2. Check that the application pod is running (`kubectl get pods -n template-fastapi-app`)
+3. Try using an incognito/private browser window
+4. Disable browser extensions that might interfere with API requests
+5. Use the curl commands or another API client as alternatives
+6. If using Chrome, check the developer console for CORS or other errors
+7. Try using a different browser
+
+The Swagger UI also provides detailed documentation about request parameters, response models, and status codes for each endpoint.
 
 ### OpenTelemetry Integration
 
