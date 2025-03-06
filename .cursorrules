@@ -78,3 +78,8 @@ Focus on providing repo-level context and guidelines, not just general coding pr
 .cursorrules can include information about project structure, architectural decisions, and commonly used libraries or methods
 Consider including rules for handling specific file types or coding patterns unique to your project
 Rules can cover both code generation and code understanding aspects for Cursor AI
+
+Build tools used
+1. Bazel for building, testing and packaging docker images
+2. Skaffold for development mode and deployments as a replacement for docker-compose
+3. Always use best practice and latest versions for these tools
