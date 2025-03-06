@@ -56,6 +56,8 @@ py_binary(
         ":app_lib",
         requirement("alembic"),
     ],
+    # Tagged as manual to exclude from //... builds since alembic might not be available in the monorepo
+    tags = ["manual"],
 )
 
 # Tests marked as manual to exclude from default test runs

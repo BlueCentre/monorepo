@@ -138,6 +138,21 @@ The OpenTelemetry collector configuration is in `kubernetes/otel-collector.yaml`
 - Verify that the collector is running with `kubectl get pods -n template-fastapi-app`
 - Check the collector logs with `kubectl logs -n template-fastapi-app <otel-collector-pod-name>`
 
+#### Bazel Build Issues
+
+If you encounter issues with Bazel builds, consider the following:
+
+- The `run_migrations` target is tagged as `manual` because it depends on `alembic`, which might not be available in the monorepo's requirements
+- When building the entire monorepo with `bazel build //...`, the `run_migrations` target will be excluded
+- To build the migration tool specifically, use `bazel build //projects/template/template_fastapi_app:run_migrations`
+- If you need to enable database migrations in the monorepo, run the provided helper script:
+
+```bash
+./scripts/update_requirements.sh
+```
+
+This script will add alembic to the monorepo's requirements and update the requirements_lock files.
+
 ## License
 
 MIT
