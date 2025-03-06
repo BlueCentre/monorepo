@@ -1,0 +1,11 @@
+# Simple BUILD file for the template directory
+# This allows Bazel to know about this package without
+# trying to build the problematic template_fastapi_app
+
+package(default_visibility = ["//visibility:public"])
+
+# Empty exports to satisfy dependencies
+filegroup(
+    name = "template_files",
+    srcs = glob(["**/*"]),
+) 
