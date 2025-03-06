@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrations
+  namespace: template-fastapi-app
+  labels:
+    app: template-fastapi-app
+    component: db-migrations
+  annotations:
+    # This annotation tells Skaffold to recreate the job on each deployment
+    "skaffold.dev/recreate-pods": "true"
+spec:
+  ttlSecondsAfterFinished: 100  # Automatically delete the job after completion
+  backoffLimit: 3  # Number of retries before considering the job as failed
+  template:
+    metadata:
+      labels:
+        app: template-fastapi-app
+        component: db-migrations
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: migrations
+        image: template-fastapi-app  # Use the same image as the main application
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "app.migrations.scripts.run_migrations", "upgrade"]
+        env:
+        - name: POSTGRES_SERVER
+          value: postgres
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: postgres-secret
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgres-secret
+        - name: POSTGRES_DB
+          value: app
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secret-key
+              name: app-secret
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi 

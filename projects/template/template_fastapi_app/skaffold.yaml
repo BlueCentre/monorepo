@@ -44,13 +44,72 @@ manifests:
   - kubernetes/*.yaml
 deploy:
   kubectl: {}
+  # Add post-deployment verification for database initialization
+  statusCheck: true
+
+# Add verification to run the database initialization job after deployment
+verify:
+  - name: database-initialization
+    container:
+      name: kubectl
+      image: bitnami/kubectl:latest
+      command: ["/bin/bash", "-c"]
+      args:
+        - |
+          echo "Waiting for all resources to be ready..."
+          sleep 10 # Give time for resources to start
+          
+          echo "Running database initialization job..."
+          # Delete any existing job first
+          kubectl delete job db-init -n template-fastapi-app --ignore-not-found=true
+          
+          # Apply the database initialization job
+          kubectl apply -f kubernetes/db-init-job.yaml
+          
+          # Wait for the job to complete
+          echo "Waiting for database initialization job to complete..."
+          kubectl wait --for=condition=complete job/db-init -n template-fastapi-app --timeout=60s
+          
+          if [ $? -eq 0 ]; then
+            echo "Database initialization completed successfully!"
+            exit 0
+          else
+            echo "Database initialization failed! Check logs:"
+            POD_NAME=$(kubectl get pods -n template-fastapi-app -l component=db-init -o jsonpath='{.items[0].metadata.name}')
+            if [ -n "$POD_NAME" ]; then
+              kubectl logs -n template-fastapi-app $POD_NAME
+            else
+              echo "Cannot find database initialization pod to display logs."
+            fi
+            exit 1
+          fi
+
 profiles:
 - name: dev
   activation:
   - command: dev
+  patches:
+  - op: add
+    path: /build/local/push
+    value: false
+  - op: add
+    path: /deploy/kubectl/flags
+    value:
+      apply:
+      - --validate=false
+      - --force=true
+
 - name: run
   activation:
   - command: run
+
+# Create a profile to skip database initialization if needed
+- name: skip-db-init
+  patches:
+  - op: add
+    path: /verify
+    value: []
+
 - name: debug
   activation:
   - command: debug
@@ -84,3 +143,21 @@ profiles:
       
       # Clean up
       rm -rf $TEMP_DIR
+
+portForward:
+  - resourceType: service
+    resourceName: template-fastapi-app
+    port: 80
+    localPort: 8000
+  - resourceType: service
+    resourceName: postgres
+    port: 5432
+    localPort: 5432
+  - resourceType: service
+    resourceName: otel-collector
+    port: 4317
+    localPort: 4317
+  - resourceType: service
+    resourceName: otel-collector
+    port: 16686
+    localPort: 16686

@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrations
+  namespace: template-fastapi-app
+  labels:
+    app: template-fastapi-app
+    component: db-migrations
+  annotations:
+    # This annotation tells Skaffold to recreate the job on each deployment
+    "skaffold.dev/recreate-pods": "true"
+    # Add a timestamp to force recreation
+    "timestamp": "2025-03-06-03-50-00"
+spec:
+  ttlSecondsAfterFinished: 100  # Automatically delete the job after completion
+  backoffLimit: 3  # Number of retries before considering the job as failed
+  template:
+    metadata:
+      labels:
+        app: template-fastapi-app
+        component: db-migrations
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: migrations
+        image: template-fastapi-app  # Use the same image as the main application
+        imagePullPolicy: Always  # Force pulling the image
+        # Using a different approach since we couldn't find the migrations module
+        command: ["python", "-c", "from app.db.session import engine; from app.db.base import Base; from app.initial_data import init; print('Creating database tables...'); Base.metadata.create_all(bind=engine); print('Initializing database with default data...'); init(); print('Database initialization complete.')"]
+        env:
+        - name: POSTGRES_SERVER
+          value: postgres
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: postgres-secret
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgres-secret
+        - name: POSTGRES_DB
+          value: app
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secret-key
+              name: app-secret
+        # Add PYTHONPATH to ensure modules can be found
+        - name: PYTHONPATH
+          value: /app/src
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi 
