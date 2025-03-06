@@ -388,6 +388,94 @@ The CI pipeline:
 
 See [BUILD_FIXES.md](docs/BUILD_FIXES.md) for information about current build issues and their workarounds.
 
+## Roadmap
+
+This section outlines planned improvements for the repository, with a focus on enhancing the template_fastapi_app to follow industry best practices.
+
+### Planned Improvements for template_fastapi_app
+
+#### Testing and Quality Assurance (Priority: High)
+- [x] Add code coverage reporting with pytest-cov
+- [x] Implement property-based testing with Hypothesis
+- [x] Set up API contract testing
+- [x] Add load testing configuration (k6 or Locust)
+- [x] Implement mutation testing
+- [x] Add end-to-end testing framework
+
+#### Documentation Enhancements (Priority: Medium)
+- [ ] Add Architectural Decision Records (ADRs)
+- [ ] Document API versioning strategy
+- [ ] Add generated data model documentation
+- [ ] Implement automated API changelog
+- [ ] Expand developer guides
+
+#### Code Quality and Maintainability (Priority: High)
+- [ ] Configure stricter type checking with mypy
+- [ ] Integrate comprehensive linting (ruff/black/isort)
+- [ ] Set up pre-commit hooks
+- [ ] Add dependency scanning for security vulnerabilities
+- [ ] Implement complexity analysis
+
+#### Security Enhancements (Priority: High)
+- [ ] Add secret rotation mechanism
+- [ ] Implement API rate limiting
+- [ ] Configure security headers
+- [ ] Set up automated security scanning
+- [ ] Implement Content Security Policy
+- [ ] Add OAuth2 scope validation
+
+#### Performance Optimizations (Priority: Medium)
+- [ ] Add response compression
+- [ ] Implement query optimization tools
+- [ ] Set up caching layer
+- [ ] Add async background tasks
+- [ ] Optimize DB connection pooling
+
+#### DevOps and Deployment Improvements (Priority: Medium)
+- [ ] Enhance multi-environment configuration
+- [ ] Add feature flag system
+- [ ] Support canary deployments
+- [ ] Implement database migration CI checks
+- [ ] Document backup and restore procedures
+- [ ] Convert to Helm charts
+
+#### Monitoring and Observability (Priority: High)
+- [ ] Add custom Prometheus metrics
+- [ ] Implement structured logging
+- [ ] Enhance health check endpoints
+- [ ] Set up user behavior analytics
+- [ ] Integrate with APM tools
+- [ ] Add error tracking
+
+#### Developer Experience (Priority: Medium)
+- [ ] Add VS Code devcontainer
+- [ ] Set up API client generation
+- [ ] Create local development dashboard
+- [ ] Improve database seeding scripts
+- [ ] Add development utilities CLI
+- [ ] Enhance hot reload for local development
+
+#### Scalability Features (Priority: Low)
+- [ ] Implement worker pattern for async tasks
+- [ ] Add message queue integration
+- [ ] Document database sharding strategy
+- [ ] Support database read replicas
+- [ ] Add horizontal scaling guidelines
+
+#### Business Logic Organization (Priority: Medium)
+- [ ] Reorganize code with domain-driven design patterns
+- [ ] Implement CQRS for complex domains
+- [ ] Add event sourcing capabilities
+- [ ] Improve separation of business logic
+- [ ] Create well-defined service layer
+
+### Implementation Timeline
+
+- **Q2 2024**: Testing and Quality Assurance, Code Quality
+- **Q3 2024**: Security Enhancements, Monitoring and Observability
+- **Q4 2024**: Documentation, Developer Experience, Business Logic
+- **Q1 2025**: Performance Optimizations, DevOps, Scalability
+
 ## Contributing
 
 We welcome contributions from the community! Please follow these steps:
