@@ -9,6 +9,7 @@ email-validator==2.0.0.post2
 sqlalchemy==2.0.20
 alembic==1.12.0
 psycopg2-binary==2.9.7
+aiosqlite>=0.17.0,<0.18.0  # Added for async SQLite testing
 
 # Security
 python-jose==3.3.0
@@ -32,6 +33,22 @@ opentelemetry-instrumentation-httpx==0.41b0
 # Testing
 pytest==7.4.2
 httpx==0.24.1
+pytest-cov==4.1.0
+pytest-mock>=3.10.0,<3.11.0
+hypothesis==6.82.6
+pytest-asyncio>=0.21.1,<0.22.0
+pactman==2.30.0
+pytest-benchmark==4.0.0
+locust==2.16.1
+# k6==0.0.2  # Removed as it's not available on PyPI
+mutmut==2.4.4
+
+# Code Quality
+mypy==1.5.1
+ruff==0.0.292
+black==23.9.1
+isort==5.12.0
+pre-commit==3.4.0
 
 # Utilities
 python-dotenv==1.0.0
