@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: template-fastapi-app
+  labels:
+    app: template-fastapi-app
+spec:
+  selector:
+    app: template-fastapi-app
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP 
