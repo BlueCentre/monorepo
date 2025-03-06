@@ -19,6 +19,7 @@ class User(Base):
         is_active: Whether the user is active.
         is_superuser: Whether the user is a superuser.
         items: Items owned by the user.
+        notes: Notes owned by the user.
     """
     
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -26,4 +27,5 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    items = relationship("Item", back_populates="owner") 
+    items = relationship("Item", back_populates="owner")
+    notes = relationship("Note", back_populates="user") 

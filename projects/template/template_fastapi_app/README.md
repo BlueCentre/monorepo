@@ -12,6 +12,8 @@ A template FastAPI application with PostgreSQL, PubSub, and more.
 - **OpenTelemetry** for observability and tracing
 - **Kubernetes** deployment with Skaffold
 - **Bazel** build system integration
+- **Notes API** for managing user notes
+- **Seed Data** utilities for generating test data
 
 ## Development
 
@@ -213,6 +215,74 @@ curl -X 'POST' \
   }'
 ```
 
+**5. List Notes**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/notes/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**6. Create a New Note**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/notes/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "title": "New Note",
+    "content": "This is a new note created via API"
+  }'
+```
+
+**7. Generate Seed Data**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+# This will create 5 random items and 5 random notes
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/?num_items=5&num_notes=5' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**8. Upload Seed Data File**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+# This will create items and notes from a JSON file
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/upload' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@path/to/your/seed_data.json'
+```
+
+Example seed data file format:
+```json
+{
+  "items": [
+    {
+      "title": "Custom Item 1",
+      "description": "Description for Custom Item 1",
+      "is_active": true
+    }
+  ],
+  "notes": [
+    {
+      "title": "Custom Note 1",
+      "content": "Content for Custom Note 1"
+    }
+  ]
+}
+```
+
 #### API Documentation and Testing
 
 The application provides two interactive API documentation interfaces:
@@ -399,6 +469,74 @@ curl -X 'POST' \
   }'
 ```
 
+**5. List Notes**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/notes/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**6. Create a New Note**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/notes/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "title": "New Note",
+    "content": "This is a new note created via API"
+  }'
+```
+
+**7. Generate Seed Data**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+# This will create 5 random items and 5 random notes
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/?num_items=5&num_notes=5' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN'
+```
+
+**8. Upload Seed Data File**
+
+```bash
+# Replace YOUR_TOKEN with the access_token from the login response
+# This will create items and notes from a JSON file
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/upload' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@path/to/your/seed_data.json'
+```
+
+Example seed data file format:
+```json
+{
+  "items": [
+    {
+      "title": "Custom Item 1",
+      "description": "Description for Custom Item 1",
+      "is_active": true
+    }
+  ],
+  "notes": [
+    {
+      "title": "Custom Note 1",
+      "content": "Content for Custom Note 1"
+    }
+  ]
+}
+```
+
 #### Using Swagger UI
 
 The Swagger UI provides an interactive interface for exploring and testing the API:
@@ -535,3 +673,158 @@ This script will add alembic to the monorepo's requirements and update the requi
 ## License
 
 MIT
+
+### Seeding Test Data
+
+The application provides API endpoints to generate random test data on demand. This is useful for development, testing, and demos.
+
+#### Generating Random Seed Data via API
+
+You must be authenticated as a superuser to use this endpoint:
+
+```bash
+# First, get an access token
+TOKEN=$(curl -s -X 'POST' \
+  'http://localhost:8000/api/v1/login/access-token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=admin@example.com&password=admin' | jq -r '.access_token')
+
+# Then use the token to generate seed data
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/?num_items=20&num_notes=15' \
+  -H 'accept: application/json' \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Parameters:**
+- `num_items` (optional): Number of random items to create (default: 10, max: 100)
+- `num_notes` (optional): Number of random notes to create (default: 10, max: 100)
+
+**Response:**
+The API returns a JSON object containing:
+- `items_created`: Total number of items created
+- `notes_created`: Total number of notes created
+- `items`: List of created items with their IDs and titles
+- `notes`: List of created notes with their IDs and titles
+
+#### Uploading Custom Seed Data via File
+
+For more control over the seed data, you can upload a JSON file with predefined items and notes:
+
+```bash
+# First, get an access token
+TOKEN=$(curl -s -X 'POST' \
+  'http://localhost:8000/api/v1/login/access-token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=admin@example.com&password=admin' | jq -r '.access_token')
+
+# Then upload a seed data file
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/seed/upload' \
+  -H 'accept: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@./sample_seed_data.json"
+```
+
+**File Format:**
+The seed data file should be a JSON file with the following structure:
+
+```json
+{
+  "items": [
+    {
+      "title": "Item Title 1",
+      "description": "Description of item 1",
+      "is_active": true
+    }
+  ],
+  "notes": [
+    {
+      "title": "Note Title 1",
+      "content": "Content of note 1"
+    }
+  ]
+}
+```
+
+**Required Fields:**
+- For items: `title` (other fields are optional)
+- For notes: `title` (other fields are optional)
+
+**Sample Seed File:**
+A sample seed data file is included in the project at `sample_seed_data.json`. You can use this as a template for creating your own seed data files.
+
+#### Validating Seed Data
+
+You can verify the seed data was created successfully in several ways:
+
+**1. Check the API Response**
+
+The seed endpoint response itself confirms what was created:
+
+```json
+{
+  "items_created": 20,
+  "notes_created": 15,
+  "items": [
+    {"id": 2, "title": "Database Solution 8622"},
+    {"id": 3, "title": "IoT Platform 1831"},
+    ...
+  ],
+  "notes": [
+    {"id": 2, "title": "Implementation Strategy 6917"},
+    {"id": 3, "title": "Development Roadmap 8235"},
+    ...
+  ]
+}
+```
+
+**2. Retrieve Items via API**
+
+```bash
+# List all items (including seed data)
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/items/' \
+  -H 'accept: application/json' \
+  -H "Authorization: Bearer $TOKEN"
+
+# Get a specific item by ID
+curl -X 'GET' \
+  'http://localhost:8000/api/v1/items/2' \
+  -H 'accept: application/json' \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**3. Check Database Directly**
+
+If you have direct database access:
+
+```bash
+# Port-forward to PostgreSQL
+kubectl port-forward service/postgres -n template-fastapi-app 5432:5432 &
+
+# Get the database password
+PGPASSWORD=$(kubectl get secret postgres-secret -n template-fastapi-app -o jsonpath='{.data.password}' | base64 --decode)
+
+# Connect and list items
+psql -h localhost -U postgres -d app -c 'SELECT id, title FROM item;'
+
+# Connect and list notes
+psql -h localhost -U postgres -d app -c 'SELECT id, title FROM note;'
+```
+
+#### Using Seed Data in Development and Testing
+
+The seed data is perfect for:
+
+- **Development**: Quickly populate your database with realistic data
+- **UI Testing**: Have varied data to test frontend components
+- **API Testing**: Test filtering, pagination, and search functionality
+- **Demos**: Create instant demo data when showcasing the application
+- **Data Migration Testing**: Test data migration scripts with consistent data sets
+
+**Benefits of File-Based Seeding:**
+- Create consistent, repeatable test datasets
+- Use version-controlled seed files to maintain test scenarios
+- Share seed data files between team members
+- Create different seed files for different testing scenarios (e.g., performance testing vs. functional testing)
