@@ -94,12 +94,12 @@ When running in development mode (`skaffold dev`), the database will be initiali
 After deployment, you can access the application at:
 
 - API: http://localhost:8000/api/v1
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- ReDoc Documentation: http://localhost:8000/docs (primary documentation)
+- Swagger UI: http://localhost:8000/swagger (alternative documentation)
 
 ### Testing the API
 
-You can test the API using either curl commands or the interactive Swagger UI. First, set up port forwarding to access the application:
+You can test the API using various tools. First, set up port forwarding to access the application:
 
 ```bash
 # Set up port forwarding
@@ -213,11 +213,29 @@ curl -X 'POST' \
   }'
 ```
 
-#### Using Swagger UI
+#### API Documentation and Testing
 
-The Swagger UI provides an interactive interface for exploring and testing the API:
+The application provides two interactive API documentation interfaces:
+
+**1. ReDoc (Recommended)**
+
+ReDoc provides a clean, responsive, and easy-to-read documentation interface:
 
 1. Open your browser and navigate to http://localhost:8000/docs
+2. The documentation is organized by tags and operations
+3. You can see:
+   - Request and response schemas
+   - Example requests and responses
+   - Detailed descriptions of parameters
+   - Authentication requirements
+
+ReDoc provides excellent documentation but doesn't include an interactive testing interface. For testing, use curl commands or Swagger UI.
+
+**2. Swagger UI (Alternative)**
+
+Swagger UI provides an interactive interface for exploring and testing the API:
+
+1. Open your browser and navigate to http://localhost:8000/swagger
 2. You'll see all available API endpoints organized by category
 3. To authenticate:
    - Click the "Authorize" button at the top of the page (the padlock icon)
@@ -245,29 +263,25 @@ The Swagger UI provides an interactive interface for exploring and testing the A
       - In the "Value" field, enter: `Bearer YOUR_TOKEN` (replacing YOUR_TOKEN with the copied token)
       - Click "Authorize" and close the dialog
 
-   **Option 2: Use alternative tools**
+   **Option 3: Use other API tools**
    - Use curl commands as shown in the previous section
    - Try API tools like [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/)
-   - Use the ReDoc documentation at http://localhost:8000/redoc for reference
 
-4. Once authorized, you can test any endpoint by:
+4. Once authorized in Swagger UI, you can test any endpoint by:
    - Expanding the endpoint
    - Clicking "Try it out"
    - Filling in the required parameters
    - Clicking "Execute"
 
-**Troubleshooting Swagger UI Issues:**
+**Troubleshooting API Access Issues:**
 
-If you encounter authentication issues in Swagger UI:
+If you encounter issues accessing the API:
 1. Make sure port forwarding is active (`kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80`)
 2. Check that the application pod is running (`kubectl get pods -n template-fastapi-app`)
 3. Try using an incognito/private browser window
 4. Disable browser extensions that might interfere with API requests
-5. Use the curl commands or another API client as alternatives
-6. If using Chrome, check the developer console for CORS or other errors
-7. Try using a different browser
-
-The Swagger UI also provides detailed documentation about request parameters, response models, and status codes for each endpoint.
+5. If using Chrome, check the developer console for CORS or other errors
+6. Try using a different browser
 
 ### OpenTelemetry Integration
 

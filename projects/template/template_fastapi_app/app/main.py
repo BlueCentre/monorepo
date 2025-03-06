@@ -45,6 +45,8 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     description="Template FastAPI application with PostgreSQL, PubSub, and more.",
     version="0.1.0",
+    docs_url="/swagger",
+    redoc_url="/docs",
 )
 
 # Set all CORS enabled origins
