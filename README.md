@@ -1,155 +1,109 @@
-# Monorepo Blueprints
+# Awesome CursorRules [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-A place to develop [monorepo](https://monorepo.tools/#what-is-a-monorepo) patterns, but can also be used for polyrepos!
+<p align="center">
+  <img src="https://raw.githubusercontent.com/getcursor/cursor/main/assets/cursor-logo-full.png" alt="Cursor Logo" width="400"/>
+</p>
 
-## Overview
+A curated list of awesome `.cursorrules` files for enhancing your Cursor AI experience. This repository contains a collection of rules files for various frameworks, libraries, and development environments.
 
-Unlike other examples and demos out in the wild, we have loftier goals. If you don't see your goals being met, I wouldn't bother digging much further since technologies and versions change so much that anything here would almost be useless similar to what my experience has been while looking for best practices and more indepth examples that can be used as on-going blueprints rather than for one time presentations and shallow demos.
+## Why .cursorrules?
 
-## Quickstart
+`.cursorrules` files provide project-specific instructions to Cursor AI, helping it understand your codebase better and generate more accurate code suggestions. By adding a `.cursorrules` file to your repository, you can:
 
-1. Download latest [bazelisk](https://bazel.build/install/bazelisk)
-1. Download latest [skaffold](https://skaffold.dev/docs/install/)
-1. Download latest [minikube](https://minikube.sigs.k8s.io/docs/start/)
-1. Todo automate for local development outside of Google Cloud Workstations
-1. Clone this repo to your local workstation or Google Cloud Workstations
-1. Run `make quickstart` followed by `eval $(minikube -p minikube docker-env)`
-1. Start with skaffold?
-1. Run `bazel build //...` or `bazel test //...`
+- Provide context about your project structure
+- Define coding standards and best practices
+- Document architectural decisions
+- Specify preferred patterns and approaches
+- Improve code generation quality
+- Enhance code understanding capabilities
 
-## Blueprint Capability
+## Contents
 
-### Continuous Development
+- [Rules](#rules)
+  - [Frontend Frameworks and Libraries](#frontend-frameworks-and-libraries)
+  - [Backend and Full-Stack](#backend-and-full-stack)
+  - [Mobile Development](#mobile-development)
+  - [CSS and Styling](#css-and-styling)
+  - [State Management](#state-management)
+  - [Database and API](#database-and-api)
+  - [Testing](#testing)
+  - [Build Tools and Development](#build-tools-and-development)
+  - [Language-Specific](#language-specific)
+  - [Other](#other)
+- [How to Use](#how-to-use)
+- [Contributing](#contributing)
+- [License](#license)
 
-- [x] [Skaffold for continuous development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
-    - [x] [Skaffold for development](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-development)
-    - [ ] [Skaffold for CI](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-integration)
-    - [ ] [Skaffold for CD](https://skaffold.dev/docs/quickstart/#use-skaffold-for-continuous-delivery)
-- [x] [Bazel](https://en.wikipedia.org/wiki/Bazel_(software))
-    - [x] Local build and test
-    - [x] Local build and test cache
-    - [x] CI build and test
-    - [x] CI build and test remote cache
-    - [x] CI remote build executor (RBE)
-- [ ] [Pants]()
+## Rules
 
-### Continuous Integration
+### Frontend Frameworks and Libraries
 
-- [x] [Github Actions](https://docs.github.com/en/actions)
-- [ ] [Cloud Build](https://cloud.google.com/build)
-- [ ] [CircleCI](https://circleci.com/)
-- [ ] [Harness](https://www.harness.io/)
+- [React Components](rules/react-component-cursorrules.md) - Rules for React component structure and best practices
 
-### Continuous Deployment
+### Backend and Full-Stack
 
-- [ ] [Argo CD](https://github.com/argoproj/argo-cd)
-- [ ] [Cloud Deploy](https://cloud.google.com/deploy)
+- [Python Flask](rules/python-flask-cursorrules.md) - Rules for Python Flask web applications
+- [Python Echo App](rules/python-echo-app-cursorrules.md) - Rules for a simple Python Echo App using standard library HTTP server
+- [Python Calculator App](rules/python-calculator-app-cursorrules.md) - Rules for a Python Calculator App using standard library HTTP server
+- [Python DevOps App](rules/python-devops-app-cursorrules.md) - Rules for a Python DevOps App using standard library HTTP server
 
-### Progressive Delivery
+### Mobile Development
 
-- [ ] [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
-- [ ] [Cloud Deploy](https://cloud.google.com/deploy)
+*Coming soon*
 
-### Framework Best Practice
+### CSS and Styling
 
-- [ ] React - Frontend
-- [ ] FastAPI - Backend
-- [ ] Gin - Backend
-- [ ] Springboot - Backend
-- [ ] Typer - CLI
+*Coming soon*
 
-## Motivation
+### State Management
 
-- [Salesforce](https://www.youtube.com/watch?v=KZIYdxsRp4w)
-- [Uber](https://www.uber.com/blog/go-monorepo-bazel/)
-- [Twitter](https://opensourcelive.withgoogle.com/events/bazelcon2020/watch?talk=day1-talk2)
-- [BazelCon - bzlmod](https://www.youtube.com/watch?v=2Nn71RV_yhI)
-- [DevOps Toolkit - skaffold](https://www.youtube.com/watch?v=qS_4Qf8owc0)
+*Coming soon*
 
-## Goals
+### Database and API
 
-1. Quick, reliable and convenient builds for SDLC.
-1. Manage dependencies across all projects.
-1. Manage [polyglot](https://www.pluralsight.com/blog/software-development/how-polyglot-dev-team) builds.
-1. Manage blueprints for rapid application development.
-1. Constant evaluation of the technology stack and scale for thousands of engineers AND feature development.
+*Coming soon*
 
-## Objectives
+### Testing
 
-1. Ensure efficient, correct, fast and repeatable builds
-1. Ensure multi-language builds
-1. Ensure high quality test coverage builds
-1. Ensure [hermetic](https://bazel.build/basics/hermeticity) builds
+*Coming soon*
 
-## Roadmap
+### Build Tools and Development
 
-- [x] Setup basic Bazel builds and simple examples
-- [x] Setup automated Bazel build + test using Github Actions
-- [ ] Setup e2e Python example
-    - [ ] Test multi-version python
-- [ ] Setup e2e Golang example
-    - [ ] Test multi-version golang
-- [ ] Setup e2e Springboot example
-    - [ ] Test multi-version springboot
-- [ ] Setup e2e React example
-- [x] OCI container support
-    - [x] Test container structure
-    - [x] Make sure we are not regressing to using [Dockerfile](https://tinyurl.com/29wvdf4e) image builds
-- [ ] Define promotion strategy supporting multi-release cadance
-- [ ] Research and setup container & kubernetes development with Skaffold
-- [ ] Research build systems like GitHub Actions, Cloud Build, Harness.io, etc
-- [ ] Research [remote execution services](https://bazel.build/community/remote-execution-services) like Buildkite, BuildBuddy, etc
-- [ ] Research testing best practice
-- [ ] Document VSCode and PyCharm IDE development environment
-- [ ] Tooling for boilerplate project creation
-    - [ ] CookieCutter or Copier
-- [ ] Port example into this code base [microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo)
+- [Bazel](rules/bazel-cursorrules.md) - Rules for Bazel build system
 
-## Directory Convention
+### Language-Specific
 
-```
-monorepo/
-|-- README.md
-|-- Makefile
-|-- skaffold.yaml
-|-- WORKSPACE.bazel
-|-- MODULE.bazel
-|-- BUILD.bazel
-|-- bazel-*/**                    -> bazel local directories not checked in
-|-- fixes/**                      -> bazel temporary fixes
-|-- docs/**                       -> please contribute!
-|-- libs/                         -> common used libraries
-|   |-- BUILD.bazel
-|   |-- README.md
-|   |-- base/
-|   |-- calculator/
-|   |-- echo/
-|   `-- ...
-|-- projects/                     -> all projects created here
-|   |-- BUILD.bazel
-|   |-- README.md
-|   |-- bazel/
-|   |-- base_project/
-|   |-- py_calculator_cli_app/
-|   |-- py_calculator_flask_app/
-|   |-- echo_fastapi_app/
-|   |-- py_helloworld_cli_app/
-|   |-- py_helloworld_v2_cli_app/
-|   `-- ...
-|-- third_party/                  -> 3rd party dependencies
-|   |-- README.md
-|   |-- python/
-|   `-- ...
-`-- tools/                        -> bazel specific tooling
-    |-- README.md
-    |-- pytest
-    `-- workspace_status.sh
-```
+*Coming soon*
 
-## References
+### Other
 
-- https://github.com/aspect-build/bazel-examples/tree/main
-- https://s.itho.me/ccms_slides/2022/9/27/8dc835fc-b6f6-4656-84d4-53df725d1d6e.pdf
-- https://nubenetes.com/kubernetes-based-devel/
-- https://blog.getambassador.io/skaffold-vs-telepresence-comparing-kubernetes-inner-development-loop-tools-c8abd70545e5
-- https://sixfeetup.com/blog/common-kubernetes-concerns
+*Coming soon*
+
+## How to Use
+
+To use a `.cursorrules` file:
+
+1. Choose a `.cursorrules` file that matches your project's technology stack
+2. Create a file named `.cursorrules` in the root of your repository
+3. Copy the content from the chosen file and customize it to match your project's needs
+4. Commit the file to your repository
+
+The content will be appended to the global "Rules for AI" settings in Cursor, providing project-specific guidance to Cursor AI.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-rule`)
+3. Add your `.cursorrules` file to the appropriate category
+4. Update the README.md to include your new file
+5. Commit your changes (`git commit -m 'Add some amazing rule'`)
+6. Push to the branch (`git push origin feature/amazing-rule`)
+7. Open a Pull Request
+
+Please ensure your `.cursorrules` file follows the [structure and guidelines](rules/README.md) outlined in the rules directory.
+
+## License
+
+This repository is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
