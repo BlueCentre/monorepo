@@ -6,14 +6,27 @@ import os
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import (
-    AnyHttpUrl,
-    EmailStr,
-    PostgresDsn,
-    field_validator,
-    ConfigDict,
-)
-from pydantic_settings import BaseSettings
+try:
+    # Try to import from Pydantic v2
+    from pydantic import (
+        AnyHttpUrl,
+        EmailStr,
+        PostgresDsn,
+        field_validator,
+        ConfigDict,
+    )
+    from pydantic_settings import BaseSettings
+    IS_PYDANTIC_V2 = True
+except ImportError:
+    # Fall back to Pydantic v1
+    from pydantic import (
+        AnyHttpUrl,
+        EmailStr,
+        PostgresDsn,
+        validator,
+        BaseSettings,
+    )
+    IS_PYDANTIC_V2 = False
 
 
 class Settings(BaseSettings):
@@ -29,14 +42,26 @@ class Settings(BaseSettings):
     # CORS settings
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Validate CORS origins."""
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    # Define validator based on Pydantic version
+    if IS_PYDANTIC_V2:
+        @classmethod
+        @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+        def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+            """Validate CORS origins."""
+            if isinstance(v, str) and not v.startswith("["):
+                return [i.strip() for i in v.split(",")]
+            elif isinstance(v, (list, str)):
+                return v
+            raise ValueError(v)
+    else:
+        @validator("BACKEND_CORS_ORIGINS", pre=True, allow_reuse=True)
+        def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+            """Validate CORS origins."""
+            if isinstance(v, str) and not v.startswith("["):
+                return [i.strip() for i in v.split(",")]
+            elif isinstance(v, (list, str)):
+                return v
+            raise ValueError(v)
 
     # Project directories
     PROJECT_ROOT: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -49,31 +74,58 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "app")
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        """Create SQLAlchemy database URI from environment variables."""
-        if isinstance(v, str):
-            return v
-        
-        # Handle the case where POSTGRES_SERVER might be a service URL
-        postgres_server = values.data.get("POSTGRES_SERVER", "")
-        if postgres_server.startswith("tcp://"):
-            postgres_server = postgres_server.replace("tcp://", "")
-        
-        # Handle the case where POSTGRES_PORT might not be a valid integer
-        try:
-            postgres_port = int(values.data.get("POSTGRES_PORT", "5432"))
-        except (ValueError, TypeError):
-            postgres_port = 5432
-        
-        return PostgresDsn.build(
-            scheme="postgresql",
-            username=values.data.get("POSTGRES_USER"),
-            password=values.data.get("POSTGRES_PASSWORD"),
-            host=postgres_server,
-            port=postgres_port,
-            path=f"{values.data.get('POSTGRES_DB') or ''}",
-        )
+    # Define validator based on Pydantic version
+    if IS_PYDANTIC_V2:
+        @classmethod
+        @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
+        def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+            """Create SQLAlchemy database URI from environment variables."""
+            if isinstance(v, str):
+                return v
+            
+            # In Pydantic v2, we access values directly
+            postgres_server = values.get("POSTGRES_SERVER", "")
+            if postgres_server.startswith("tcp://"):
+                postgres_server = postgres_server.replace("tcp://", "")
+            
+            try:
+                postgres_port = int(values.get("POSTGRES_PORT", "5432"))
+            except (ValueError, TypeError):
+                postgres_port = 5432
+            
+            return PostgresDsn.build(
+                scheme="postgresql",
+                username=values.get("POSTGRES_USER"),
+                password=values.get("POSTGRES_PASSWORD"),
+                host=postgres_server,
+                port=postgres_port,
+                path=f"{values.get('POSTGRES_DB') or ''}",
+            )
+    else:
+        @validator("SQLALCHEMY_DATABASE_URI", pre=True, allow_reuse=True)
+        def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+            """Create SQLAlchemy database URI from environment variables."""
+            if isinstance(v, str):
+                return v
+            
+            # In Pydantic v1, we might need to access values through values.data
+            postgres_server = values.get("POSTGRES_SERVER", "")
+            if postgres_server.startswith("tcp://"):
+                postgres_server = postgres_server.replace("tcp://", "")
+            
+            try:
+                postgres_port = int(values.get("POSTGRES_PORT", "5432"))
+            except (ValueError, TypeError):
+                postgres_port = 5432
+            
+            return PostgresDsn.build(
+                scheme="postgresql",
+                username=values.get("POSTGRES_USER"),
+                password=values.get("POSTGRES_PASSWORD"),
+                host=postgres_server,
+                port=postgres_port,
+                path=f"{values.get('POSTGRES_DB') or ''}",
+            )
 
     # Google Cloud PubSub settings
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "")
@@ -103,11 +155,17 @@ class Settings(BaseSettings):
     # Algorithm for token generation
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     
-    # Pydantic configuration
-    model_config = ConfigDict(
-        case_sensitive=True,
-        env_file=".env",
-    )
+    # Configure settings based on Pydantic version
+    if IS_PYDANTIC_V2:
+        model_config = ConfigDict(
+            case_sensitive=True,
+            env_file=".env",
+        )
+    else:
+        class Config:
+            """Pydantic config."""
+            case_sensitive = True
+            env_file = ".env"
 
 
 settings = Settings() 
