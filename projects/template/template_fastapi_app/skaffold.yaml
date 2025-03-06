@@ -1,0 +1,86 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: template-fastapi-app
+build:
+  artifacts:
+  - image: template-fastapi-app
+    custom:
+      buildCommand: |
+        # Navigate to monorepo root first
+        MONOREPO_ROOT=$(cd ../../.. && pwd)
+        cd $MONOREPO_ROOT
+        
+        # Then build the tarball
+        bazel build //projects/template/template_fastapi_app:image_tarball
+        
+        # Extract the tarball
+        TEMP_DIR=$(mktemp -d)
+        tar -xf bazel-bin/projects/template/template_fastapi_app/image_tarball.tar -C $TEMP_DIR
+        
+        # Verify contents were extracted correctly
+        echo "Extracted files:"
+        ls -la $TEMP_DIR
+        
+        # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
+        if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+          echo "Renaming Dockerfile.bazel to Dockerfile"
+          cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
+        fi
+        
+        # Build the Docker image
+        docker build -t $IMAGE $TEMP_DIR
+        
+        # Clean up
+        rm -rf $TEMP_DIR
+      dependencies:
+        paths:
+          - "**/*"
+  local:
+    push: false
+    useBuildkit: false
+manifests:
+  rawYaml:
+  - kubernetes/*.yaml
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  activation:
+  - command: dev
+- name: run
+  activation:
+  - command: run
+- name: debug
+  activation:
+  - command: debug
+  patches:
+  - op: add
+    path: /build/artifacts/0/custom/buildCommand
+    value: |
+      # Navigate to monorepo root first
+      MONOREPO_ROOT=$(cd ../../.. && pwd)
+      cd $MONOREPO_ROOT
+      
+      # Then build the tarball with debug flags
+      bazel build //projects/template/template_fastapi_app:image_tarball --compilation_mode=dbg
+      
+      # Extract the tarball
+      TEMP_DIR=$(mktemp -d)
+      tar -xf bazel-bin/projects/template/template_fastapi_app/image_tarball.tar -C $TEMP_DIR
+      
+      # Verify contents were extracted correctly
+      echo "Extracted files:"
+      ls -la $TEMP_DIR
+      
+      # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
+      if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+        echo "Renaming Dockerfile.bazel to Dockerfile"
+        cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
+      fi
+      
+      # Build the Docker image with debug arguments
+      docker build -t $IMAGE $TEMP_DIR --build-arg COMPILATION_MODE=dbg
+      
+      # Clean up
+      rm -rf $TEMP_DIR

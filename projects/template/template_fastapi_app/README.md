@@ -1,180 +1,143 @@
-# Template FastAPI Application
+# Template FastAPI App
 
-A modern FastAPI application template with PostgreSQL, Google Cloud Pub/Sub, and more.
+A template FastAPI application with PostgreSQL, PubSub, and more.
 
 ## Features
 
-- **FastAPI**: Modern, fast (high-performance) web framework for building APIs
-- **PostgreSQL**: Robust relational database with SQLAlchemy ORM
-- **Alembic**: Database migration tool
-- **Pydantic**: Data validation and settings management
-- **JWT Authentication**: Secure authentication with JSON Web Tokens
-- **Google Cloud Pub/Sub**: Asynchronous messaging
-- **OpenTelemetry**: Comprehensive observability with distributed tracing, metrics, and logs
-- **Docker**: Containerization for easy deployment
-- **Kubernetes**: Deployment configuration for Kubernetes
-- **Testing**: Pytest for unit and integration tests
+- **FastAPI** framework for building APIs
+- **PostgreSQL** database with SQLAlchemy ORM
+- **Alembic** for database migrations
+- **JWT** authentication
+- **Google Cloud PubSub** integration
+- **OpenTelemetry** for observability and tracing
+- **Kubernetes** deployment with Skaffold
+- **Bazel** build system integration
 
-## Project Structure
-
-```
-template_fastapi_app/
-├── app/                    # Application package
-│   ├── api/                # API endpoints
-│   │   ├── deps.py         # Dependencies for API endpoints
-│   │   └── v1/             # API version 1
-│   │       ├── endpoints/  # API endpoints
-│   │       └── api.py      # API router
-│   ├── core/               # Core modules
-│   │   ├── config.py       # Configuration settings
-│   │   ├── security.py     # Security utilities
-│   │   └── telemetry.py    # OpenTelemetry configuration
-│   ├── crud/               # CRUD operations
-│   ├── db/                 # Database modules
-│   │   ├── base.py         # Base model imports
-│   │   ├── base_class.py   # Base class for models
-│   │   ├── init_db.py      # Database initialization
-│   │   └── session.py      # Database session
-│   ├── models/             # SQLAlchemy models
-│   ├── pubsub/             # Pub/Sub modules
-│   │   ├── publisher.py    # Pub/Sub publisher
-│   │   └── subscriber.py   # Pub/Sub subscriber
-│   ├── schemas/            # Pydantic schemas
-│   └── main.py             # FastAPI application
-├── migrations/             # Alembic migrations
-├── tests/                  # Tests
-├── .env                    # Environment variables
-├── .env.example            # Example environment variables
-├── Dockerfile              # Docker configuration
-├── docker-compose.yml      # Docker Compose configuration
-├── requirements.txt        # Python dependencies
-└── run.py                  # Script to run the application
-```
-
-## Getting Started
+## Development
 
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL
-- Google Cloud SDK (for Pub/Sub)
+- Docker
+- Kubernetes (local or remote)
+- Bazel
 
-### Installation
+### Setup
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/template_fastapi_app.git
-cd template_fastapi_app
-```
-
-2. Create a virtual environment:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file based on `.env.example`:
+### Running with Bazel
+
+This application is integrated with Bazel for building and packaging:
 
 ```bash
-cp .env.example .env
+# Build the application binary
+bazel build //projects/template/template_fastapi_app:run_bin
+
+# Build the container image
+bazel build //projects/template/template_fastapi_app:image_tarball
+
+# Load the image into Docker
+docker load < bazel-bin/projects/template/template_fastapi_app/image_tarball.tar
 ```
 
-5. Edit the `.env` file with your configuration.
-
-### Running the Application
+Alternatively, you can use the helper script:
 
 ```bash
-python run.py
+cd projects/template/template_fastapi_app
+./skaffold.sh build
 ```
 
-The API will be available at http://localhost:8000.
+### Running with Skaffold
 
-### API Documentation
+This application uses Skaffold for development and deployment:
 
+```bash
+# Run in development mode
+./skaffold.sh dev
+
+# Run in production mode
+./skaffold.sh run
+
+# Delete the deployment
+./skaffold.sh delete
+```
+
+### Accessing the Application
+
+After deployment, you can access the application at:
+
+- API: http://localhost:8000/api/v1
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-### Running Tests
+### OpenTelemetry Integration
+
+The application is integrated with OpenTelemetry for distributed tracing and metrics:
 
 ```bash
-pytest
+# Port forward the OpenTelemetry collector
+kubectl port-forward service/otel-collector -n template-fastapi-app 4317:4317 16686:16686 &
 ```
 
-## Observability with OpenTelemetry
+The OpenTelemetry collector exposes the following endpoints:
 
-This template includes OpenTelemetry for comprehensive observability:
+- OTLP gRPC endpoint: http://localhost:4317
+- OTLP HTTP endpoint: http://localhost:4318
+- Prometheus metrics: http://localhost:8889
 
-- **Tracing**: Distributed tracing for all requests and database operations
-- **Metrics**: Application and runtime metrics
-- **Logging**: Correlation between logs and traces
+## Project Structure
 
-### Tracing in Development
-
-When running locally with Docker Compose, OpenTelemetry Collector is included for trace collection:
-
-1. Start the application with Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
-
-2. Access the tracing UI at http://localhost:16686 (compatible with Jaeger UI)
-
-### Tracing in Kubernetes
-
-For Kubernetes deployments, Istio is used for distributed tracing:
-
-1. Ensure Istio is installed in your cluster with tracing enabled
-2. Apply the Kubernetes configurations:
-   ```bash
-   kubectl apply -f kubernetes/
-   ```
-
-3. Access the tracing UI through your Istio installation (typically Kiali or the configured tracing backend)
-
-### Custom Instrumentation
-
-You can add custom spans to your code:
-
-```python
-from opentelemetry import trace
-
-tracer = trace.get_tracer(__name__)
-
-with tracer.start_as_current_span("my-operation") as span:
-    span.set_attribute("attribute.key", "attribute.value")
-    # Your code here
+```
+.
+├── app                     # Application code
+│   ├── api                 # API endpoints
+│   ├── core                # Core functionality
+│   ├── crud                # CRUD operations
+│   ├── db                  # Database models and session
+│   ├── models              # SQLAlchemy models
+│   ├── schemas             # Pydantic schemas
+│   └── services            # Business logic
+├── kubernetes              # Kubernetes manifests
+├── tests                   # Tests
+├── alembic                 # Database migrations
+├── alembic.ini             # Alembic configuration
+├── BUILD.bazel             # Bazel build configuration
+├── Dockerfile.bazel        # Dockerfile for Bazel builds
+├── requirements.txt        # Python dependencies
+├── run.py                  # Application entry point
+└── skaffold.yaml           # Skaffold configuration
 ```
 
-## Docker
+## Troubleshooting
 
-### Building the Docker Image
+### Common Issues
 
-```bash
-docker build -t template_fastapi_app .
-```
+#### Python Path Issues
 
-### Running with Docker Compose
+If you encounter import errors related to Python's built-in modules, check the `PYTHONPATH` environment variable in the Dockerfile. The application code should be in a separate directory to avoid conflicts with Python's built-in modules.
 
-```bash
-docker-compose up -d
-```
+#### Database Connection Issues
 
-## Deployment
+If you encounter database connection issues, check the database configuration in `app/core/config.py`. The application is configured to use PostgreSQL, and the connection string is built from environment variables.
 
-### Kubernetes
+#### Kubernetes Deployment Issues
 
-```bash
-kubectl apply -f kubernetes/
-```
+If you encounter issues with the Kubernetes deployment, check the Kubernetes manifests in the `kubernetes` directory. The application is configured to use Skaffold for deployment, and the Skaffold configuration is in `skaffold.yaml`.
+
+#### OpenTelemetry Issues
+
+The OpenTelemetry collector configuration is in `kubernetes/otel-collector.yaml`. If you encounter issues with the OpenTelemetry collector, check the following:
+
+- Make sure the `debug` exporter is used instead of the deprecated `logging` exporter
+- Verify that the collector is running with `kubectl get pods -n template-fastapi-app`
+- Check the collector logs with `kubectl logs -n template-fastapi-app <otel-collector-pod-name>`
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT
