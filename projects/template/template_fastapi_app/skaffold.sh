@@ -39,7 +39,7 @@ function show_help {
 }
 
 # Set default values
-namespace="template-fastapi-app"
+namespace="default"
 context="colima"
 command="dev"
 profile=""
