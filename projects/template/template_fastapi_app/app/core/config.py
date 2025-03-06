@@ -54,12 +54,24 @@ class Settings(BaseSettings):
         """Create SQLAlchemy database URI from environment variables."""
         if isinstance(v, str):
             return v
+        
+        # Handle the case where POSTGRES_SERVER might be a service URL
+        postgres_server = values.data.get("POSTGRES_SERVER", "")
+        if postgres_server.startswith("tcp://"):
+            postgres_server = postgres_server.replace("tcp://", "")
+        
+        # Handle the case where POSTGRES_PORT might not be a valid integer
+        try:
+            postgres_port = int(values.data.get("POSTGRES_PORT", "5432"))
+        except (ValueError, TypeError):
+            postgres_port = 5432
+        
         return PostgresDsn.build(
             scheme="postgresql",
             username=values.data.get("POSTGRES_USER"),
             password=values.data.get("POSTGRES_PASSWORD"),
-            host=values.data.get("POSTGRES_SERVER"),
-            port=int(values.data.get("POSTGRES_PORT")),
+            host=postgres_server,
+            port=postgres_port,
             path=f"{values.data.get('POSTGRES_DB') or ''}",
         )
 

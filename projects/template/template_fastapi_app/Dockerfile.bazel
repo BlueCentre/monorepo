@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create a separate directory for the app code
+RUN mkdir -p /app/src
+
+# Copy application code to the src directory
+COPY app /app/src/app
+COPY run.py /app/src/
+
+# Set environment variables
+ENV PYTHONPATH=/app/src
+
+# Expose port 8000
+EXPOSE 8000
+
+# Run the app
+CMD ["python", "/app/src/run.py"] 

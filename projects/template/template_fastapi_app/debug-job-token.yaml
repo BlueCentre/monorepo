@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fastapi-debug-token
+  namespace: template-fastapi-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: debug
+        image: template-fastapi-app:e9400af-dirty
+        command: ["cat", "/app/token.py"]
+      restartPolicy: Never
+  backoffLimit: 0 

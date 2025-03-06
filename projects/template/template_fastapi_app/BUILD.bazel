@@ -15,6 +15,7 @@
 
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@pip//:requirements.bzl", "requirement")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,67 +27,116 @@ py_library(
     deps = [
         requirement("fastapi"),
         requirement("pydantic"),
+        # Exclude pydantic-settings as it's not available in the monorepo
+        # requirement("pydantic-settings"),
         requirement("sqlalchemy"),
-        requirement("asyncpg"),
-        requirement("httpx"),
-        # Note: Other dependencies like opentelemetry, google-cloud-pubsub, etc. 
-        # are not available in the current pip configuration
+        # requirement("starlette"),  # Included via fastapi
+        requirement("uvicorn"),
+        # requirement("psycopg2-binary"),  # Not available in the monorepo
     ],
 )
 
 # The main application binary
 py_binary(
     name = "run_bin",
-    srcs = glob(["bin/**/*.py"]),
-    main = "bin/run_bin.py",
-    imports = ["."],
-    deps = [":app_lib"],
+    srcs = ["run.py"],
+    main = "run.py",
+    deps = [
+        ":app_lib",
+        requirement("uvicorn"),
+    ],
 )
 
 # Database migration script binary
 py_binary(
     name = "run_migrations",
-    srcs = glob(["migrations/**/*.py"]),
-    main = "migrations/scripts/run_migrations.py",
-    imports = ["."],
-    deps = [":app_lib"],
-)
-
-# Test targets with proper dependencies
-py_test(
-    name = "test_main",
-    srcs = ["tests/test_main.py", "tests/__init__.py"],
-    main = "tests/test_main.py",
-    imports = ["."],
-    tags = ["manual"],
+    srcs = ["run_migrations.py"],
+    main = "run_migrations.py",
     deps = [
         ":app_lib",
-        requirement("pytest"),
-        requirement("httpx"),
+        requirement("alembic"),
     ],
+    # Tagged as manual to exclude from //... builds since alembic might not be available in the monorepo
+    tags = ["manual"],
+)
+
+# Tests marked as manual to exclude from default test runs
+py_test(
+    name = "test_main",
+    srcs = ["tests/test_main.py"],
+    deps = [":app_lib"],
+    tags = ["manual"],
 )
 
 py_test(
     name = "test_telemetry",
-    srcs = ["tests/test_telemetry.py", "tests/__init__.py"],
-    main = "tests/test_telemetry.py",
-    imports = ["."],
+    srcs = ["tests/test_telemetry.py"],
+    deps = [":app_lib"],
     tags = ["manual"],
-    deps = [
-        ":app_lib",
-        requirement("pytest"),
-    ],
 )
 
 py_test(
     name = "web_app_test",
-    srcs = ["tests/web_app_test.py", "tests/__init__.py"],
-    main = "tests/web_app_test.py",
-    imports = ["."],
+    srcs = ["tests/web_app_test.py"],
+    deps = [":app_lib"],
     tags = ["manual"],
-    deps = [
-        ":app_lib",
-        requirement("pytest"),
-        requirement("httpx"),
+)
+
+# Create a tar of the app code and its dependencies
+genrule(
+    name = "app_tar",
+    srcs = [
+        "run.py",
+        "Dockerfile.bazel",
+        "requirements.txt",
+    ] + glob(["app/**/*.py"]),
+    outs = ["app.tar"],
+    cmd = """
+        mkdir -p app_files/app
+        # Copy the run.py file
+        cp $(location run.py) app_files/
+        # Copy the entire app directory structure
+        for f in $(locations app/main.py) $(locations app/api/deps.py) $(locations app/core/config.py) $(SRCS); do
+            if [[ $$f == *app/* ]]; then
+                rel_path=$${f#*/}  # Remove the workspace path prefix
+                mkdir -p app_files/$$(dirname $$rel_path)
+                cp $$f app_files/$$rel_path
+            fi
+        done
+        # Copy requirements.txt
+        cp $(location requirements.txt) app_files/
+        # Copy Dockerfile
+        cp $(location Dockerfile.bazel) app_files/Dockerfile
+        # Create tarball
+        tar -cf $@ -C app_files .
+    """,
+)
+
+# Create a tarball that can be loaded into Docker
+pkg_tar(
+    name = "image_tarball",
+    srcs = [
+        "run.py",
+        "Dockerfile.bazel",
+        "requirements.txt",
     ],
+    # Use package_dir to maintain the correct directory structure
+    package_dir = "/",
+    # Include app files with their directory structure preserved
+    deps = [
+        ":app_files_tar",
+    ],
+    symlinks = {
+        "Dockerfile": "Dockerfile.bazel",
+    },
+    extension = "tar",
+)
+
+# Create a tarball of just the app files with proper directory structure
+pkg_tar(
+    name = "app_files_tar",
+    srcs = glob(["app/**/*.py"]),
+    # Preserve the directory structure
+    strip_prefix = ".",
+    package_dir = "/",
 )

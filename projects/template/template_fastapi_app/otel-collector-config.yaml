@@ -19,7 +19,7 @@ processors:
     timeout: 2s
 
 exporters:
-  logging:
+  debug:
     verbosity: detailed
   otlp:
     endpoint: "${OTLP_EXPORTER_ENDPOINT:collector:4317}"
@@ -37,7 +37,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch, resourcedetection]
-      exporters: [logging, jaeger]
+      exporters: [debug, jaeger]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch, resourcedetection]

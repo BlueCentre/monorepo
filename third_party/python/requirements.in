@@ -15,6 +15,7 @@ bcrypt
 python-multipart
 tenacity
 google-cloud-pubsub
+# TODO: Add alembic here to support the template_fastapi_app migrations
 
 # OpenTelemetry
 opentelemetry-api
