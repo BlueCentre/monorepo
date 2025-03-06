@@ -1,109 +1,121 @@
-# Awesome CursorRules [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
+# Monorepo Project
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/getcursor/cursor/main/assets/cursor-logo-full.png" alt="Cursor Logo" width="400"/>
-</p>
+[![CI](https://github.com/BlueCentre/monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/BlueCentre/monorepo/actions/workflows/ci.yml)
 
-A curated list of awesome `.cursorrules` files for enhancing your Cursor AI experience. This repository contains a collection of rules files for various frameworks, libraries, and development environments.
+A modern monorepo architecture using Bazel for building and testing multiple projects across different languages and frameworks.
 
-## Why .cursorrules?
+## Overview
 
-`.cursorrules` files provide project-specific instructions to Cursor AI, helping it understand your codebase better and generate more accurate code suggestions. By adding a `.cursorrules` file to your repository, you can:
+This monorepo contains multiple projects organized by language and purpose. It uses Bazel as the build system to ensure consistent, reproducible builds across all projects.
 
-- Provide context about your project structure
-- Define coding standards and best practices
-- Document architectural decisions
-- Specify preferred patterns and approaches
-- Improve code generation quality
-- Enhance code understanding capabilities
+## Repository Structure
 
-## Contents
+```
+monorepo/
+├── projects/
+│   ├── base/           # Base project templates and utilities
+│   ├── java/           # Java applications and libraries
+│   ├── py/             # Python applications and libraries
+│   └── template/       # Project templates
+├── third_party/        # Third-party dependencies
+├── .bazelignore        # Files and directories to ignore in Bazel builds
+├── .bazelrc            # Bazel configuration
+├── BUILD.bazel         # Root BUILD file
+├── MODULE.bazel        # Bazel module definition
+└── WORKSPACE           # Bazel workspace definition (legacy)
+```
 
-- [Rules](#rules)
-  - [Frontend Frameworks and Libraries](#frontend-frameworks-and-libraries)
-  - [Backend and Full-Stack](#backend-and-full-stack)
-  - [Mobile Development](#mobile-development)
-  - [CSS and Styling](#css-and-styling)
-  - [State Management](#state-management)
-  - [Database and API](#database-and-api)
-  - [Testing](#testing)
-  - [Build Tools and Development](#build-tools-and-development)
-  - [Language-Specific](#language-specific)
-  - [Other](#other)
-- [How to Use](#how-to-use)
-- [Contributing](#contributing)
-- [License](#license)
+## Getting Started
 
-## Rules
+### Prerequisites
 
-### Frontend Frameworks and Libraries
+- [Bazel](https://bazel.build/install) (or [Bazelisk](https://github.com/bazelbuild/bazelisk) for automatic version management)
+- Java JDK 11+
+- Python 3.9+
 
-- [React Components](rules/react-component-cursorrules.md) - Rules for React component structure and best practices
+### Installation
 
-### Backend and Full-Stack
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BlueCentre/monorepo.git
+   cd monorepo
+   ```
 
-- [Python Flask](rules/python-flask-cursorrules.md) - Rules for Python Flask web applications
-- [Python Echo App](rules/python-echo-app-cursorrules.md) - Rules for a simple Python Echo App using standard library HTTP server
-- [Python Calculator App](rules/python-calculator-app-cursorrules.md) - Rules for a Python Calculator App using standard library HTTP server
-- [Python DevOps App](rules/python-devops-app-cursorrules.md) - Rules for a Python DevOps App using standard library HTTP server
+2. Build all projects:
+   ```bash
+   bazel build //...
+   ```
 
-### Mobile Development
+3. Run tests:
+   ```bash
+   bazel test //...
+   ```
 
-*Coming soon*
+## Project Categories
 
-### CSS and Styling
+### Python Projects
 
-*Coming soon*
+- **Echo FastAPI App**: A simple FastAPI application
+- **Calculator CLI App**: Command-line calculator utility
+- **DevOps FastAPI App**: FastAPI application with DevOps features
+- **Calculator Flask App**: Flask-based calculator web application
+- **Hello World App**: Basic Python application
 
-### State Management
+### Java Projects
 
-*Coming soon*
+- **Simple Java App**: Basic Java application without external dependencies
+- **Java Web Server**: Simple HTTP server in Java
 
-### Database and API
+## Development
 
-*Coming soon*
+### Adding a New Project
 
-### Testing
+1. Create a new directory under the appropriate category in `projects/`
+2. Add a `BUILD.bazel` file defining your build targets
+3. Implement your application code
+4. Add tests
 
-*Coming soon*
+### Building Specific Projects
 
-### Build Tools and Development
+```bash
+# Build a specific Python project
+bazel build //projects/py/echo_fastapi_app/...
 
-- [Bazel](rules/bazel-cursorrules.md) - Rules for Bazel build system
+# Build a specific Java project
+bazel build //projects/java/simple_java_app/...
+```
 
-### Language-Specific
+### Running Applications
 
-*Coming soon*
+```bash
+# Run a Python application
+bazel run //projects/py/calculator_cli_py_app
 
-### Other
+# Run a Java application
+bazel run //projects/java/simple_java_app:hello
+```
 
-*Coming soon*
+## CI/CD
 
-## How to Use
+This repository uses GitHub Actions for continuous integration. The workflow is defined in `.github/workflows/ci.yml`.
 
-To use a `.cursorrules` file:
+The CI pipeline:
+1. Builds all projects
+2. Runs all tests
+3. Reports build and test results
 
-1. Choose a `.cursorrules` file that matches your project's technology stack
-2. Create a file named `.cursorrules` in the root of your repository
-3. Copy the content from the chosen file and customize it to match your project's needs
-4. Commit the file to your repository
+## Known Issues
 
-The content will be appended to the global "Rules for AI" settings in Cursor, providing project-specific guidance to Cursor AI.
+See [BUILD_FIXES.md](../BUILD_FIXES.md) for information about current build issues and their workarounds.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-rule`)
-3. Add your `.cursorrules` file to the appropriate category
-4. Update the README.md to include your new file
-5. Commit your changes (`git commit -m 'Add some amazing rule'`)
-6. Push to the branch (`git push origin feature/amazing-rule`)
-7. Open a Pull Request
-
-Please ensure your `.cursorrules` file follows the [structure and guidelines](rules/README.md) outlined in the rules directory.
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This repository is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details. 
