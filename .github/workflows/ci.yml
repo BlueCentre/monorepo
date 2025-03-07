@@ -19,8 +19,6 @@ name: CI
 on: [push]
 
 jobs:
-<<<<<<< Updated upstream
-=======
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
@@ -41,7 +39,6 @@ jobs:
             -Dsonar.verbose=false
           env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
->>>>>>> Stashed changes
   build:
     # virtual environments: https://github.com/actions/virtual-environments
     runs-on: ubuntu-20.04
