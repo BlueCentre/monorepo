@@ -7,6 +7,7 @@ General guidelines
 - Maintain the existing structure of the README.md file
 - Follow consistent formatting for list items
 - Use descriptive names for .cursorrules files and their folders
+- Always validate code and configuration changes and make sure 'bazel build //...', 'bazel test //...', 'skaffold run -m template-fastapi-app -p dev' and automated smoke tests always succeeds
 
 // README.md structure
 // The README.md file should maintain the following structure:
