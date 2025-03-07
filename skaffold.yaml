@@ -8,7 +8,7 @@ requires:
   # - path: ./projects/py/devops_fastapi_app
   # - path: ./projects/go/devops_go_app
   # - path: ./projects/java/hello_springboot_app
-  - path: ./projects/microservices-demo
+  # - path: ./projects/microservices-demo
 
 # See:
 # - https://skaffold.dev/docs/references/yaml/

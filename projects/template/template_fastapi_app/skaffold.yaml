@@ -183,12 +183,19 @@ profiles:
     activation:
       - command: run
 
+  # Casuses: ERRO[0000] panic occurred during schema reflection for yaml line number information: runtime error: index out of range [-1]  subtask=-1 task=DevLoop
+  # - name: skip-verify
+  #   patches:
+  #     - op: add
+  #       path: /verify
+  #       value: []
+
   - name: db-verify-only
     patches:
-      - op: add
+      - op: replace
         path: /verify
         value:
-          - name: smoke-test
+          - name: db-verify
             container:
               name: db-check
               image: postgres:15
@@ -249,9 +256,3 @@ profiles:
                   exit 1
             executionMode:
               kubernetesCluster: {}
-
-  - name: skip-verify
-    patches:
-      - op: add
-        path: /verify
-        value: []
