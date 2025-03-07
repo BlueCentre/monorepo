@@ -15,6 +15,7 @@ A production-ready FastAPI application template showcasing best practices for bu
 - **Async Support**: Asynchronous endpoint handling
 - **Logging & Telemetry**: Built-in observability with OpenTelemetry
 - **Robust Database Connectivity**: Handles complex Kubernetes environments with automatic connection string parsing
+- **Secret Rotation**: Automatic and manual rotation of JWT keys and database credentials for enhanced security
 
 ## Monorepo Integration
 
@@ -184,6 +185,9 @@ The application is configured using the following environment variables:
 | `SECRET_KEY` | Secret key for JWT tokens | Auto-generated |
 | `ENVIRONMENT` | Environment name (development, production) | `development` |
 | `ENABLE_TELEMETRY` | Enable OpenTelemetry | `True` |
+| `SECRET_ROTATION_ENABLED` | Enable automatic secret rotation | `True` |
+| `SECRET_KEY_LIFETIME_DAYS` | Number of days before a secret key expires | `30` |
+| `SECRET_KEY_TRANSITION_DAYS` | Number of days for transition period before expiration | `1` |
 
 ### Kubernetes Environment Handling
 
@@ -192,6 +196,100 @@ In Kubernetes environments, the application automatically handles environment va
 - `POSTGRES_PORT` might come as `tcp://10.43.82.247:5432` - the application extracts the port number properly
 - `POSTGRES_SERVER` might include TCP protocol - this is handled automatically
 - If the database connection fails, it falls back to an in-memory SQLite database for testing purposes
+
+## Secret Rotation
+
+The application includes a sophisticated secret rotation mechanism that enhances security by automatically rotating sensitive credentials, including JWT signing keys and database credentials. This ensures that even if credentials are compromised, they have a limited lifetime, reducing the risk of unauthorized access.
+
+### Key Concepts
+
+- **Key Rotation**: The process of periodically replacing cryptographic keys to limit their exposure
+- **Transition Period**: Time window during which both old and new keys are valid to ensure smooth transitions
+- **Secret Lifecycle**: Creation, active use, transition, and expiration phases of secrets
+
+### How Secret Rotation Works
+
+The secret rotation mechanism works as follows:
+
+1. **Initialization**:
+   - On application startup, the `SecretRotationManager` loads or initializes secret keys
+   - If no keys exist, it generates new keys using the values from environment variables
+   - Keys are stored in a secure JSON file with their creation and expiration timestamps
+
+2. **Automatic Rotation**:
+   - Keys are automatically checked for expiration on application startup and during operations
+   - When a key approaches its expiration date (determined by `SECRET_KEY_TRANSITION_DAYS`), a new key is generated
+   - During the transition period, both the old and new keys are valid
+   - After the transition period, the old key is no longer used for new operations but remains valid for verification
+
+3. **JWT Key Rotation**:
+   - JWT signing keys are rotated based on the configured lifetime
+   - During the transition period, the application can verify tokens signed with either the old or new key
+   - New tokens are always signed with the current key
+
+4. **Database Credential Rotation**:
+   - Database credentials can also be rotated automatically
+   - The application will use the most recent credentials for database connections
+   - Note: External database users must be updated separately
+
+### Configuration
+
+The secret rotation mechanism can be configured with the following environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SECRET_ROTATION_ENABLED` | Enable or disable automatic secret rotation | `True` |
+| `SECRET_KEY_LIFETIME_DAYS` | Number of days a secret key is valid | `30` |
+| `SECRET_KEY_TRANSITION_DAYS` | Number of days for transition period before expiration | `1` |
+
+### API Endpoints for Key Management
+
+The application provides secure endpoints for managing keys. These endpoints are only accessible to superusers:
+
+- **GET `/api/v1/key-management/status`**: Get the status of all JWT keys and DB credentials
+- **POST `/api/v1/key-management/rotate-jwt-key`**: Force immediate rotation of the JWT signing key
+- **POST `/api/v1/key-management/rotate-db-credentials`**: Force immediate rotation of the DB credentials
+
+### Example: Manually Rotating Keys
+
+In some scenarios, you might want to manually trigger key rotation:
+
+```bash
+# Get the current status of keys
+curl -X GET \
+  http://localhost:8000/api/v1/key-management/status \
+  -H 'Authorization: Bearer YOUR_ADMIN_TOKEN'
+
+# Force rotation of JWT key
+curl -X POST \
+  http://localhost:8000/api/v1/key-management/rotate-jwt-key \
+  -H 'Authorization: Bearer YOUR_ADMIN_TOKEN'
+
+# Force rotation of database credentials
+curl -X POST \
+  http://localhost:8000/api/v1/key-management/rotate-db-credentials \
+  -H 'Authorization: Bearer YOUR_ADMIN_TOKEN'
+```
+
+### Best Practices for Secret Rotation
+
+1. **Monitoring**: Regularly check the status of your keys through the API endpoints
+2. **Testing**: After rotation, verify that your application still works properly
+3. **Emergency Rotation**: If you suspect a key has been compromised, rotate it immediately
+4. **Database Synchronization**: When rotating database credentials, ensure the database is updated accordingly
+5. **Backup**: Always maintain backups of your secret files in secure locations
+
+### Implementation Details
+
+The secret rotation mechanism is implemented in the `app/core/secret_rotation.py` file. The main components are:
+
+- `SecretRotationManager`: Core class that handles all aspects of secret rotation
+- `JWT_KEY_TYPE` and `DB_CREDENTIAL_TYPE`: Constants defining the types of secrets managed
+- Integration with `app/core/security.py` for JWT token operations
+
+For automated testing of the secret rotation mechanism, see the test files:
+- `tests/test_secret_rotation.py`: Tests for the core rotation mechanism
+- `tests/test_key_management_api.py`: Tests for the API endpoints
 
 ## Verification
 

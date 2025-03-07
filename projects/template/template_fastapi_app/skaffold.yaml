@@ -5,45 +5,45 @@ metadata:
 
 build:
   artifacts:
-  - image: template-fastapi-app
-    custom:
-      buildCommand: |
-        # Navigate to monorepo root first
-        MONOREPO_ROOT=$(cd ../../.. && pwd)
-        cd $MONOREPO_ROOT
-        
-        # Then build the tarball
-        bazel build //projects/template/template_fastapi_app:image_tarball
-        
-        # Extract the tarball
-        TEMP_DIR=$(mktemp -d)
-        tar -xf bazel-bin/projects/template/template_fastapi_app/image_tarball.tar -C $TEMP_DIR
-        
-        # Verify contents were extracted correctly
-        echo "Extracted files:"
-        ls -la $TEMP_DIR
-        
-        # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
-        if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
-          echo "Renaming Dockerfile.bazel to Dockerfile"
-          cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
-        fi
-        
-        # Build the Docker image
-        docker build -t $IMAGE $TEMP_DIR
-        
-        # Clean up
-        rm -rf $TEMP_DIR
-      dependencies:
-        paths:
-          - "**/*"
+    - image: template-fastapi-app
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd $MONOREPO_ROOT
+
+          # Then build the tarball
+          bazel build //projects/template/template_fastapi_app:image_tarball
+
+          # Extract the tarball
+          TEMP_DIR=$(mktemp -d)
+          tar -xf bazel-bin/projects/template/template_fastapi_app/image_tarball.tar -C $TEMP_DIR
+
+          # Verify contents were extracted correctly
+          echo "Extracted files:"
+          ls -la $TEMP_DIR
+
+          # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
+          if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+            echo "Renaming Dockerfile.bazel to Dockerfile"
+            cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
+          fi
+
+          # Build the Docker image
+          docker build -t $IMAGE $TEMP_DIR
+
+          # Clean up
+          rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "**/*"
   local:
     push: false
     useBuildkit: false
 
 manifests:
   rawYaml:
-  - kubernetes/*.yaml
+    - kubernetes/*.yaml
 
 deploy:
   kubectl: {}
@@ -99,7 +99,18 @@ verify:
                 
                 if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
                   echo "Users endpoint test passed!"
-                  SUCCESS=true
+                  
+                  # Test key management endpoint
+                  echo "Testing key management status endpoint..."
+                  KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                  echo "Key management status response: $KEY_MGMT_RESPONSE"
+                  
+                  if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
+                    echo "Key management status test passed!"
+                    SUCCESS=true
+                  else
+                    echo "Key management status test failed!"
+                  fi
                 else
                   echo "Users endpoint test failed!"
                 fi
@@ -121,7 +132,7 @@ verify:
               fi
             fi
           done
-          
+
           # Final success message
           if [ "$SUCCESS" = true ]; then
             echo "API verification successful! All tests passed."
@@ -130,109 +141,10 @@ verify:
             echo "API verification failed!"
             exit 1
           fi
+    # Do not remove this executionMode block since we need to run the tests in the cluster.
+    # Ignore the linter warning for this line.
     executionMode:
       kubernetesCluster: {}
-
-profiles:
-- name: dev
-  activation:
-  - command: dev
-  patches:
-  - op: add
-    path: /build/local/push
-    value: false
-  - op: add
-    path: /deploy/kubectl/flags
-    value:
-      apply:
-      - --validate=false
-      - --force=true
-- name: run
-  activation:
-  - command: run
-# Create a profile to skip database initialization if needed
-- name: skip-db-init
-  patches:
-  - op: add
-    path: /verify
-    value:
-      - name: smoke-test
-        container:
-          name: curl-smoke-test
-          image: curlimages/curl:latest
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Waiting for application to be ready..."
-              sleep 15
-              
-              # Try different service naming approaches
-              SUCCESS=false
-              
-              # Test different endpoint formats
-              echo "Testing health endpoint at http://template-fastapi-app/health"
-              HEALTH_RESPONSE=$(curl -s http://template-fastapi-app/health)
-              echo "Response: $HEALTH_RESPONSE"
-              if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
-                echo "Health check passed!"
-                SUCCESS=true
-              else
-                echo "Health check failed, trying alternate endpoint..."
-                
-                echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app/health"
-                HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app/health)
-                echo "Response: $HEALTH_RESPONSE"
-                if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
-                  echo "Health check passed!"
-                  SUCCESS=true
-                else
-                  echo "Health check failed, trying alternate endpoint..."
-                  
-                  echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc/health"
-                  HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc/health)
-                  echo "Response: $HEALTH_RESPONSE"
-                  if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
-                    echo "Health check passed!"
-                    SUCCESS=true
-                  else
-                    echo "Health check failed, trying alternate endpoint..."
-                    
-                    echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health"
-                    HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health)
-                    echo "Response: $HEALTH_RESPONSE"
-                    if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
-                      echo "Health check passed!"
-                      SUCCESS=true
-                    else
-                      # Try direct IP address
-                      echo "Trying direct services lookup via nslookup..."
-                      nslookup template-fastapi-app
-                      
-                      echo "Testing direct IP, looking up cluster IPs..."
-                      CLUSTER_IPS=$(getent hosts template-fastapi-app | awk '{print $1}')
-                      echo "Found IPs: $CLUSTER_IPS"
-                      
-                      # Try a direct IP approach
-                      echo "Testing health endpoint at http://10.43.189.106/health (last known service IP)"
-                      HEALTH_RESPONSE=$(curl -s --connect-timeout 5 http://10.43.189.106/health)
-                      echo "Response: $HEALTH_RESPONSE"
-                      if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
-                        echo "Health check passed!"
-                        SUCCESS=true
-                      fi
-                    fi
-                  fi
-                fi
-              fi
-              
-              # Final success message
-              if [ "$SUCCESS" = true ]; then
-                echo "API verification successful! Health check passed."
-                exit 0
-              else
-                echo "API verification failed!"
-                exit 1
-              fi
 
 portForward:
   - resourceType: service
@@ -251,3 +163,96 @@ portForward:
     resourceName: otel-collector
     port: 16686
     localPort: 16686
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
+
+  - name: run
+    activation:
+      - command: run
+
+  # Casuses: ERRO[0000] panic occurred during schema reflection for yaml line number information: runtime error: index out of range [-1]  subtask=-1 task=DevLoop
+  # - name: skip-verify
+  #   patches:
+  #     - op: add
+  #       path: /verify
+  #       value: []
+
+  - name: db-verify-only
+    patches:
+      - op: replace
+        path: /verify
+        value:
+          - name: db-verify
+            container:
+              name: db-check
+              image: postgres:15
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "Waiting for database to be ready..."
+                  sleep 15
+
+                  MAX_RETRIES=30
+
+                  for i in $(seq 1 $MAX_RETRIES); do
+                    echo "Attempt $i/$MAX_RETRIES: Checking database connection..."
+                    if PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT 1" > /dev/null 2>&1; then
+                      echo "Database connection successful!"
+                      
+                      # List all visible database tables
+                      echo "Listing all database tables:"
+                      echo "========================================"
+                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "\dt"
+                      echo ""
+                      
+                      # Show table details
+                      echo "Table details (schema information):"
+                      echo "========================================"
+                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
+                      echo ""
+                      
+                      # Show row counts for important tables
+                      echo "Row counts for important tables:"
+                      echo "========================================"
+                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "
+                        SELECT 'user' as table_name, COUNT(*) as row_count FROM user UNION ALL
+                        SELECT 'item' as table_name, COUNT(*) as row_count FROM item UNION ALL
+                        SELECT 'note' as table_name, COUNT(*) as row_count FROM note
+                        ORDER BY table_name;
+                      "
+                      echo ""
+                      
+                      # Verify that admin user exists
+                      USER_COUNT=$(PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -t -c "SELECT COUNT(*) FROM user WHERE email='admin@example.com'" | tr -d ' ')
+                      
+                      if [ "$USER_COUNT" -ge "1" ]; then
+                        echo "Admin user exists in database!"
+                        echo "Database verification successful!"
+                        exit 0
+                      else
+                        echo "Admin user not found in database!"
+                        exit 1
+                      fi
+                    else
+                      echo "Database connection failed, retrying in 2 seconds..."
+                      sleep 2
+                    fi
+                  done
+
+                  echo "Failed to connect to database after $MAX_RETRIES attempts!"
+                  exit 1
+            executionMode:
+              kubernetesCluster: {}
