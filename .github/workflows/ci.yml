@@ -28,6 +28,15 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+            -Dsonar.organization=vitruvian-software-llc
+            -Dsonar.projectKey=vitruvian-software-llc_monorepo
+            -Dsonar.sources=./projects
+            # -Dsonar.java.binaries=./projects/java
+            -Dsonar.exclusions=java/**
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.verbose=false
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
