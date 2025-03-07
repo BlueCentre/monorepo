@@ -254,3 +254,81 @@ If verification fails, you can debug by:
 3. Validating service accessibility from within the cluster: `kubectl exec -it your-app-pod -- curl http://your-service/health`
 
 The robust service discovery mechanism in the verification script will automatically try multiple addressing approaches, making it resilient to various Kubernetes network configurations.
+
+## Code Quality and Maintainability
+
+This project uses several tools to ensure code quality and maintainability:
+
+### Type Checking
+
+We use MyPy for static type checking with strict settings:
+
+```bash
+# Run type checking
+mypy app
+```
+
+### Linting and Formatting
+
+We use a combination of tools for linting and formatting:
+
+- **Ruff**: Fast Python linter that combines multiple linting tools
+- **Black**: Code formatter with consistent style
+- **isort**: Import sorter that works with Black
+
+```bash
+# Run all linting checks
+ruff check app tests
+black --check app tests
+isort --check app tests
+
+# Auto-format code
+ruff check --fix app tests
+black app tests
+isort app tests
+```
+
+### Pre-commit Hooks
+
+We use pre-commit hooks to ensure code quality before committing:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run pre-commit hooks manually
+pre-commit run --all-files
+```
+
+### Security Scanning
+
+We scan dependencies and code for security vulnerabilities:
+
+```bash
+# Scan dependencies for security vulnerabilities
+./scripts/scan_dependencies.sh
+
+# Run security checks during pre-commit
+pre-commit run gitleaks --all-files
+```
+
+### Complexity Analysis
+
+We analyze code complexity to maintain maintainable code:
+
+```bash
+# Run complexity analysis
+./scripts/analyze_complexity.sh
+```
+
+### Code Coverage with SonarQube
+
+We use SonarQube for code coverage and quality analysis:
+
+```bash
+# Generate coverage reports for SonarQube
+./scripts/run_tests_with_coverage.sh
+
+# Run SonarQube analysis (requires SonarQube server)
+sonar-scanner
+```
