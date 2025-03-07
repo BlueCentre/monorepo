@@ -4,6 +4,7 @@ Configuration settings for the FastAPI application.
 
 import os
 import secrets
+import logging
 from typing import Any, Dict, List, Optional, Union
 
 try:
@@ -28,6 +29,7 @@ except ImportError:
     )
     IS_PYDANTIC_V2 = False
 
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     """Application settings."""
@@ -81,51 +83,125 @@ class Settings(BaseSettings):
         def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
             """Create SQLAlchemy database URI from environment variables."""
             if isinstance(v, str):
+                logger.info(f"Using existing database URI: {v}")
                 return v
             
             # In Pydantic v2, we access values directly
             postgres_server = values.get("POSTGRES_SERVER", "")
+            logger.info(f"Original POSTGRES_SERVER: {postgres_server}")
+            
             if postgres_server.startswith("tcp://"):
-                postgres_server = postgres_server.replace("tcp://", "")
+                postgres_server = postgres_server.split(":")[-2].replace("//", "")
+                logger.info(f"Modified POSTGRES_SERVER: {postgres_server}")
+            
+            # Handle case where POSTGRES_PORT might be a full TCP URL
+            postgres_port_str = values.get("POSTGRES_PORT", "5432")
+            logger.info(f"Original POSTGRES_PORT: {postgres_port_str}")
+            
+            if postgres_port_str.startswith("tcp://"):
+                # Extract just the port number from the TCP URL
+                postgres_port_str = postgres_port_str.split(":")[-1]
+                logger.info(f"Modified POSTGRES_PORT: {postgres_port_str}")
             
             try:
-                postgres_port = int(values.get("POSTGRES_PORT", "5432"))
+                postgres_port = int(postgres_port_str)
             except (ValueError, TypeError):
+                logger.warning(f"Could not convert port '{postgres_port_str}' to int, using default 5432")
                 postgres_port = 5432
             
-            return PostgresDsn.build(
-                scheme="postgresql",
-                username=values.get("POSTGRES_USER"),
-                password=values.get("POSTGRES_PASSWORD"),
-                host=postgres_server,
-                port=postgres_port,
-                path=f"{values.get('POSTGRES_DB') or ''}",
-            )
+            # Ensure we have valid values
+            postgres_user = values.get("POSTGRES_USER", "postgres") 
+            postgres_password = values.get("POSTGRES_PASSWORD", "postgres")
+            postgres_db = values.get("POSTGRES_DB", "app")
+            
+            logger.info(f"POSTGRES_USER: {postgres_user}")
+            logger.info(f"POSTGRES_PASSWORD: {'*' * len(postgres_password) if postgres_password else 'None'}")
+            logger.info(f"POSTGRES_DB: {postgres_db}")
+            
+            if not postgres_server or postgres_server == "None":
+                logger.info("Setting POSTGRES_SERVER to default 'postgres'")
+                postgres_server = "postgres"
+            
+            # Build and return the database URI
+            try:
+                db_uri = PostgresDsn.build(
+                    scheme="postgresql",
+                    username=postgres_user,
+                    password=postgres_password,
+                    host=postgres_server,
+                    port=postgres_port,
+                    path=f"/{postgres_db}",
+                )
+                logger.info(f"Built PostgreSQL DSN: {db_uri}")
+                return db_uri
+            except Exception as e:
+                logger.error(f"Error building PostgreSQL DSN: {e}")
+                # Return a fallback connection string
+                fallback_uri = f"postgresql://{postgres_user}:{postgres_password}@{postgres_server}:{postgres_port}/{postgres_db}"
+                logger.info(f"Using fallback connection string: {fallback_uri}")
+                return fallback_uri
     else:
         @validator("SQLALCHEMY_DATABASE_URI", pre=True, allow_reuse=True)
         def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
             """Create SQLAlchemy database URI from environment variables."""
             if isinstance(v, str):
+                logger.info(f"Using existing database URI: {v}")
                 return v
             
             # In Pydantic v1, we might need to access values through values.data
             postgres_server = values.get("POSTGRES_SERVER", "")
+            logger.info(f"Original POSTGRES_SERVER: {postgres_server}")
+            
             if postgres_server.startswith("tcp://"):
-                postgres_server = postgres_server.replace("tcp://", "")
+                postgres_server = postgres_server.split(":")[-2].replace("//", "")
+                logger.info(f"Modified POSTGRES_SERVER: {postgres_server}")
+            
+            # Handle case where POSTGRES_PORT might be a full TCP URL
+            postgres_port_str = values.get("POSTGRES_PORT", "5432")
+            logger.info(f"Original POSTGRES_PORT: {postgres_port_str}")
+            
+            if postgres_port_str.startswith("tcp://"):
+                # Extract just the port number from the TCP URL
+                postgres_port_str = postgres_port_str.split(":")[-1]
+                logger.info(f"Modified POSTGRES_PORT: {postgres_port_str}")
             
             try:
-                postgres_port = int(values.get("POSTGRES_PORT", "5432"))
+                postgres_port = int(postgres_port_str)
             except (ValueError, TypeError):
+                logger.warning(f"Could not convert port '{postgres_port_str}' to int, using default 5432")
                 postgres_port = 5432
             
-            return PostgresDsn.build(
-                scheme="postgresql",
-                username=values.get("POSTGRES_USER"),
-                password=values.get("POSTGRES_PASSWORD"),
-                host=postgres_server,
-                port=postgres_port,
-                path=f"{values.get('POSTGRES_DB') or ''}",
-            )
+            # Ensure we have valid values
+            postgres_user = values.get("POSTGRES_USER", "postgres") 
+            postgres_password = values.get("POSTGRES_PASSWORD", "postgres")
+            postgres_db = values.get("POSTGRES_DB", "app")
+            
+            logger.info(f"POSTGRES_USER: {postgres_user}")
+            logger.info(f"POSTGRES_PASSWORD: {'*' * len(postgres_password) if postgres_password else 'None'}")
+            logger.info(f"POSTGRES_DB: {postgres_db}")
+            
+            if not postgres_server or postgres_server == "None":
+                logger.info("Setting POSTGRES_SERVER to default 'postgres'")
+                postgres_server = "postgres"
+                
+            # Build and return the database URI
+            try:
+                db_uri = PostgresDsn.build(
+                    scheme="postgresql",
+                    username=postgres_user,
+                    password=postgres_password,
+                    host=postgres_server,
+                    port=postgres_port,
+                    path=f"/{postgres_db}",
+                )
+                logger.info(f"Built PostgreSQL DSN: {db_uri}")
+                return db_uri
+            except Exception as e:
+                logger.error(f"Error building PostgreSQL DSN: {e}")
+                # Return a fallback connection string
+                fallback_uri = f"postgresql://{postgres_user}:{postgres_password}@{postgres_server}:{postgres_port}/{postgres_db}"
+                logger.info(f"Using fallback connection string: {fallback_uri}")
+                return fallback_uri
 
     # Google Cloud PubSub settings
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "")
