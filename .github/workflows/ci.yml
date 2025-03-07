@@ -37,7 +37,7 @@ jobs:
             -Dsonar.exclusions=java/**
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.verbose=false
-          env:
+        env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
     # virtual environments: https://github.com/actions/virtual-environments
