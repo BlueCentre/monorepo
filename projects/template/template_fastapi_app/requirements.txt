@@ -49,6 +49,10 @@ ruff==0.0.292
 black==23.9.1
 isort==5.12.0
 pre-commit==3.4.0
+safety>=2.4.0  # Updated from 2.3.5 to resolve packaging dependency conflict
+bandit==1.7.5
+radon>=4.0.0,<6.0.0  # Updated to be compatible with xenon's requirements
+xenon==0.9.0
 
 # Utilities
 python-dotenv==1.0.0
