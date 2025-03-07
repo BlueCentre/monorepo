@@ -16,6 +16,7 @@ A production-ready FastAPI application template showcasing best practices for bu
 - **Logging & Telemetry**: Built-in observability with OpenTelemetry
 - **Robust Database Connectivity**: Handles complex Kubernetes environments with automatic connection string parsing
 - **Secret Rotation**: Automatic and manual rotation of JWT keys and database credentials for enhanced security
+- **API Rate Limiting**: Infrastructure-level protection against abuse using Istio service mesh
 
 ## Monorepo Integration
 
@@ -41,8 +42,8 @@ For a complete development and deployment flow within the monorepo:
 # Build and test everything in the monorepo
 bazel build //... && bazel test //...
 
-# Deploy the application
-skaffold run -m template-fastapi-app -p dev
+# Deploy the application (without Istio)
+skaffold run -m template-fastapi-app -p no-istio
 
 # Verify the deployment
 skaffold verify -m template-fastapi-app -p dev
@@ -291,6 +292,186 @@ For automated testing of the secret rotation mechanism, see the test files:
 - `tests/test_secret_rotation.py`: Tests for the core rotation mechanism
 - `tests/test_key_management_api.py`: Tests for the API endpoints
 
+## API Rate Limiting
+
+The application uses Istio service mesh to implement robust, infrastructure-level rate limiting. This protects the API from abuse, denial-of-service attacks, and ensures fair usage across clients without requiring changes to the application code.
+
+### Key Concepts
+
+- **Rate Limiting**: Restricting the number of requests a client can make in a given time period
+- **Service Mesh**: A dedicated infrastructure layer for handling service-to-service communication
+- **Envoy Proxy**: The sidecar proxy that enforces rate limits within the Istio service mesh
+- **Global vs. Local Rate Limiting**: Limits applied across all instances vs. per-instance limits
+
+### How Rate Limiting Works
+
+The rate limiting implementation works as follows:
+
+1. **Request Interception**:
+   - Istio injects an Envoy sidecar proxy into each application pod
+   - All incoming requests are intercepted by the Envoy proxy before reaching the application
+   - The proxy extracts rate limiting descriptors from the request (path, authentication status, etc.)
+
+2. **Rate Limit Evaluation**:
+   - Requests are classified into categories based on the extracted descriptors
+   - The rate limit service checks if the request exceeds configured limits for its category
+   - Different limits are applied for different endpoints and user types
+
+3. **Limit Enforcement**:
+   - If limits are not exceeded, the request proceeds to the application
+   - If limits are exceeded, the request is rejected with a 429 (Too Many Requests) response
+   - Headers are added to responses indicating rate limit status and remaining quota
+
+4. **Distributed Rate Limiting**:
+   - Rate limits are tracked in Redis, allowing coordination across multiple application instances
+   - This ensures consistent enforcement in scaled deployments
+
+### Rate Limit Configuration
+
+The following rate limits are configured:
+
+| Endpoint | Authenticated Users | Unauthenticated Users |
+|----------|---------------------|------------------------|
+| All API endpoints | 200 per minute | 30 per minute |
+| Login endpoint | 10 per minute | 10 per minute |
+| Key management | 5 per minute | Not accessible |
+| Health/docs | Unlimited | Unlimited |
+
+### Implementation Details
+
+The rate limiting implementation consists of several Kubernetes resources:
+
+1. **EnvoyFilter**: Configures the Envoy proxy to enable rate limiting
+2. **VirtualService**: Routes traffic and applies rate limiting metadata
+3. **DestinationRule**: Defines traffic policies for the service
+4. **ConfigMap**: Contains the rate limit configuration
+5. **Redis Deployment**: Provides storage for rate limit counters
+6. **Rate Limit Service**: Standalone service that evaluates rate limit requests
+
+All configuration files are in the `kubernetes/` directory:
+- `istio-rate-limit.yaml`: Main rate limiting configuration
+- `istio-virtual-service.yaml`: Routing rules and rate limit application
+- `istio-rate-limit-handler.yaml`: Additional rate limiting components
+
+### Customizing Rate Limits
+
+To modify the rate limits:
+
+1. Edit the `ratelimit-config` ConfigMap in `kubernetes/istio-rate-limit.yaml`
+2. Update the `requests_per_unit` values for the appropriate descriptors
+3. Apply the changes: `kubectl apply -f kubernetes/istio-rate-limit.yaml`
+
+### Bypassing Rate Limits for Internal Services
+
+Internal services can bypass rate limits by adding the `x-forwarded-for: internal-service` header to their requests.
+
+### Monitoring Rate Limits
+
+You can monitor rate limiting activity through:
+
+1. **Istio Dashboard**: View rate limit rejections and counters
+2. **Application Logs**: Check for 429 response codes
+3. **Redis Monitoring**: Observe rate limit counter usage
+
+### Deploying and Testing Rate Limiting
+
+To deploy and test the Istio-based rate limiting functionality, use Skaffold's container-based approach:
+
+```bash
+# Deploy with built-in Istio configuration and verification
+skaffold run -m template-fastapi-app -p istio-rate-limit-actions
+```
+
+This single command handles the complete workflow:
+1. Automatically enables Istio injection on the namespace (pre-deploy action via container)
+2. Deploys the application with all necessary Istio rate limiting configurations
+3. Runs a verification job (inside a container) that tests rate limiting functionality
+4. Shows the verification results directly in the Skaffold output
+
+#### Verification Process
+
+The rate limiting verification runs inside a container within the cluster, ensuring consistent results across all environments. The verification:
+
+1. Waits for all services to be ready
+2. Locates the application endpoints using in-cluster DNS
+3. Makes multiple rapid requests to trigger rate limiting
+4. Confirms success when it receives 429 responses
+
+To see the verification results:
+```bash
+kubectl logs -n template-fastapi-app -l job-name=rate-limit-test
+```
+
+#### Prerequisites
+
+- A Kubernetes cluster with Istio installed
+- `kubectl` configured to access your cluster
+- Permission to create resources in the cluster
+
+#### Development Workflow
+
+For active development with rate limiting:
+
+```bash
+# Start development mode with integrated validation
+skaffold dev -m template-fastapi-app -p istio-rate-limit-actions
+```
+
+This workflow leverages Skaffold's custom actions to:
+- Enable Istio injection automatically before deployment using containers
+- Apply all rate limiting configurations as part of the deployment
+- Verify rate limiting is working after deployment through container-based tests
+- Keep the application running with live updates during development
+
+#### Extending the Verification
+
+To create custom rate limit verification, add a new verification job to your Kubernetes manifests:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: custom-rate-limit-test
+  namespace: template-fastapi-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: rate-limit-tester
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          # Custom rate limit testing logic
+          echo "Testing rate limiting with custom parameters..."
+          
+          SERVICE_URL="http://template-fastapi-app.template-fastapi-app.svc"
+          
+          # Test specific endpoints with custom thresholds
+          for i in {1..60}; do
+            RESP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL/api/v1/key-management/status)
+            echo "Request $i: $RESP_CODE"
+            
+            if [ "$RESP_CODE" = "429" ]; then
+              echo "Rate limiting confirmed after $i requests!"
+              exit 0
+            fi
+            
+            sleep 0.05  # Faster requests to hit limits quickly
+          done
+          
+          echo "Failed to trigger rate limiting after 60 requests"
+          exit 1
+      restartPolicy: Never
+  backoffLimit: 1
+```
+
+Apply this job after deployment to run your custom verification:
+```bash
+kubectl apply -f custom-rate-limit-test.yaml
+kubectl logs -f -n template-fastapi-app job/custom-rate-limit-test
+```
+
 ## Verification
 
 The application includes verification steps that can be used to ensure the deployment is working correctly:
@@ -349,84 +530,199 @@ If verification fails, you can debug by:
 
 1. Checking the logs of the verification container: `kubectl logs -n your-namespace verification-pod-name`
 2. Ensuring your services are properly deployed: `kubectl get svc -n your-namespace`
-3. Validating service accessibility from within the cluster: `kubectl exec -it your-app-pod -- curl http://your-service/health`
 
-The robust service discovery mechanism in the verification script will automatically try multiple addressing approaches, making it resilient to various Kubernetes network configurations.
+## Deployment and Validation Guide
 
-## Code Quality and Maintainability
+This guide provides a step-by-step approach to building, testing, deploying, and validating the FastAPI application and its dependencies.
 
-This project uses several tools to ensure code quality and maintainability:
+> **🔑 Key Principle**: All validations are performed using container-based approaches for consistency between local development and CI/CD pipelines.
 
-### Type Checking
-
-We use MyPy for static type checking with strict settings:
+### Step 1: Set Up Your Environment
 
 ```bash
-# Run type checking
-mypy app
+# Navigate to your monorepo
+cd /path/to/monorepo
+
+# Ensure your Kubernetes context is set correctly
+kubectl config current-context
 ```
 
-### Linting and Formatting
+### Step 2: Build and Deploy for Development
 
-We use a combination of tools for linting and formatting:
-
-- **Ruff**: Fast Python linter that combines multiple linting tools
-- **Black**: Code formatter with consistent style
-- **isort**: Import sorter that works with Black
+#### Standard Deployment (Default Approach)
 
 ```bash
-# Run all linting checks
-ruff check app tests
-black --check app tests
-isort --check app tests
+# Create namespace if it doesn't exist
+kubectl create namespace template-fastapi-app
 
-# Auto-format code
-ruff check --fix app tests
-black app tests
-isort app tests
+# Build and deploy using the no-istio profile
+skaffold run -m template-fastapi-app -p no-istio
 ```
 
-### Pre-commit Hooks
+This default approach:
+- Works in all Kubernetes environments regardless of whether Istio is installed
+- Uses a streamlined deployment that includes only the application components
+- Deploys the FastAPI application, PostgreSQL database, and necessary configurations
+- Includes standard health checks and readiness probes
 
-We use pre-commit hooks to ensure code quality before committing:
+#### Development Mode with Live Reload
 
 ```bash
-# Install pre-commit hooks
-pre-commit install
-
-# Run pre-commit hooks manually
-pre-commit run --all-files
+# Start development mode with live reload
+skaffold dev -m template-fastapi-app -p no-istio
 ```
 
-### Security Scanning
+This command:
+- Builds and deploys the application
+- Watches for file changes and automatically rebuilds/redeploys
+- Provides a development-friendly workflow for iterative changes
 
-We scan dependencies and code for security vulnerabilities:
+#### Optional: Deployment with Rate Limiting (Requires Istio)
+
+For environments where Istio is installed and rate limiting is needed:
 
 ```bash
-# Scan dependencies for security vulnerabilities
-./scripts/scan_dependencies.sh
+# First, verify that Istio is installed
+kubectl get namespace istio-system
 
-# Run security checks during pre-commit
-pre-commit run gitleaks --all-files
+# If Istio is installed, deploy with rate limiting enabled
+skaffold run -m template-fastapi-app -p istio-rate-limit-actions
 ```
 
-### Complexity Analysis
-
-We analyze code complexity to maintain maintainable code:
+### Step 3: Run Post-Deployment Validation
 
 ```bash
-# Run complexity analysis
-./scripts/analyze_complexity.sh
+# Run the standard verification suite
+skaffold verify -m template-fastapi-app -p dev
 ```
 
-### Code Coverage with SonarQube
+This will run container-based verification tests to ensure:
+- The application is healthy and responding
+- Authentication is working correctly
+- API endpoints are accessible and returning expected data
+- Key management functionality is operational
 
-We use SonarQube for code coverage and quality analysis:
+### Step 4: Complete CI/CD Pipeline Commands
+
+For CI/CD environments, you can chain the commands:
 
 ```bash
-# Generate coverage reports for SonarQube
-./scripts/run_tests_with_coverage.sh
-
-# Run SonarQube analysis (requires SonarQube server)
-sonar-scanner
+# Complete build-deploy-verify pipeline
+skaffold build -m template-fastapi-app -p no-istio && \
+skaffold deploy -m template-fastapi-app -p no-istio && \
+skaffold verify -m template-fastapi-app -p dev
 ```
+
+### Step 5: Cleaning Up Resources
+
+```bash
+# Delete all deployed resources
+skaffold delete -m template-fastapi-app
+```
+
+### Common Workflow Scenarios
+
+#### Local Development Loop
+
+```bash
+# Create namespace if needed
+kubectl create namespace template-fastapi-app
+
+# Start development mode with live reload
+skaffold dev -m template-fastapi-app -p no-istio
+```
+
+#### Feature Branch Testing
+
+```bash
+# Complete build-test-deploy-verify cycle for a feature branch
+skaffold build -m template-fastapi-app -p no-istio && \
+skaffold deploy -m template-fastapi-app -p no-istio && \
+skaffold verify -m template-fastapi-app -p dev
+```
+
+#### Production Deployment
+
+```bash
+# Deploy to production (using an appropriate profile)
+skaffold run -m template-fastapi-app -p no-istio && \
+skaffold verify -m template-fastapi-app -p dev
+```
+
+### Verification Process
+
+After deployment, validation should be performed using container-based approaches to maintain consistency with CI/CD pipelines:
+
+#### Using Skaffold Verify
+
+The recommended way to validate deployments is through Skaffold's built-in verification mechanism:
+
+```bash
+# Run the complete verification process
+skaffold verify -m template-fastapi-app -p dev
+```
+
+These verification steps run in containers within the Kubernetes cluster and perform comprehensive checks:
+
+1. **Health Check Verification**: Confirms the application is responding
+2. **Authentication Verification**: Tests login functionality
+3. **API Functionality Verification**: Checks that endpoints return expected data
+4. **Database Verification**: Confirms database connectivity and initialization
+
+### Troubleshooting Guide
+
+If you encounter issues during any step, here are common problems and solutions:
+
+#### Build and Test Issues
+
+1. **Bazel build fails with dependency errors**
+   - Ensure you have the correct Java version specified in .bazelrc
+   - Run `bazel clean --expunge` and try again
+   - Check for any version conflicts in dependencies
+
+2. **Tests fail**
+   - Check the test logs: `bazel test //projects/template/template_fastapi_app:all_tests --test_output=all`
+   - Verify environment setup matches test expectations
+   - Look for specific test failures and address each one
+
+#### Deployment Issues
+
+1. **Namespace already exists or not found**
+   - If namespace exists: Continue with deployment
+   - If namespace not found: `kubectl create namespace template-fastapi-app`
+
+2. **Skaffold deployment fails**
+   - Check for proper Docker and Kubernetes configurations
+   - Ensure Skaffold is properly installed
+   - Verify the image can be built: `skaffold build -m template-fastapi-app`
+
+3. **Pods are not starting or are crashing**
+   - Check pod logs: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
+   - Check pod events: `kubectl describe pod -n template-fastapi-app <pod-name>`
+   - Check for resource constraints: `kubectl get pod -n template-fastapi-app <pod-name> -o yaml`
+
+4. **Database connectivity issues**
+   - Check if Postgres is running: `kubectl get pods -n template-fastapi-app -l app=postgres`
+   - Verify database connection settings in the configmap: `kubectl get configmap -n template-fastapi-app`
+
+5. **Istio-related deployment failures**
+   - If using `istio-rate-limit-actions` profile when Istio is not installed:
+     - Switch to `no-istio` profile: `skaffold run -m template-fastapi-app -p no-istio`
+   - If Istio is needed: Install it with `istioctl install --set profile=demo`
+
+#### Verification Issues
+
+1. **Verification fails at health check**
+   - Check if the application is running: `kubectl get pods -n template-fastapi-app`
+   - Check application logs: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
+   - Verify service exists: `kubectl get svc -n template-fastapi-app`
+
+2. **Authentication verification fails**
+   - Check database initialization: `kubectl logs -n template-fastapi-app -l app=postgres`
+   - Verify default credentials are set correctly
+   - Check application logs for JWT errors: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
+
+3. **Database verification fails**
+   - Verify database initialization: `kubectl logs -n template-fastapi-app job/db-init`
+   - Check for database connection errors in application logs
+   - Ensure PostgreSQL is running properly: `kubectl exec -n template-fastapi-app deploy/postgres -- pg_isready`

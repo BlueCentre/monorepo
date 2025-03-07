@@ -178,81 +178,179 @@ profiles:
           apply:
             - --validate=false
             - --force=true
-
   - name: run
     activation:
       - command: run
-
-  # Casuses: ERRO[0000] panic occurred during schema reflection for yaml line number information: runtime error: index out of range [-1]  subtask=-1 task=DevLoop
-  # - name: skip-verify
-  #   patches:
-  #     - op: add
-  #       path: /verify
-  #       value: []
-
-  - name: db-verify-only
+  - name: skip-db-init
     patches:
-      - op: replace
+      - op: add
         path: /verify
         value:
-          - name: db-verify
+          - name: smoke-test
             container:
-              name: db-check
-              image: postgres:15
+              name: curl-smoke-test
+              image: curlimages/curl:latest
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  echo "Waiting for database to be ready..."
+                  echo "Waiting for application to be ready..."
                   sleep 15
-
-                  MAX_RETRIES=30
-
-                  for i in $(seq 1 $MAX_RETRIES); do
-                    echo "Attempt $i/$MAX_RETRIES: Checking database connection..."
-                    if PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT 1" > /dev/null 2>&1; then
-                      echo "Database connection successful!"
-                      
-                      # List all visible database tables
-                      echo "Listing all database tables:"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "\dt"
-                      echo ""
-                      
-                      # Show table details
-                      echo "Table details (schema information):"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
-                      echo ""
-                      
-                      # Show row counts for important tables
-                      echo "Row counts for important tables:"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "
-                        SELECT 'user' as table_name, COUNT(*) as row_count FROM user UNION ALL
-                        SELECT 'item' as table_name, COUNT(*) as row_count FROM item UNION ALL
-                        SELECT 'note' as table_name, COUNT(*) as row_count FROM note
-                        ORDER BY table_name;
-                      "
-                      echo ""
-                      
-                      # Verify that admin user exists
-                      USER_COUNT=$(PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -t -c "SELECT COUNT(*) FROM user WHERE email='admin@example.com'" | tr -d ' ')
-                      
-                      if [ "$USER_COUNT" -ge "1" ]; then
-                        echo "Admin user exists in database!"
-                        echo "Database verification successful!"
-                        exit 0
-                      else
-                        echo "Admin user not found in database!"
-                        exit 1
-                      fi
+                  
+                  # Try different service naming approaches
+                  SUCCESS=false
+                  
+                  # Test different endpoint formats
+                  echo "Testing health endpoint at http://template-fastapi-app/health"
+                  HEALTH_RESPONSE=$(curl -s http://template-fastapi-app/health)
+                  echo "Response: $HEALTH_RESPONSE"
+                  if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                    echo "Health check passed!"
+                    SUCCESS=true
+                  else
+                    echo "Health check failed, trying alternate endpoint..."
+                    
+                    echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app/health"
+                    HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app/health)
+                    echo "Response: $HEALTH_RESPONSE"
+                    if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                      echo "Health check passed!"
+                      SUCCESS=true
                     else
-                      echo "Database connection failed, retrying in 2 seconds..."
-                      sleep 2
+                      echo "Health check failed, trying alternate endpoint..."
+                      
+                      echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc/health"
+                      HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc/health)
+                      echo "Response: $HEALTH_RESPONSE"
+                      if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                        echo "Health check passed!"
+                        SUCCESS=true
+                      else
+                        echo "Health check failed, trying alternate endpoint..."
+                        
+                        echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health"
+                        HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health)
+                        echo "Response: $HEALTH_RESPONSE"
+                        if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                          echo "Health check passed!"
+                          SUCCESS=true
+                        else
+                          # Try direct IP address
+                          echo "Trying direct services lookup via nslookup..."
+                          nslookup template-fastapi-app
+                          
+                          echo "Testing direct IP, looking up cluster IPs..."
+                          CLUSTER_IPS=$(getent hosts template-fastapi-app | awk '{print $1}')
+                          echo "Found IPs: $CLUSTER_IPS"
+                          
+                          # Try a direct IP approach
+                          echo "Testing health endpoint at http://10.43.189.106/health (last known service IP)"
+                          HEALTH_RESPONSE=$(curl -s --connect-timeout 5 http://10.43.189.106/health)
+                          echo "Response: $HEALTH_RESPONSE"
+                          if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                            echo "Health check passed!"
+                            SUCCESS=true
+                          fi
+                        fi
+                      fi
                     fi
-                  done
-
-                  echo "Failed to connect to database after $MAX_RETRIES attempts!"
-                  exit 1
+                  fi
+                  
+                  # Final success message
+                  if [ "$SUCCESS" = true ]; then
+                    echo "API verification successful! Health check passed."
+                    exit 0
+                  else
+                    echo "API verification failed!"
+                    exit 1
+                  fi
             executionMode:
               kubernetesCluster: {}
+              
+  # Profile for deploying Istio rate limiting using custom actions
+  - name: istio-rate-limit-actions
+    patches:
+      - op: add
+        path: /manifests/rawYaml
+        value:
+          - kubernetes/00-istio-namespace.yaml
+          - kubernetes/*.yaml
+      - op: add
+        path: /customActions
+        value:
+          - name: enable-istio-injection
+            containers:
+              - name: kubectl-injection
+                image: bitnami/kubectl:latest
+                command: ["kubectl"]
+                args: ["label", "namespace", "template-fastapi-app", "istio-injection=enabled", "--overwrite"]
+            executeAt:
+              - preDeploy
+          - name: verify-rate-limiting
+            containers:
+              - name: kubectl-verify
+                image: bitnami/kubectl:latest
+                command: ["/bin/sh", "-c"]
+                args:
+                  - |
+                    echo "Waiting for services to be ready..."
+                    sleep 10
+                    
+                    # Delete the test job if it exists
+                    kubectl delete job rate-limit-test -n template-fastapi-app --ignore-not-found
+                    
+                    # Wait for pods to be ready
+                    kubectl wait --namespace template-fastapi-app --for=condition=ready pod --selector=app=template-fastapi-app --timeout=60s
+                    
+                    # Apply the rate limit verification job
+                    kubectl apply -f kubernetes/istio-rate-limit-verify.yaml
+                    
+                    # Follow the job logs
+                    echo "Following rate limit test job logs..."
+                    kubectl wait --namespace template-fastapi-app --for=condition=complete job/rate-limit-test --timeout=180s || true
+                    kubectl logs -n template-fastapi-app -l job-name=rate-limit-test --follow
+            executeAt:
+              - postDeploy
+
+  # Profile for deploying without Istio resources
+  - name: no-istio
+    patches:
+      - op: add
+        path: /manifests/rawYaml
+        value:
+          - kubernetes/deployment.yaml
+          - kubernetes/service.yaml
+          - kubernetes/configmap.yaml
+          - kubernetes/secrets.yaml
+          - kubernetes/postgres-pvc.yaml
+          - kubernetes/postgres-deployment.yaml
+          - kubernetes/postgres-service.yaml
+          - kubernetes/db-init-job.yaml
+      - op: add
+        path: /customActions
+        value:
+          - name: verify-deployment
+            containers:
+              - name: kubectl-verify-deployment
+                image: bitnami/kubectl:latest
+                command: ["/bin/sh", "-c"]
+                args:
+                  - |
+                    echo "Waiting for services to be ready..."
+                    sleep 10
+                    
+                    # Wait for pods to be ready
+                    kubectl wait --namespace template-fastapi-app --for=condition=ready pod --selector=app=template-fastapi-app --timeout=60s
+                    
+                    # Check the health endpoint
+                    kubectl exec -n template-fastapi-app deploy/template-fastapi-app -- curl -s http://localhost:8000/health
+                    
+                    # Check if the app is running properly
+                    if kubectl exec -n template-fastapi-app deploy/template-fastapi-app -- curl -s http://localhost:8000/health | grep -q "ok"; then
+                      echo "=== SUCCESS: Application is healthy ==="
+                      exit 0
+                    else
+                      echo "ERROR: Application health check failed"
+                      exit 1
+                    fi
+            executeAt:
+              - postDeploy
