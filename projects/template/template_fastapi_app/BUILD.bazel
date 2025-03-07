@@ -99,6 +99,29 @@ py_test(
     ],
 )
 
+# Secret rotation tests
+py_test(
+    name = "test_secret_rotation",
+    srcs = ["tests/test_secret_rotation.py"],
+    deps = [
+        ":app_lib",
+        ":test_lib",
+        requirement("pytest"),
+    ],
+)
+
+# Key management API tests
+py_test(
+    name = "test_key_management_api",
+    srcs = ["tests/test_key_management_api.py"],
+    deps = [
+        ":app_lib",
+        ":test_lib",
+        requirement("pytest"),
+        requirement("httpx"),
+    ],
+)
+
 # Web application tests
 py_test(
     name = "web_app_test",
@@ -153,6 +176,8 @@ test_suite(
         ":web_app_test",
         ":isolated_web_app_test",
         ":independent_test",
+        ":test_secret_rotation",
+        ":test_key_management_api",
     ],
 )
 
@@ -163,6 +188,7 @@ test_suite(
         ":test_telemetry",
         ":isolated_web_app_test",
         ":independent_test",
+        ":test_secret_rotation",
     ],
 )
 
