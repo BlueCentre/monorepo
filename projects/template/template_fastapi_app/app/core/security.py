@@ -3,12 +3,13 @@ Security utilities for authentication.
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, List
 
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 from app.core.config import settings
+from app.core.secret_rotation import secret_manager
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -33,10 +34,43 @@ def create_access_token(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
+    
+    # Use the current JWT key from the rotation manager
+    secret_key = secret_manager.get_current_jwt_key()
     encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        to_encode, secret_key, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
+
+
+def verify_token(token: str) -> Optional[str]:
+    """
+    Verify a JWT token and return the subject.
+    
+    This function tries all active keys when verifying tokens to allow
+    for smooth key rotation.
+    
+    Args:
+        token: JWT token to verify.
+        
+    Returns:
+        The subject of the token if valid, None otherwise.
+    """
+    # Get all active JWT keys
+    jwt_keys = secret_manager.get_jwt_keys()
+    
+    # Try each key until one works
+    for key in jwt_keys:
+        try:
+            payload = jwt.decode(
+                token, key, algorithms=[settings.ALGORITHM]
+            )
+            return payload.get("sub")
+        except JWTError:
+            continue
+    
+    # If no key works, the token is invalid
+    return None
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

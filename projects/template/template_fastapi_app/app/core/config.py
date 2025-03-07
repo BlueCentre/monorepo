@@ -38,7 +38,16 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Template FastAPI App"
     APP_NAME: str = "Template FastAPI App"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    
+    # Secret key for JWT token generation - fallback value for backwards compatibility
+    # The actual key will be managed by the secret_rotation module when available
+    SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+    
+    # Secret rotation settings
+    SECRET_ROTATION_ENABLED: bool = os.getenv("SECRET_ROTATION_ENABLED", "True").lower() == "true"
+    SECRET_KEY_LIFETIME_DAYS: int = int(os.getenv("SECRET_KEY_LIFETIME_DAYS", "30"))
+    SECRET_KEY_TRANSITION_DAYS: int = int(os.getenv("SECRET_KEY_TRANSITION_DAYS", "1"))
+    
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # CORS settings
