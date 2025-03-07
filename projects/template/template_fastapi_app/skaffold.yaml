@@ -2,6 +2,7 @@ apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
   name: template-fastapi-app
+
 build:
   artifacts:
   - image: template-fastapi-app
@@ -39,48 +40,136 @@ build:
   local:
     push: false
     useBuildkit: false
+
 manifests:
   rawYaml:
   - kubernetes/*.yaml
+
 deploy:
   kubectl: {}
   # Add post-deployment verification for database initialization
   statusCheck: true
 
-# Add verification to run the database initialization job after deployment
+# Add verification steps
 verify:
-  - name: database-initialization
+  - name: smoke-test
     container:
-      name: kubectl
-      image: bitnami/kubectl:latest
-      command: ["/bin/bash", "-c"]
+      name: curl-smoke-test
+      image: curlimages/curl:latest
+      command: ["/bin/sh", "-c"]
       args:
         - |
-          echo "Waiting for all resources to be ready..."
-          sleep 10 # Give time for resources to start
+          echo "Waiting for application to be ready..."
+          sleep 15
           
-          echo "Running database initialization job..."
-          # Delete any existing job first
-          kubectl delete job db-init -n template-fastapi-app --ignore-not-found=true
+          # Try different service naming approaches
+          SUCCESS=false
           
-          # Apply the database initialization job
-          kubectl apply -f kubernetes/db-init-job.yaml
+          # Test different endpoint formats
+          echo "Testing health endpoint at http://template-fastapi-app/health"
+          HEALTH_RESPONSE=$(curl -s http://template-fastapi-app/health)
+          echo "Response: $HEALTH_RESPONSE"
+          if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+            echo "Health check passed!"
+            SERVICE_URL="http://template-fastapi-app"
+            SUCCESS=true
+          else
+            echo "Health check failed, trying alternate endpoint..."
+            
+            echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app/health"
+            HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app/health)
+            echo "Response: $HEALTH_RESPONSE"
+            if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+              echo "Health check passed!"
+              SERVICE_URL="http://template-fastapi-app.template-fastapi-app"
+              SUCCESS=true
+            else
+              echo "Health check failed, trying alternate endpoint..."
+              
+              echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc/health"
+              HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc/health)
+              echo "Response: $HEALTH_RESPONSE"
+              if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                echo "Health check passed!"
+                SERVICE_URL="http://template-fastapi-app.template-fastapi-app.svc"
+                SUCCESS=true
+              else
+                echo "Health check failed, trying alternate endpoint..."
+                
+                echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health"
+                HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health)
+                echo "Response: $HEALTH_RESPONSE"
+                if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                  echo "Health check passed!"
+                  SERVICE_URL="http://template-fastapi-app.template-fastapi-app.svc.cluster.local"
+                  SUCCESS=true
+                else
+                  # Try direct IP address
+                  echo "Trying direct services lookup via nslookup..."
+                  nslookup template-fastapi-app
+                  
+                  echo "Testing direct IP, looking up cluster IPs..."
+                  CLUSTER_IPS=$(getent hosts template-fastapi-app | awk '{print $1}')
+                  echo "Found IPs: $CLUSTER_IPS"
+                  
+                  # Try a direct IP approach
+                  echo "Testing health endpoint at http://10.43.0.0/health (approximate cluster IP range)"
+                  HEALTH_RESPONSE=$(curl -s --connect-timeout 5 http://10.43.0.0/health)
+                  echo "Response: $HEALTH_RESPONSE"
+                  
+                  echo "Testing health endpoint at http://10.43.189.106/health (last known service IP)"
+                  HEALTH_RESPONSE=$(curl -s --connect-timeout 5 http://10.43.189.106/health)
+                  echo "Response: $HEALTH_RESPONSE"
+                  if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                    echo "Health check passed!"
+                    SERVICE_URL="http://10.43.189.106"
+                    SUCCESS=true
+                  fi
+                fi
+              fi
+            fi
+          fi
           
-          # Wait for the job to complete
-          echo "Waiting for database initialization job to complete..."
-          kubectl wait --for=condition=complete job/db-init -n template-fastapi-app --timeout=60s
+          if [ "$SUCCESS" = true ]; then
+            echo "Found working endpoint: $SERVICE_URL"
+            
+            # Test login endpoint
+            echo "Testing login endpoint..."
+            LOGIN_RESPONSE=$(curl -s -X 'POST' "${SERVICE_URL}/api/v1/login/access-token" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
+            echo "Login response: $LOGIN_RESPONSE"
+            
+            if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
+              echo "==============================================" 
+              echo "Login successful, authentication token received!"
+              echo "=============================================="
+              
+              # Extract the token
+              TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+              
+              # Test users endpoint
+              echo "Testing users endpoint..."
+              USERS_RESPONSE=$(curl -s -X 'GET' "${SERVICE_URL}/api/v1/users/" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+              echo "Users response: $USERS_RESPONSE"
+              
+              if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
+                echo "Users endpoint test passed!"
+                SUCCESS=true
+              else
+                echo "Users endpoint test failed!"
+                SUCCESS=false
+              fi
+            else
+              echo "Login test failed - could not get authentication token!"
+              SUCCESS=false
+            fi
+          fi
           
-          if [ $? -eq 0 ]; then
-            echo "Database initialization completed successfully!"
+          # Final success message
+          if [ "$SUCCESS" = true ]; then
+            echo "API verification successful! All tests passed."
             exit 0
           else
-            echo "Database initialization failed! Check logs:"
-            POD_NAME=$(kubectl get pods -n template-fastapi-app -l component=db-init -o jsonpath='{.items[0].metadata.name}')
-            if [ -n "$POD_NAME" ]; then
-              kubectl logs -n template-fastapi-app $POD_NAME
-            else
-              echo "Cannot find database initialization pod to display logs."
-            fi
+            echo "API verification failed!"
             exit 1
           fi
 
@@ -98,51 +187,92 @@ profiles:
       apply:
       - --validate=false
       - --force=true
-
 - name: run
   activation:
   - command: run
-
 # Create a profile to skip database initialization if needed
 - name: skip-db-init
   patches:
   - op: add
     path: /verify
-    value: []
-
-- name: debug
-  activation:
-  - command: debug
-  patches:
-  - op: add
-    path: /build/artifacts/0/custom/buildCommand
-    value: |
-      # Navigate to monorepo root first
-      MONOREPO_ROOT=$(cd ../../.. && pwd)
-      cd $MONOREPO_ROOT
-      
-      # Then build the tarball with debug flags
-      bazel build //projects/template/template_fastapi_app:image_tarball --compilation_mode=dbg
-      
-      # Extract the tarball
-      TEMP_DIR=$(mktemp -d)
-      tar -xf bazel-bin/projects/template/template_fastapi_app/image_tarball.tar -C $TEMP_DIR
-      
-      # Verify contents were extracted correctly
-      echo "Extracted files:"
-      ls -la $TEMP_DIR
-      
-      # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
-      if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
-        echo "Renaming Dockerfile.bazel to Dockerfile"
-        cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
-      fi
-      
-      # Build the Docker image with debug arguments
-      docker build -t $IMAGE $TEMP_DIR --build-arg COMPILATION_MODE=dbg
-      
-      # Clean up
-      rm -rf $TEMP_DIR
+    value:
+      - name: smoke-test
+        container:
+          name: curl-smoke-test
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for application to be ready..."
+              sleep 15
+              
+              # Try different service naming approaches
+              SUCCESS=false
+              
+              # Test different endpoint formats
+              echo "Testing health endpoint at http://template-fastapi-app/health"
+              HEALTH_RESPONSE=$(curl -s http://template-fastapi-app/health)
+              echo "Response: $HEALTH_RESPONSE"
+              if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                echo "Health check passed!"
+                SUCCESS=true
+              else
+                echo "Health check failed, trying alternate endpoint..."
+                
+                echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app/health"
+                HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app/health)
+                echo "Response: $HEALTH_RESPONSE"
+                if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                  echo "Health check passed!"
+                  SUCCESS=true
+                else
+                  echo "Health check failed, trying alternate endpoint..."
+                  
+                  echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc/health"
+                  HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc/health)
+                  echo "Response: $HEALTH_RESPONSE"
+                  if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                    echo "Health check passed!"
+                    SUCCESS=true
+                  else
+                    echo "Health check failed, trying alternate endpoint..."
+                    
+                    echo "Testing health endpoint at http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health"
+                    HEALTH_RESPONSE=$(curl -s http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health)
+                    echo "Response: $HEALTH_RESPONSE"
+                    if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                      echo "Health check passed!"
+                      SUCCESS=true
+                    else
+                      # Try direct IP address
+                      echo "Trying direct services lookup via nslookup..."
+                      nslookup template-fastapi-app
+                      
+                      echo "Testing direct IP, looking up cluster IPs..."
+                      CLUSTER_IPS=$(getent hosts template-fastapi-app | awk '{print $1}')
+                      echo "Found IPs: $CLUSTER_IPS"
+                      
+                      # Try a direct IP approach
+                      echo "Testing health endpoint at http://10.43.189.106/health (last known service IP)"
+                      HEALTH_RESPONSE=$(curl -s --connect-timeout 5 http://10.43.189.106/health)
+                      echo "Response: $HEALTH_RESPONSE"
+                      if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                        echo "Health check passed!"
+                        SUCCESS=true
+                      fi
+                    fi
+                  fi
+                fi
+              fi
+              
+              # Final success message
+              if [ "$SUCCESS" = true ]; then
+                echo "API verification successful! Health check passed."
+                exit 0
+              else
+                echo "API verification failed!"
+                exit 1
+              fi
 
 portForward:
   - resourceType: service
