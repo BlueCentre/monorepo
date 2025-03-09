@@ -375,102 +375,38 @@ You can monitor rate limiting activity through:
 
 ### Deploying and Testing Rate Limiting
 
-To deploy and test the Istio-based rate limiting functionality, use Skaffold's container-based approach:
+We provide a Kubernetes-native approach for deploying with or without Istio rate limiting using Skaffold profiles:
 
 ```bash
-# Deploy with built-in Istio configuration and verification
-skaffold run -m template-fastapi-app -p istio-rate-limit-actions
+# For standard deployment without Istio:
+skaffold run -m template-fastapi-app -p no-istio --filename=skaffold-refactored.yaml
+
+# For deployment with Istio rate limiting:
+skaffold run -m template-fastapi-app -p istio-rate-limit --filename=skaffold-refactored.yaml
 ```
 
-This single command handles the complete workflow:
-1. Automatically enables Istio injection on the namespace (pre-deploy action via container)
-2. Deploys the application with all necessary Istio rate limiting configurations
-3. Runs a verification job (inside a container) that tests rate limiting functionality
-4. Shows the verification results directly in the Skaffold output
+For detailed instructions, see the [Istio Rate Limiting Deployment Guide](ISTIO-SETUP-NEW.md).
 
-#### Verification Process
+Our implementation uses Kubernetes jobs for setup and verification tasks:
+- **Setup Jobs**: Run automatically at the beginning of deployment to prepare the environment
+- **Verification Jobs**: Run after deployment to validate that everything is working correctly
 
-The rate limiting verification runs inside a container within the cluster, ensuring consistent results across all environments. The verification:
+All validation is performed in containers within the Kubernetes cluster, ensuring consistent results across all environments from local development to CI/CD pipelines.
 
-1. Waits for all services to be ready
-2. Locates the application endpoints using in-cluster DNS
-3. Makes multiple rapid requests to trigger rate limiting
-4. Confirms success when it receives 429 responses
+#### Key Benefits
 
-To see the verification results:
-```bash
-kubectl logs -n template-fastapi-app -l job-name=rate-limit-test
-```
+1. **Kubernetes-Native**: All setup and verification is done through Kubernetes jobs
+2. **Consistent Workflows**: The same process works in all environments
+3. **Integrated with Skaffold**: No need for external scripts
+4. **Self-Contained**: The jobs run in the cluster with proper service account permissions
 
-#### Prerequisites
+#### Included Verification
 
-- A Kubernetes cluster with Istio installed
-- `kubectl` configured to access your cluster
-- Permission to create resources in the cluster
-
-#### Development Workflow
-
-For active development with rate limiting:
-
-```bash
-# Start development mode with integrated validation
-skaffold dev -m template-fastapi-app -p istio-rate-limit-actions
-```
-
-This workflow leverages Skaffold's custom actions to:
-- Enable Istio injection automatically before deployment using containers
-- Apply all rate limiting configurations as part of the deployment
-- Verify rate limiting is working after deployment through container-based tests
-- Keep the application running with live updates during development
-
-#### Extending the Verification
-
-To create custom rate limit verification, add a new verification job to your Kubernetes manifests:
-
-```yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: custom-rate-limit-test
-  namespace: template-fastapi-app
-spec:
-  template:
-    spec:
-      containers:
-      - name: rate-limit-tester
-        image: curlimages/curl:latest
-        command: ["/bin/sh", "-c"]
-        args:
-        - |
-          # Custom rate limit testing logic
-          echo "Testing rate limiting with custom parameters..."
-          
-          SERVICE_URL="http://template-fastapi-app.template-fastapi-app.svc"
-          
-          # Test specific endpoints with custom thresholds
-          for i in {1..60}; do
-            RESP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL/api/v1/key-management/status)
-            echo "Request $i: $RESP_CODE"
-            
-            if [ "$RESP_CODE" = "429" ]; then
-              echo "Rate limiting confirmed after $i requests!"
-              exit 0
-            fi
-            
-            sleep 0.05  # Faster requests to hit limits quickly
-          done
-          
-          echo "Failed to trigger rate limiting after 60 requests"
-          exit 1
-      restartPolicy: Never
-  backoffLimit: 1
-```
-
-Apply this job after deployment to run your custom verification:
-```bash
-kubectl apply -f custom-rate-limit-test.yaml
-kubectl logs -f -n template-fastapi-app job/custom-rate-limit-test
-```
+The verification jobs check:
+1. **Application Health**: Basic health endpoint test
+2. **Authentication**: Login functionality
+3. **API Functionality**: Key API endpoints
+4. **Rate Limiting**: Verifies rate limits are enforced (for Istio deployments)
 
 ## Verification
 

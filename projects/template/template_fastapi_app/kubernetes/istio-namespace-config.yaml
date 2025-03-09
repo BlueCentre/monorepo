@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: template-fastapi-app
-  labels:
-    istio-injection: enabled
-  annotations:
-    description: "Namespace for the template FastAPI application with Istio injection enabled" 

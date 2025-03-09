@@ -1,0 +1,27 @@
+# https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+---
+# ClusterRole with namespace management permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-manager
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]
+  # resources: ["nodes", "namespaces", "pods", "secrets", "configmaps", "deployments", "jobs", "services", "endpoints"]
+  # verbs: ["get", "list", "patch", "update"]
+---
+# ClusterRoleBinding to bind the role to the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: namespace-manager-binding
+subjects:
+- kind: ServiceAccount
+  name: default  # The service account mentioned in the error
+  namespace: template-fastapi-app
+roleRef:
+  kind: ClusterRole
+  name: namespace-manager
+  apiGroup: rbac.authorization.k8s.io
