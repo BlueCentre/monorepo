@@ -84,3 +84,10 @@ Build tools used
 1. Bazel for building, testing and packaging docker images
 2. Skaffold for development mode and deployments as a replacement for docker-compose
 3. Always use best practice and latest versions for these tools
+
+Repository & prompt objectives
+1. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
+2. Always build, test, deploy and validate end-to-end after any code changes
+3. Once everything works, always update the relevant READMEs
+4. Clean up any unused code or configurations that are not used to keep the repository maintainable
+5. Never modify colima runtime or configuration

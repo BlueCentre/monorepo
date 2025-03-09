@@ -662,3 +662,70 @@ If you encounter issues during any step, here are common problems and solutions:
    - Verify database initialization: `kubectl logs -n template-fastapi-app job/db-init`
    - Check for database connection errors in application logs
    - Ensure PostgreSQL is running properly: `kubectl exec -n template-fastapi-app deploy/postgres -- pg_isready`
+
+## Admin User
+
+The application automatically creates an admin user during initialization with the following credentials:
+
+- Email: `admin@example.com`
+- Password: `admin`
+
+The admin user is created by the database migration job (`db-migrations-job.yaml`). The job follows a two-step approach:
+
+1. First, it attempts to run Alembic migrations if the configuration files are present
+2. If Alembic is not available or fails, it falls back to:
+   - Creating database tables using SQLAlchemy's `Base.metadata.create_all()`
+   - Creating the admin user using direct SQL commands
+
+This hybrid approach ensures that the database is properly initialized regardless of the environment, while still preferring Alembic migrations when available.
+
+### Database Migrations
+
+For schema changes, we recommend using Alembic migrations:
+
+1. Define database models in SQLAlchemy classes within the application code
+2. Create a new Alembic migration if you need to change the schema or add data:
+   ```bash
+   alembic revision -m "your_migration_description"
+   ```
+3. Edit the generated migration file to implement your changes
+4. The migrations will be applied automatically during deployment
+
+### Password Hashing
+
+The application uses bcrypt for password hashing. If you need to update the admin password, you can generate a new hash using:
+
+```python
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+new_hash = pwd_context.hash('your_new_password')
+print(new_hash)
+```
+
+Then update the password in the `db-migrations-job.yaml` file.
+
+### Authentication
+
+The application uses JWT tokens for authentication. You can obtain a token by sending a POST request to the `/api/v1/login/access-token` endpoint:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/login/access-token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin@example.com&password=admin"
+```
+
+The response will include an access token that can be used to authenticate subsequent requests:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+Use this token in the Authorization header for authenticated requests:
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```

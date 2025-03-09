@@ -1,17 +1,15 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: db-migrations
-  namespace: template-fastapi-app
+  name: db-migrations-job
   labels:
     app: template-fastapi-app
     component: db-migrations
   annotations:
-    # This annotation tells Skaffold to recreate the job on each deployment
     "skaffold.dev/recreate-pods": "true"
 spec:
-  ttlSecondsAfterFinished: 100  # Automatically delete the job after completion
-  backoffLimit: 3  # Number of retries before considering the job as failed
+  ttlSecondsAfterFinished: 100
+  backoffLimit: 5
   template:
     metadata:
       labels:
@@ -19,35 +17,83 @@ spec:
         component: db-migrations
     spec:
       restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:15
+        command: ["sh", "-c", "until pg_isready -h postgres -p 5432; do echo waiting for postgres; sleep 2; done;"]
       containers:
-      - name: migrations
-        image: template-fastapi-app  # Use the same image as the main application
+      - name: db-migrations
+        image: template-fastapi-app
         imagePullPolicy: IfNotPresent
-        command: ["python", "-m", "app.migrations.scripts.run_migrations", "upgrade"]
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          # Set environment variables
+          export PYTHONPATH=/app:/app/src
+          
+          # Create database tables
+          cd /app/src
+          echo "Creating database tables with SQLAlchemy..."
+          python -c "from app.db.base import Base; from app.db.session import engine; Base.metadata.create_all(bind=engine); print('Database tables created successfully')"
+          
+          # Generate password hash using Python
+          echo "Generating password hash..."
+          HASHED_PASSWORD=$(python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt'], deprecated='auto').hash('admin'))")
+          echo "Password hash generated."
+          
+          # Install PostgreSQL client for SQL execution
+          echo "Installing PostgreSQL client..."
+          apt-get update && apt-get install -y postgresql-client
+          
+          # Create admin user using SQL directly (avoid User model issue)
+          echo "Creating admin user with SQL..."
+          echo "
+          DO \$\$
+          BEGIN
+              IF NOT EXISTS (SELECT 1 FROM \"user\" WHERE email = 'admin@example.com') THEN
+                  INSERT INTO \"user\" (email, hashed_password, full_name, is_active, is_superuser)
+                  VALUES ('admin@example.com', '${HASHED_PASSWORD}', 'Admin', TRUE, TRUE);
+                  RAISE NOTICE 'Admin user created successfully';
+              ELSE
+                  RAISE NOTICE 'Admin user already exists';
+              END IF;
+          END
+          \$\$;
+          " > /tmp/create_admin.sql
+          
+          # Execute the SQL file
+          PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_SERVER -U $POSTGRES_USER -d $POSTGRES_DB -f /tmp/create_admin.sql
+          
+          # Verify admin user was created
+          echo "Verifying admin user creation..."
+          PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_SERVER -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT id, email, is_superuser FROM \"user\" WHERE email = 'admin@example.com'"
+          
+          echo "Database initialization completed."
         env:
-        - name: POSTGRES_SERVER
-          value: postgres
+        - name: PYTHONPATH
+          value: "/app:/app/src"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              key: username
               name: postgres-secret
+              key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              key: password
               name: postgres-secret
+              key: password
+        - name: POSTGRES_SERVER
+          value: "postgres"
         - name: POSTGRES_DB
-          value: app
-        - name: SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              key: secret-key
-              name: app-secret
+          value: "app"
+        - name: SQLALCHEMY_DATABASE_URI
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_SERVER)/$(POSTGRES_DB)"
+        - name: PYTHONUNBUFFERED
+          value: "1"
         resources:
           limits:
-            cpu: 200m
-            memory: 256Mi
+            cpu: "0.5"
+            memory: "256Mi"
           requests:
-            cpu: 100m
-            memory: 128Mi 
+            cpu: "0.1"
+            memory: "128Mi" 

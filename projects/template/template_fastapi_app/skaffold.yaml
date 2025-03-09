@@ -46,12 +46,15 @@ build:
 
 manifests:
   rawYaml:
-    - kubernetes/*.yaml
+    - kubernetes/bootstrap/namespace.yaml
+    - kubernetes/db-migrations-job.yaml  # Include our migrations job
+    - kubernetes/*.yaml  # Include all other Kubernetes resources
 
 deploy:
   kubectl: {}
   # Add post-deployment verification for database initialization
   statusCheck: true
+
 
 # Define custom actions at the root level of the configuration
 customActions:
@@ -175,9 +178,6 @@ verify:
           fi
     executionMode:
       kubernetesCluster: {}
-        # Does not do what we expect, so we're not using it
-        # overrides: '{"spec": {"template": {"spec": {"serviceAccountName": "namespace-manager"}}}}'
-        # jobManifestPath: kubernetes/verify/curl-smoke-test.yaml
 
 portForward:
   - resourceType: service
@@ -234,13 +234,381 @@ deploy:
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: servicemesh
+  name: servicemesh-namespace
 manifests:
   rawYaml:
-    - kubernetes/istio/*.yaml
-    # - kubernetes/istio/istio-setup-job.yaml
+    - kubernetes/istio/namespace.yaml
 deploy:
   kubectl: {}
+---
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: servicemesh
+requires:
+  - configs:
+      - servicemesh-namespace
+customActions:
+  - name: apply-rate-limiting
+    containers:
+      - name: istio-setup
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            # Install required tools
+            apk add --no-cache curl kubectl
+            
+            # Create necessary directories
+            mkdir -p /tmp/istio
+            
+            # Download and install istioctl if needed
+            if [ ! -f "/tmp/istio/bin/istioctl" ]; then
+              echo "Downloading Istio..."
+              curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 TARGET_ARCH=x86_64 sh -
+              mv istio-1.25.0/bin/istioctl /tmp/istio/bin/
+              chmod +x /tmp/istio/bin/istioctl
+            fi
+            
+            # Create istio-system namespace if it doesn't exist
+            kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
+            
+            # Install Istio with demo profile
+            /tmp/istio/bin/istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.25.0 -y
+            
+            # Enable istio injection for the template-fastapi-app namespace
+            kubectl create namespace template-fastapi-app --dry-run=client -o yaml | kubectl apply -f -
+            kubectl label namespace template-fastapi-app istio-injection=enabled --overwrite
+            
+            # Create or update Gateway
+            cat > /tmp/gateway.yaml << 'EOF'
+            apiVersion: networking.istio.io/v1alpha3
+            kind: Gateway
+            metadata:
+              name: template-fastapi-gateway
+              namespace: template-fastapi-app
+            spec:
+              selector:
+                istio: ingressgateway
+              servers:
+              - port:
+                  number: 80
+                  name: http
+                  protocol: HTTP
+                hosts:
+                - "*"
+            ---
+            apiVersion: networking.istio.io/v1alpha3
+            kind: VirtualService
+            metadata:
+              name: template-fastapi-app
+              namespace: template-fastapi-app
+            spec:
+              hosts:
+              - "*"
+              gateways:
+              - template-fastapi-gateway
+              http:
+              - match:
+                - uri:
+                    prefix: /
+                route:
+                - destination:
+                    host: template-fastapi-app
+                    port:
+                      number: 80
+            EOF
+            kubectl apply -f /tmp/gateway.yaml
+            
+            # Create or update rate limiting configuration
+            cat > /tmp/rate-limiting.yaml << 'EOF'
+            apiVersion: networking.istio.io/v1alpha3
+            kind: EnvoyFilter
+            metadata:
+              name: filter-ratelimit
+              namespace: istio-system
+            spec:
+              workloadSelector:
+                labels:
+                  istio: ingressgateway
+              configPatches:
+                - applyTo: HTTP_FILTER
+                  match:
+                    context: GATEWAY
+                    listener:
+                      filterChain:
+                        filter:
+                          name: "envoy.filters.network.http_connection_manager"
+                          subFilter:
+                            name: "envoy.filters.http.router"
+                  patch:
+                    operation: INSERT_BEFORE
+                    value:
+                      name: envoy.filters.http.ratelimit
+                      typed_config:
+                        "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+                        domain: template-fastapi-rate-limit
+                        failure_mode_deny: true
+                        rate_limit_service:
+                          grpc_service:
+                            envoy_grpc:
+                              cluster_name: rate_limit_service
+                            timeout: 10s
+                          transport_api_version: V3
+            ---
+            apiVersion: networking.istio.io/v1alpha3
+            kind: EnvoyFilter
+            metadata:
+              name: ratelimit-config
+              namespace: istio-system
+            spec:
+              workloadSelector:
+                labels:
+                  istio: ingressgateway
+              configPatches:
+                - applyTo: VIRTUAL_HOST
+                  match:
+                    context: GATEWAY
+                    routeConfiguration:
+                      vhost:
+                        name: "*:80"
+                        route:
+                          action: ANY
+                  patch:
+                    operation: MERGE
+                    value:
+                      rate_limits:
+                        - actions:
+                          - request_headers:
+                              header_name: ":path"
+                              descriptor_key: "path"
+            ---
+            apiVersion: networking.istio.io/v1alpha3
+            kind: EnvoyFilter
+            metadata:
+              name: rate-limit-service
+              namespace: istio-system
+            spec:
+              configPatches:
+                - applyTo: CLUSTER
+                  match:
+                    context: GATEWAY
+                  patch:
+                    operation: ADD
+                    value:
+                      name: rate_limit_service
+                      type: STRICT_DNS
+                      connect_timeout: 10s
+                      http2_protocol_options: {}
+                      load_assignment:
+                        cluster_name: rate_limit_service
+                        endpoints:
+                          - lb_endpoints:
+                              - endpoint:
+                                  address:
+                                    socket_address:
+                                      address: ratelimit.istio-system.svc.cluster.local
+                                      port_value: 8081
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: ratelimit
+              namespace: istio-system
+            spec:
+              selector:
+                app: ratelimit
+              ports:
+              - name: http-port
+                port: 8080
+                targetPort: 8080
+                protocol: TCP
+              - name: grpc-port
+                port: 8081
+                targetPort: 8081
+                protocol: TCP
+            ---
+            apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: ratelimit-config
+              namespace: istio-system
+            data:
+              config.yaml: |
+                domain: template-fastapi-rate-limit
+                descriptors:
+                  - key: path
+                    value: "/api/v1/items"
+                    rate_limit:
+                      unit: minute
+                      requests_per_unit: 5
+                  - key: path
+                    value: "/docs"
+                    rate_limit:
+                      unit: minute
+                      requests_per_unit: 10
+                  - key: path
+                    rate_limit:
+                      unit: minute
+                      requests_per_unit: 100
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: ratelimit
+              namespace: istio-system
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: ratelimit
+              template:
+                metadata:
+                  labels:
+                    app: ratelimit
+                spec:
+                  containers:
+                  - name: ratelimit
+                    image: envoyproxy/ratelimit:6f5de117
+                    imagePullPolicy: Always
+                    command: ["/bin/ratelimit"]
+                    env:
+                    - name: LOG_LEVEL
+                      value: debug
+                    - name: REDIS_SOCKET_TYPE
+                      value: tcp
+                    - name: REDIS_URL
+                      value: redis:6379
+                    - name: USE_STATSD
+                      value: "false"
+                    - name: RUNTIME_ROOT
+                      value: /data
+                    - name: RUNTIME_SUBDIRECTORY
+                      value: ratelimit
+                    ports:
+                    - containerPort: 8080
+                    - containerPort: 8081
+                    - containerPort: 6070
+                    volumeMounts:
+                    - name: config-volume
+                      mountPath: /data/ratelimit/config/config.yaml
+                      subPath: config.yaml
+                  volumes:
+                  - name: config-volume
+                    configMap:
+                      name: ratelimit-config
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: redis
+              namespace: istio-system
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: redis
+              template:
+                metadata:
+                  labels:
+                    app: redis
+                spec:
+                  containers:
+                  - image: redis:alpine
+                    imagePullPolicy: Always
+                    name: redis
+                    ports:
+                    - name: redis
+                      containerPort: 6379
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: redis
+              namespace: istio-system
+            spec:
+              ports:
+              - name: redis
+                port: 6379
+                targetPort: 6379
+                protocol: TCP
+              selector:
+                app: redis
+            EOF
+            kubectl apply -f /tmp/rate-limiting.yaml
+            
+            # Restart deployments to ensure sidecar injection 
+            if kubectl get deployment -n template-fastapi-app template-fastapi-app 2>/dev/null; then
+              echo "Restarting template-fastapi-app deployment to inject Istio sidecar..."
+              kubectl rollout restart deployment/template-fastapi-app -n template-fastapi-app
+            else
+              echo "No template-fastapi-app deployment found. Deploy the application first."
+            fi
+            
+            echo "===================================="
+            echo "Istio and rate limiting setup complete!"
+            echo "===================================="
+            echo "To verify the installation:"
+            echo "1. kubectl get pods -n istio-system"
+            echo "2. kubectl get gateway,virtualservice -n template-fastapi-app"
+            echo "3. Get gateway IP: kubectl get svc -n istio-system istio-ingressgateway"
+            echo "4. Test API with: curl http://GATEWAY_IP/"
+            echo "5. Test rate limiting: curl http://GATEWAY_IP/api/v1/items (limited to 5 req/min)"
+deploy:
+  kubectl:
+    defaultNamespace: istio-system
+  helm:
+    releases:
+      - name: istio-base
+        repo: https://istio-release.storage.googleapis.com/charts
+        remoteChart: base
+        namespace: istio-system
+        createNamespace: true
+        version: 1.25.0
+        setValues:
+          global.istioNamespace: istio-system
+        wait: true
+        
+      - name: istiod
+        repo: https://istio-release.storage.googleapis.com/charts
+        remoteChart: istiod
+        namespace: istio-system
+        version: 1.25.0
+        wait: true
+        setValues:
+          global.proxy.resources.requests.cpu: 100m
+          global.proxy.resources.requests.memory: 128Mi
+          pilot.resources.requests.cpu: 200m
+          pilot.resources.requests.memory: 256Mi
+        
+      - name: istio-ingress
+        repo: https://istio-release.storage.googleapis.com/charts
+        remoteChart: gateway
+        namespace: istio-system
+        version: 1.25.0
+        wait: true
+        setValues:
+          service.type: ClusterIP
+          
+      - name: rate-limit
+        repo: https://charts.bitnami.com/bitnami
+        remoteChart: redis
+        namespace: istio-system
+        createNamespace: true
+        wait: true
+      
+profiles:
+  - name: dev
+    patches:
+      - op: add
+        path: /deploy/helm/releases/2/setValues/service.type
+        value: NodePort
+  
+  - name: prod
+    patches:
+      - op: add
+        path: /deploy/helm/releases/2/setValues/service.type
+        value: LoadBalancer
 ---
 apiVersion: skaffold/v4beta6
 kind: Config

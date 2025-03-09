@@ -1,5 +1,5 @@
 // DevOps FastAPI App - Rules for AI
-// This file provides guidance for working with the DevOps FastAPI App project
+// This file provides guidance for working with the Template FastAPI App project
 
 // Project Structure
 // - projects/py/devops_fastapi_app/app/web_app.py: Main FastAPI application file
@@ -15,6 +15,7 @@
 // 4. The application follows a modular structure with separate files for models, routes, and the main app
 // 5. Maintain backward compatibility with the existing API endpoints
 // 6. Keep the code simple, well-documented, and follow FastAPI best practices
+// 7. Always cleanup code or configurations used for troubleshooting and debugging purposes
 
 // Implementation Details
 // - The application is built using FastAPI framework
@@ -24,6 +25,7 @@
 // - Error handling is implemented using FastAPI's exception handlers
 // - CORS middleware is configured to allow cross-origin requests
 // - The application integrates with the DevOps library to provide information about different DevOps roles
+// - Any database changes will always use alembic database migration
 
 // Testing Strategy
 // - The project uses a comprehensive testing approach with both unit and integration tests

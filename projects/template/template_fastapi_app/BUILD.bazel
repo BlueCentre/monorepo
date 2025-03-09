@@ -200,15 +200,26 @@ genrule(
         "Dockerfile.bazel",
         "requirements.txt",
         "sample_seed_data.json",
-    ] + glob(["app/**/*.py"]),
+        "alembic.ini",
+    ] + glob(["app/**/*.py"]) + glob(["migrations/**/*.py", "migrations/**/*.mako", "migrations/README"]),
     outs = ["app.tar"],
     cmd = """
-        mkdir -p app_files/app
+        mkdir -p app_files/app app_files/migrations
         # Copy the run.py file
         cp $(location run.py) app_files/
+        # Copy the alembic.ini file
+        cp $(location alembic.ini) app_files/
         # Copy the entire app directory structure
         for f in $(locations app/main.py) $(locations app/api/deps.py) $(locations app/core/config.py) $(SRCS); do
             if [[ $$f == *app/* ]]; then
+                rel_path=$${f#*/}  # Remove the workspace path prefix
+                mkdir -p app_files/$$(dirname $$rel_path)
+                cp $$f app_files/$$rel_path
+            fi
+        done
+        # Copy migrations directory
+        for f in $(SRCS); do
+            if [[ $$f == *migrations/* ]]; then
                 rel_path=$${f#*/}  # Remove the workspace path prefix
                 mkdir -p app_files/$$(dirname $$rel_path)
                 cp $$f app_files/$$rel_path

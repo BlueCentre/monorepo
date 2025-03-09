@@ -1,1 +1,39 @@
- 
+# Database Migrations
+
+This directory contains the Alembic database migrations for the project.
+
+## Migration Structure
+
+- `env.py`: Alembic environment configuration
+- `script.py.mako`: Template for generating new migrations
+- `versions/`: Contains migration scripts
+  - `01_initial_schema_and_data.py`: Initial migration that creates the database schema and seeds initial data
+
+## Running Migrations
+
+Migrations are automatically run during application deployment by the Kubernetes job defined in `kubernetes/db-migrations-job.yaml`.
+
+To run migrations manually:
+
+```bash
+# Run all migrations up to the latest version
+python -m app.migrations.scripts.run_migrations upgrade
+
+# Create a new migration
+python -m app.migrations.scripts.run_migrations revision "migration_description" --autogenerate
+
+# Seed initial data separately (not usually needed as it's part of the initial migration)
+python -m app.migrations.scripts.run_migrations seed
+```
+
+## Initial Data
+
+The first migration (`01_initial_schema_and_data.py`) not only creates the database schema but also seeds initial data:
+
+1. Creates a superuser using the credentials from environment variables:
+   - Email: `FIRST_SUPERUSER_EMAIL`
+   - Password: `FIRST_SUPERUSER_PASSWORD`
+
+2. Creates a sample item owned by the superuser.
+
+This approach ensures that the database is properly initialized with both schema and necessary data in a transactional manner. 
