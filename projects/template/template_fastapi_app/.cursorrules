@@ -65,3 +65,47 @@ The project follows a modular structure:
 - Use OpenTelemetry for tracing and metrics
 - Use Docker for containerization
 - Use Kubernetes for deployment
+
+## Database Configuration
+- PostgreSQL is used as the database
+- SQLAlchemy is used as the ORM
+- Alembic is used for database migrations
+- Migration files are located at: app/db/migrations/alembic/versions/
+- New migrations should follow a linear sequence with proper dependencies
+- All migrations must include both upgrade() and downgrade() methods
+- For password hashing in migrations, always use bcrypt
+
+## Build and Deployment
+- Docker image is built using the project's Dockerfile
+- Kubernetes manifests define the application deployment
+- Database migrations are applied through a Kubernetes job defined in kubernetes/db/migrations.yaml
+- API server configuration is in kubernetes/app/deployment.yaml
+- Database configuration is in kubernetes/db/postgres.yaml
+- Health check endpoint is defined at /health
+
+## Istio Service Mesh Integration
+- Istio is used for service mesh capabilities including rate limiting
+- EnvoyFilters are used to configure rate limiting
+- Rate limiting configuration is in kubernetes/istio/rate-limiting.yaml
+- Gateway and VirtualService resources define the ingress configuration
+- Service mesh features are applied using the servicemesh profile in skaffold.yaml
+
+## Workflow Commands
+- Build the application: skaffold build -m template-fastapi-app
+- Deploy the application: skaffold run -m template-fastapi-app
+- Apply rate limiting: skaffold exec apply-rate-limiting -m servicemesh
+- Verify deployment: skaffold verify -m template-fastapi-app
+- Development mode: skaffold dev -m template-fastapi-app
+
+## Common Issues and Solutions
+- For database migration errors with multiple heads, ensure migrations have proper linear dependencies
+- If migration scripts aren't found, check the path in the migrations.yaml job
+- When the health check endpoint fails, ensure the FastAPI app is actually running with the correct command
+- For image pull errors in Kubernetes, ensure the image is correctly built and available
+- Always ensure bcrypt is included in requirements.txt when using password hashing in migrations
+
+## Testing Practices
+- Health checks are configured at /health endpoint
+- Rate limiting can be tested with repeated requests to rate-limited endpoints
+- Database seeds can be verified by querying the database directly
+- Always validate both API functionality and service mesh features

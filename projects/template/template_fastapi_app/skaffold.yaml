@@ -46,7 +46,8 @@ build:
 
 manifests:
   rawYaml:
-    - kubernetes/bootstrap/namespace.yaml
+    - kubernetes/bootstrap/rbac.yaml
+    - kubernetes/namespace.yaml
     - kubernetes/db-migrations-job.yaml  # Include our migrations job
     - kubernetes/*.yaml  # Include all other Kubernetes resources
 
@@ -55,8 +56,6 @@ deploy:
   # Add post-deployment verification for database initialization
   statusCheck: true
 
-
-# Define custom actions at the root level of the configuration
 customActions:
   - name: enable-istio-injection
     containers:
@@ -85,7 +84,6 @@ customActions:
     executionMode:
       kubernetesCluster: {}
 
-# Add verification steps
 verify:
   - name: smoke-test
     container:
@@ -105,41 +103,40 @@ verify:
             SLEEP_DURATION=$((RANDOM % 5 + 5)) # Sleep between 5 and 10 seconds
             echo "Running smoke test (attempt $(($RETRY_COUNT+1))/$((MAX_RETRIES+1)))..."
 
-            
             # Test health endpoint
             echo "Testing health endpoint..."
             HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health}")
             echo "Health response: $HEALTH_RESPONSE"
-            
+
             if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
               echo "Health check passed!"
-              
+
               # Test login endpoint
               echo "Testing login endpoint..."
               LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
               echo "Login response: $LOGIN_RESPONSE"
-              
+
               if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
                 echo "==============================================" 
                 echo "Login successful, authentication token received!"
                 echo "=============================================="
-                
+
                 # Extract the token
                 TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-                
+
                 # Test users endpoint
                 echo "Testing users endpoint..."
                 USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                 echo "Users response: $USERS_RESPONSE"
-                
+
                 if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
                   echo "Users endpoint test passed!"
-                  
+
                   # Test key management endpoint
                   echo "Testing key management status endpoint..."
                   KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                   echo "Key management status response: $KEY_MGMT_RESPONSE"
-                  
+
                   if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
                     echo "Key management status test passed!"
                     SUCCESS=true
@@ -155,7 +152,7 @@ verify:
             else
               echo "Health check failed!"
             fi
-            
+
             if [ "$SUCCESS" = false ]; then
               RETRY_COUNT=$((RETRY_COUNT+1))
               if [ $RETRY_COUNT -le $MAX_RETRIES ]; then
@@ -215,400 +212,201 @@ profiles:
   - name: run
     activation:
       - command: run
-
----
-apiVersion: skaffold/v4beta6
-kind: Config
-metadata:
-  name: bootstrap
-# requires:
-#   - configs:
-#       - template-fastapi-app
-manifests:
-  rawYaml:
-    - kubernetes/bootstrap/rbac.yaml
-    - kubernetes/bootstrap/namespace.yaml
-deploy:
-  kubectl: {}
----
-apiVersion: skaffold/v4beta6
-kind: Config
-metadata:
-  name: servicemesh-namespace
-manifests:
-  rawYaml:
-    - kubernetes/istio/namespace.yaml
-deploy:
-  kubectl: {}
----
-apiVersion: skaffold/v4beta6
-kind: Config
-metadata:
-  name: servicemesh
-requires:
-  - configs:
-      - servicemesh-namespace
-customActions:
-  - name: apply-rate-limiting
-    containers:
-      - name: istio-setup
-        image: alpine:latest
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            # Install required tools
-            apk add --no-cache curl kubectl
-            
-            # Create necessary directories
-            mkdir -p /tmp/istio
-            
-            # Download and install istioctl if needed
-            if [ ! -f "/tmp/istio/bin/istioctl" ]; then
-              echo "Downloading Istio..."
-              curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 TARGET_ARCH=x86_64 sh -
-              mv istio-1.25.0/bin/istioctl /tmp/istio/bin/
-              chmod +x /tmp/istio/bin/istioctl
-            fi
-            
-            # Create istio-system namespace if it doesn't exist
-            kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
-            
-            # Install Istio with demo profile
-            /tmp/istio/bin/istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.25.0 -y
-            
-            # Enable istio injection for the template-fastapi-app namespace
-            kubectl create namespace template-fastapi-app --dry-run=client -o yaml | kubectl apply -f -
-            kubectl label namespace template-fastapi-app istio-injection=enabled --overwrite
-            
-            # Create or update Gateway
-            cat > /tmp/gateway.yaml << 'EOF'
-            apiVersion: networking.istio.io/v1alpha3
-            kind: Gateway
-            metadata:
-              name: template-fastapi-gateway
-              namespace: template-fastapi-app
-            spec:
-              selector:
-                istio: ingressgateway
-              servers:
-              - port:
-                  number: 80
-                  name: http
-                  protocol: HTTP
-                hosts:
-                - "*"
-            ---
-            apiVersion: networking.istio.io/v1alpha3
-            kind: VirtualService
-            metadata:
-              name: template-fastapi-app
-              namespace: template-fastapi-app
-            spec:
-              hosts:
-              - "*"
-              gateways:
-              - template-fastapi-gateway
-              http:
-              - match:
-                - uri:
-                    prefix: /
-                route:
-                - destination:
-                    host: template-fastapi-app
-                    port:
-                      number: 80
-            EOF
-            kubectl apply -f /tmp/gateway.yaml
-            
-            # Create or update rate limiting configuration
-            cat > /tmp/rate-limiting.yaml << 'EOF'
-            apiVersion: networking.istio.io/v1alpha3
-            kind: EnvoyFilter
-            metadata:
-              name: filter-ratelimit
-              namespace: istio-system
-            spec:
-              workloadSelector:
-                labels:
-                  istio: ingressgateway
-              configPatches:
-                - applyTo: HTTP_FILTER
-                  match:
-                    context: GATEWAY
-                    listener:
-                      filterChain:
-                        filter:
-                          name: "envoy.filters.network.http_connection_manager"
-                          subFilter:
-                            name: "envoy.filters.http.router"
-                  patch:
-                    operation: INSERT_BEFORE
-                    value:
-                      name: envoy.filters.http.ratelimit
-                      typed_config:
-                        "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
-                        domain: template-fastapi-rate-limit
-                        failure_mode_deny: true
-                        rate_limit_service:
-                          grpc_service:
-                            envoy_grpc:
-                              cluster_name: rate_limit_service
-                            timeout: 10s
-                          transport_api_version: V3
-            ---
-            apiVersion: networking.istio.io/v1alpha3
-            kind: EnvoyFilter
-            metadata:
-              name: ratelimit-config
-              namespace: istio-system
-            spec:
-              workloadSelector:
-                labels:
-                  istio: ingressgateway
-              configPatches:
-                - applyTo: VIRTUAL_HOST
-                  match:
-                    context: GATEWAY
-                    routeConfiguration:
-                      vhost:
-                        name: "*:80"
-                        route:
-                          action: ANY
-                  patch:
-                    operation: MERGE
-                    value:
-                      rate_limits:
-                        - actions:
-                          - request_headers:
-                              header_name: ":path"
-                              descriptor_key: "path"
-            ---
-            apiVersion: networking.istio.io/v1alpha3
-            kind: EnvoyFilter
-            metadata:
-              name: rate-limit-service
-              namespace: istio-system
-            spec:
-              configPatches:
-                - applyTo: CLUSTER
-                  match:
-                    context: GATEWAY
-                  patch:
-                    operation: ADD
-                    value:
-                      name: rate_limit_service
-                      type: STRICT_DNS
-                      connect_timeout: 10s
-                      http2_protocol_options: {}
-                      load_assignment:
-                        cluster_name: rate_limit_service
-                        endpoints:
-                          - lb_endpoints:
-                              - endpoint:
-                                  address:
-                                    socket_address:
-                                      address: ratelimit.istio-system.svc.cluster.local
-                                      port_value: 8081
-            ---
-            apiVersion: v1
-            kind: Service
-            metadata:
-              name: ratelimit
-              namespace: istio-system
-            spec:
-              selector:
-                app: ratelimit
-              ports:
-              - name: http-port
-                port: 8080
-                targetPort: 8080
-                protocol: TCP
-              - name: grpc-port
-                port: 8081
-                targetPort: 8081
-                protocol: TCP
-            ---
-            apiVersion: v1
-            kind: ConfigMap
-            metadata:
-              name: ratelimit-config
-              namespace: istio-system
-            data:
-              config.yaml: |
-                domain: template-fastapi-rate-limit
-                descriptors:
-                  - key: path
-                    value: "/api/v1/items"
-                    rate_limit:
-                      unit: minute
-                      requests_per_unit: 5
-                  - key: path
-                    value: "/docs"
-                    rate_limit:
-                      unit: minute
-                      requests_per_unit: 10
-                  - key: path
-                    rate_limit:
-                      unit: minute
-                      requests_per_unit: 100
-            ---
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: ratelimit
-              namespace: istio-system
-            spec:
-              replicas: 1
-              selector:
-                matchLabels:
-                  app: ratelimit
-              template:
-                metadata:
-                  labels:
-                    app: ratelimit
-                spec:
-                  containers:
-                  - name: ratelimit
-                    image: envoyproxy/ratelimit:6f5de117
-                    imagePullPolicy: Always
-                    command: ["/bin/ratelimit"]
-                    env:
-                    - name: LOG_LEVEL
-                      value: debug
-                    - name: REDIS_SOCKET_TYPE
-                      value: tcp
-                    - name: REDIS_URL
-                      value: redis:6379
-                    - name: USE_STATSD
-                      value: "false"
-                    - name: RUNTIME_ROOT
-                      value: /data
-                    - name: RUNTIME_SUBDIRECTORY
-                      value: ratelimit
-                    ports:
-                    - containerPort: 8080
-                    - containerPort: 8081
-                    - containerPort: 6070
-                    volumeMounts:
-                    - name: config-volume
-                      mountPath: /data/ratelimit/config/config.yaml
-                      subPath: config.yaml
-                  volumes:
-                  - name: config-volume
-                    configMap:
-                      name: ratelimit-config
-            ---
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: redis
-              namespace: istio-system
-            spec:
-              replicas: 1
-              selector:
-                matchLabels:
-                  app: redis
-              template:
-                metadata:
-                  labels:
-                    app: redis
-                spec:
-                  containers:
-                  - image: redis:alpine
-                    imagePullPolicy: Always
-                    name: redis
-                    ports:
-                    - name: redis
-                      containerPort: 6379
-            ---
-            apiVersion: v1
-            kind: Service
-            metadata:
-              name: redis
-              namespace: istio-system
-            spec:
-              ports:
-              - name: redis
-                port: 6379
-                targetPort: 6379
-                protocol: TCP
-              selector:
-                app: redis
-            EOF
-            kubectl apply -f /tmp/rate-limiting.yaml
-            
-            # Restart deployments to ensure sidecar injection 
-            if kubectl get deployment -n template-fastapi-app template-fastapi-app 2>/dev/null; then
-              echo "Restarting template-fastapi-app deployment to inject Istio sidecar..."
-              kubectl rollout restart deployment/template-fastapi-app -n template-fastapi-app
-            else
-              echo "No template-fastapi-app deployment found. Deploy the application first."
-            fi
-            
-            echo "===================================="
-            echo "Istio and rate limiting setup complete!"
-            echo "===================================="
-            echo "To verify the installation:"
-            echo "1. kubectl get pods -n istio-system"
-            echo "2. kubectl get gateway,virtualservice -n template-fastapi-app"
-            echo "3. Get gateway IP: kubectl get svc -n istio-system istio-ingressgateway"
-            echo "4. Test API with: curl http://GATEWAY_IP/"
-            echo "5. Test rate limiting: curl http://GATEWAY_IP/api/v1/items (limited to 5 req/min)"
-deploy:
-  kubectl:
-    defaultNamespace: istio-system
-  helm:
-    releases:
-      - name: istio-base
-        repo: https://istio-release.storage.googleapis.com/charts
-        remoteChart: base
-        namespace: istio-system
-        createNamespace: true
-        version: 1.25.0
-        setValues:
-          global.istioNamespace: istio-system
-        wait: true
-        
-      - name: istiod
-        repo: https://istio-release.storage.googleapis.com/charts
-        remoteChart: istiod
-        namespace: istio-system
-        version: 1.25.0
-        wait: true
-        setValues:
-          global.proxy.resources.requests.cpu: 100m
-          global.proxy.resources.requests.memory: 128Mi
-          pilot.resources.requests.cpu: 200m
-          pilot.resources.requests.memory: 256Mi
-        
-      - name: istio-ingress
-        repo: https://istio-release.storage.googleapis.com/charts
-        remoteChart: gateway
-        namespace: istio-system
-        version: 1.25.0
-        wait: true
-        setValues:
-          service.type: ClusterIP
-          
-      - name: rate-limit
-        repo: https://charts.bitnami.com/bitnami
-        remoteChart: redis
-        namespace: istio-system
-        createNamespace: true
-        wait: true
-      
-profiles:
-  - name: dev
-    patches:
-      - op: add
-        path: /deploy/helm/releases/2/setValues/service.type
-        value: NodePort
   
-  - name: prod
+  - name: istio-rate-limit
     patches:
       - op: add
-        path: /deploy/helm/releases/2/setValues/service.type
-        value: LoadBalancer
+        path: /manifests/rawYaml
+        value:
+          # Standard application resources
+          - kubernetes/namespace.yaml
+          - kubernetes/db-migrations-job.yaml
+          - kubernetes/*.yaml
+          # Istio resources for template-fastapi-app namespace
+          - kubernetes/istio/rbac.yaml
+          - kubernetes/istio/enable-istio-job.yaml
+          - kubernetes/istio/namespace.yaml
+          - kubernetes/istio/virtual-service.yaml
+          - kubernetes/istio/rate-limit-handler.yaml
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+      - op: add
+        path: /verify
+        value:
+          - name: verify-rate-limiting
+            container:
+              name: verify-rate-limiting
+              image: curlimages/curl:latest
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "Waiting for application and Istio to be ready..."
+                  sleep 15
+
+                  # Function to make requests and check for rate limiting
+                  test_rate_limiting() {
+                    local endpoint="$1"
+                    local expected_429="$2"
+                    local max_attempts=20
+                    local count_429=0
+
+                    echo "Testing rate limiting on endpoint: $endpoint"
+                    echo "Making $max_attempts rapid requests..."
+
+                    # Try different service addressing methods
+                    SERVICE_URL=""
+
+                    # Test health endpoint
+                    echo "Testing health endpoint..."
+                    HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health}")
+                    echo "Health response: $HEALTH_RESPONSE"
+
+                    if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                      echo "Health check passed!"
+
+                      # Test login endpoint
+                      echo "Testing login endpoint..."
+                      LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
+                      echo "Login response: $LOGIN_RESPONSE"
+
+                      if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
+                        echo "==============================================" 
+                        echo "Login successful, authentication token received!"
+                        echo "=============================================="
+
+                        # Extract the token
+                        TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+
+                        # Test users endpoint
+                        echo "Testing users endpoint..."
+                        USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                        echo "Users response: $USERS_RESPONSE"
+
+                        if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
+                          echo "Users endpoint test passed!"
+
+                          # Test key management endpoint
+                          echo "Testing key management status endpoint..."
+                          KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                          echo "Key management status response: $KEY_MGMT_RESPONSE"
+
+                          if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
+                            echo "Key management status test passed!"
+                            SUCCESS=true
+                          else
+                            echo "Key management status test failed!"
+                          fi
+                        else
+                          echo "Users endpoint test failed!"
+                        fi
+
+
+                        # ---
+
+                        # Try first URL format
+                        echo "Trying URL: http://template-fastapi-app/$endpoint"
+                        response=$(curl -s -o /dev/null -w "%{http_code}" "http://template-fastapi-app/$endpoint/" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN" || echo "000")
+                        if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ] || [ "$response" = "429" ]; then
+                          SERVICE_URL="http://template-fastapi-app/$endpoint/"
+                          echo "Found working service URL: $SERVICE_URL"
+                        else
+                          # Try second URL format
+                          echo "Trying URL: http://template-fastapi-app.template-fastapi-app/$endpoint"
+                          response=$(curl -s -o /dev/null -w "%{http_code}" "http://template-fastapi-app.template-fastapi-app/$endpoint/" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN" || echo "000")
+                          if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ] || [ "$response" = "429" ]; then
+                            SERVICE_URL="http://template-fastapi-app.template-fastapi-app/$endpoint/"
+                            echo "Found working service URL: $SERVICE_URL"
+                          else
+                            # Try third URL format
+                            echo "Trying URL: http://template-fastapi-app.template-fastapi-app.svc.cluster.local/$endpoint"
+                            response=$(curl -s -o /dev/null -w "%{http_code}" "http://template-fastapi-app.template-fastapi-app.svc.cluster.local/$endpoint/" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN" || echo "000")
+                            if [ "$response" = "200" ] || [ "$response" = "307" ] || [ "$response" = "401" ] || [ "$response" = "403" ] || [ "$response" = "429" ]; then
+                              SERVICE_URL="http://template-fastapi-app.template-fastapi-app.svc.cluster.local/$endpoint/"
+                              echo "Found working service URL: $SERVICE_URL"
+                            fi
+                          fi
+                        fi
+
+                        if [ -z "$SERVICE_URL" ]; then
+                          echo "❌ Could not find a working service URL"
+                          return 1
+                        fi
+
+                        for i in $(seq 1 $max_attempts); do
+                          echo "Request $i to $SERVICE_URL"
+                          response=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN" || echo "000")
+                          echo "Response code: $response"
+
+                          if [ "$response" = "429" ]; then
+                            count_429=$((count_429 + 1))
+                            echo "Got rate limited (429)"
+                          fi
+
+                          # Small delay to avoid overwhelming the service
+                          sleep 0.1
+                        done
+
+                        echo "Received $count_429 rate limiting responses (429) out of $max_attempts requests"
+
+                        if [ $count_429 -ge $expected_429 ]; then
+                          echo "✅ Rate limiting is working as expected for $endpoint"
+                          return 0
+                        else
+                          echo "❌ Rate limiting is NOT working as expected for $endpoint"
+                          echo "Expected at least $expected_429 rate limiting responses, but got $count_429"
+                          return 1
+                        fi
+                      fi
+                    fi
+                  }
+
+                  # Test API endpoint that should be rate limited
+                  if ! test_rate_limiting "api/v1/items" 5; then
+                    echo "Rate limiting verification failed for API endpoint"
+                    exit 1
+                  fi
+
+                  # Test health endpoint that should NOT be rate limited
+                  if test_rate_limiting "health" 1; then
+                    echo "Health endpoint is being rate limited when it shouldn't be"
+                    exit 1
+                  else
+                    echo "✅ Health endpoint is correctly NOT being rate limited"
+                  fi
+
+                  echo "✅ All rate limiting verification tests passed!"
+                  exit 0
+            executionMode:
+              kubernetesCluster: {}
+# - name: disable-istio
+#   patches:
+#     - op: add
+#       path: /manifests/rawYaml
+#       value:
+#         # Standard application resources only
+#         - kubernetes/namespace.yaml
+#         - kubernetes/db-migrations-job.yaml
+#         - kubernetes/*.yaml
+#         - kubernetes/istio/rbac.yaml
+#         - kubernetes/istio/disable-istio-job.yaml
+#     - op: add
+#       path: /deploy/kubectl/flags
+#       value:
+#         apply:
+#           - --validate=false
+# ---
+# apiVersion: skaffold/v4beta6
+# kind: Config
+# metadata:
+#   name: bootstrap
+# manifests:
+#   rawYaml:
+#     - kubernetes/bootstrap/rbac.yaml
+# deploy:
+#   kubectl: {}
 ---
 apiVersion: skaffold/v4beta6
 kind: Config
@@ -619,6 +417,11 @@ manifests:
     - kubernetes/debug/debug-job.yaml
 deploy:
   kubectl: {}
+
+
+
+
+
 # ---
 # apiVersion: skaffold/v4beta6
 # kind: Config

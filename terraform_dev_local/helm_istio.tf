@@ -90,7 +90,7 @@ resource "helm_release" "istio_cni" {
   repository       = "https://istio-release.storage.googleapis.com/charts"
   description      = "Terraform driven Helm release of Istio CNI Helm chart"
   namespace        = "kube-system"
-  create_namespace = false
+  create_namespace = true
   wait             = false
 
   # https://github.com/istio/istio/blob/master/manifests/charts/istio-cni/values.yaml

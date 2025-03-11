@@ -6,8 +6,8 @@ cert_manager_enabled = true
 opentelemetry_enabled = true
 # datadog_enabled = true
 # telepresence_enabled = true
-istio_enabled  = true
-argocd_enabled = true
+istio_enabled = true
+# argocd_enabled = true
 
 # teardown = true
-kubernetes_context = "colima-x86_64"
+kubernetes_context = "colima"

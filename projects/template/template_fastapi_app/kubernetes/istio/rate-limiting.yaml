@@ -22,7 +22,7 @@ spec:
           name: envoy.filters.http.ratelimit
           typed_config:
             "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
-            domain: template-fastapi-app
+            domain: template-fastapi-rate-limit
             failure_mode_deny: true
             rate_limit_service:
               grpc_service:
@@ -84,5 +84,5 @@ spec:
               - endpoint:
                   address:
                     socket_address:
-                      address: rate-limit-redis-master.istio-system.svc.cluster.local
-                      port_value: 6379 
+                      address: ratelimit.istio-system.svc.cluster.local
+                      port_value: 8081 

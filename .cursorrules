@@ -7,7 +7,7 @@ General guidelines
 - Maintain the existing structure of the README.md file
 - Follow consistent formatting for list items
 - Use descriptive names for .cursorrules files and their folders
-- ALways update the relevant README files after making changes to any code or configurations
+- Always update the relevant README files after making changes to any code or configurations
 
 // README.md structure
 Any newly created README.md file should maintain the following structure:
@@ -45,13 +45,6 @@ Each .cursorrules file should follow this structure:
 7. Benefits of using the rules
 8. Additional resources
 
-// Repository structure
-// - README.md: Main documentation file
-// - rules/: Directory containing all .cursorrules files
-//   - README.md: Documentation for the rules directory
-//   - [technology]-cursorrules.md: Individual rule files
-// - .cursorrules: This file, providing guidance for the repository itself
-
 Best practices for .cursorrules files
 - Focus on providing repo-level context and guidelines
 - Include information about project structure and architectural decisions
@@ -80,20 +73,21 @@ Focus on providing repo-level context and guidelines, not just general coding pr
 Consider including rules for handling specific file types or coding patterns unique to your project
 Rules can cover both code generation and code understanding aspects for Cursor AI
 
-Build tools used
-1. Bazel for building, testing and packaging docker images
-2. Skaffold for development mode and deployments as a replacement for docker-compose
-3. Always use best practice and latest versions for these tools
+Development tools used in this repository
+1. Colima for local kubernetes cluster management
+2. Bazel for building, testing and packaging docker images
+3. Skaffold for development workflow orchestration and a replacement for docker-compose
+4. Sonarcube is used for code quality assurance
+5. Always use best practice and latest versions for these tools
+6. Never downgrade schema or tool versions to resolve issues
+7. Never deviate from our defined guidance or architecture without confirmation
 
 Repository & prompt objectives
 1. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
-2. Always build, test, deploy and validate end-to-end after any code changes
-3. Once everything works, always update the relevant READMEs
+2. Always build, test, run and validate end-to-end after any code changes
+3. Once everything works, always update the relevant root and application README files
 4. Clean up any unused code or configurations that are not used to keep the repository maintainable
 5. Never modify colima runtime or configuration
-
-Development guidelines
-- Always validate code and configuration changes and make sure 'bazel build //...', 'bazel test //...', 'skaffold run -m template-fastapi-app -p dev' and automated smoke tests always succeeds
 
 // Monorepo Structure and Organization
 This is a monorepo containing multiple projects with different technologies.
@@ -105,22 +99,26 @@ This is a monorepo containing multiple projects with different technologies.
 // Build Tools and Infrastructure
 - Bazel is used for building, testing and packaging docker images
 - Skaffold is used for development mode and deployments as a replacement for docker-compose
+- Replace any custom scripts using Skaffold exec to trigger custom actions
 - Always use best practice and latest versions for these tools
-- Kubernetes is used for all deployments via Skaffold
+- All applications are deployed to Kubernetes using Skaffold only
+- If you need to install third-party packages to support the application, you must use Helm support in Skaffold
 
 // Workflow Guidelines
-- To execute a project: skaffold run -m <project-name>
 - To build a project: skaffold build -m <project-name>
-- To run custom actions: skaffold exec <action-name> -m <profile-name>
-- For development mode: skaffold dev -m <project-name>
+- To test a project: skaffold test -m <project-name>
+- To run a project: skaffold run -m <project-name>
 - To verify a deployment: skaffold verify -m <project-name>
+- To execute custom actions: skaffold exec <action-name> -m <profile-name>
+- For development mode: skaffold dev -m <project-name>
 
 // Development Rules
-1. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
-2. Always build, test, deploy and validate end-to-end after any code changes
-3. Once everything works, always update the relevant READMEs
-4. Clean up any unused code or configurations that are not used to keep the repository maintainable
-5. Never modify colima runtime or configuration
+1. Always validate code and configuration changes and make sure 'bazel build //...', 'bazel test //...', 'skaffold run -m template-fastapi-app -p dev' and automated smoke tests always succeeds
+2. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
+3. Always build, test, deploy and validate end-to-end after any code changes
+4. Once everything works, always update the relevant READMEs
+5. Clean up any unused code or configurations that are not used to keep the repository maintainable
+6. Never modify colima runtime or configuration
 
 // Common Issues
 - For build errors, check Bazel and Skaffold configuration in the relevant project
@@ -138,64 +136,3 @@ This is a monorepo containing multiple projects with different technologies.
 - Always validate code and configuration changes
 - Ensure 'bazel build //...', 'bazel test //...', 'skaffold run -m <project-name> -p dev' and automated smoke tests always succeed
 - For Kubernetes deployments, check pod status and logs when troubleshooting
-
-// Template FastAPI Application
-This is a FastAPI application template with PostgreSQL database and Istio service mesh integration.
-
-// Project Structure
-- app/: Contains the application code
-  - app/api/: API endpoints and routers
-  - app/core/: Core functionality (config, security, etc.)
-  - app/db/: Database models and migrations
-  - app/schemas/: Pydantic models for request/response
-  - app/models/: SQLAlchemy ORM models
-- kubernetes/: Kubernetes manifests for deployment
-  - kubernetes/app/: Application deployment manifests
-  - kubernetes/db/: Database deployment and migration manifests 
-  - kubernetes/istio/: Istio service mesh configurations
-- tests/: Test files
-- main.py: Application entry point
-
-// Database Configuration
-- PostgreSQL is used as the database
-- SQLAlchemy is used as the ORM
-- Alembic is used for database migrations
-- Migration files are located at: app/db/migrations/alembic/versions/
-- New migrations should follow a linear sequence with proper dependencies
-- All migrations must include both upgrade() and downgrade() methods
-- For password hashing in migrations, always use bcrypt
-
-// Build and Deployment
-- Docker image is built using the project's Dockerfile
-- Kubernetes manifests define the application deployment
-- Database migrations are applied through a Kubernetes job defined in kubernetes/db/migrations.yaml
-- API server configuration is in kubernetes/app/deployment.yaml
-- Database configuration is in kubernetes/db/postgres.yaml
-- Health check endpoint is defined at /health
-
-// Istio Service Mesh Integration
-- Istio is used for service mesh capabilities including rate limiting
-- EnvoyFilters are used to configure rate limiting
-- Rate limiting configuration is in kubernetes/istio/rate-limiting.yaml
-- Gateway and VirtualService resources define the ingress configuration
-- Service mesh features are applied using the servicemesh profile in skaffold.yaml
-
-// Workflow Commands
-- Build the application: skaffold build -m template-fastapi-app
-- Deploy the application: skaffold run -m template-fastapi-app
-- Apply rate limiting: skaffold exec apply-rate-limiting -m servicemesh
-- Verify deployment: skaffold verify -m template-fastapi-app
-- Development mode: skaffold dev -m template-fastapi-app
-
-// Common Issues and Solutions
-- For database migration errors with multiple heads, ensure migrations have proper linear dependencies
-- If migration scripts aren't found, check the path in the migrations.yaml job
-- When the health check endpoint fails, ensure the FastAPI app is actually running with the correct command
-- For image pull errors in Kubernetes, ensure the image is correctly built and available
-- Always ensure bcrypt is included in requirements.txt when using password hashing in migrations
-
-// Testing Practices
-- Health checks are configured at /health endpoint
-- Rate limiting can be tested with repeated requests to rate-limited endpoints
-- Database seeds can be verified by querying the database directly
-- Always validate both API functionality and service mesh features

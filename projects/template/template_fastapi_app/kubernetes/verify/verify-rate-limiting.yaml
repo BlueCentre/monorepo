@@ -1,0 +1,102 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-rate-limiting
+  namespace: template-fastapi-app
+  labels:
+    app: template-fastapi-app
+    component: verify-rate-limiting
+spec:
+  ttlSecondsAfterFinished: 100
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: template-fastapi-app
+        component: verify-rate-limiting
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: verify-rate-limiting
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for application and Istio to be ready..."
+          sleep 15
+          
+          # Function to make requests and check for rate limiting
+          test_rate_limiting() {
+            local endpoint=$1
+            local expected_429=$2
+            local max_attempts=20
+            local count_429=0
+            
+            echo "Testing rate limiting on endpoint: $endpoint"
+            echo "Making $max_attempts rapid requests..."
+            
+            # Try different service addressing methods
+            SERVICE_URLS=(
+              "http://template-fastapi-app/$endpoint"
+              "http://template-fastapi-app.template-fastapi-app/$endpoint"
+              "http://template-fastapi-app.template-fastapi-app.svc.cluster.local/$endpoint"
+            )
+            
+            # Find a working service URL
+            SERVICE_URL=""
+            for url in "${SERVICE_URLS[@]}"; do
+              echo "Trying service URL: $url"
+              if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200\|401\|403\|429"; then
+                SERVICE_URL="$url"
+                echo "Found working service URL: $SERVICE_URL"
+                break
+              fi
+            done
+            
+            if [ -z "$SERVICE_URL" ]; then
+              echo "❌ Could not find a working service URL"
+              return 1
+            fi
+            
+            for i in $(seq 1 $max_attempts); do
+              echo "Request $i to $SERVICE_URL"
+              response=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL")
+              echo "Response code: $response"
+              
+              if [ "$response" = "429" ]; then
+                count_429=$((count_429 + 1))
+                echo "Got rate limited (429)"
+              fi
+              
+              # Small delay to avoid overwhelming the service
+              sleep 0.1
+            done
+            
+            echo "Received $count_429 rate limiting responses (429) out of $max_attempts requests"
+            
+            if [ $count_429 -ge $expected_429 ]; then
+              echo "✅ Rate limiting is working as expected for $endpoint"
+              return 0
+            else
+              echo "❌ Rate limiting is NOT working as expected for $endpoint"
+              echo "Expected at least $expected_429 rate limiting responses, but got $count_429"
+              return 1
+            fi
+          }
+          
+          # Test API endpoint that should be rate limited
+          if ! test_rate_limiting "api/v1/items" 5; then
+            echo "Rate limiting verification failed for API endpoint"
+            exit 1
+          fi
+          
+          # Test health endpoint that should NOT be rate limited
+          if test_rate_limiting "health" 1; then
+            echo "Health endpoint is being rate limited when it shouldn't be"
+            exit 1
+          else
+            echo "✅ Health endpoint is correctly NOT being rate limited"
+          fi
+          
+          echo "✅ All rate limiting verification tests passed!"
+          exit 0 

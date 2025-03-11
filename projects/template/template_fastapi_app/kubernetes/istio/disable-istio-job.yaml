@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: disable-istio-injection
+  namespace: template-fastapi-app
+  labels:
+    app: template-fastapi-app
+    component: disable-istio-injection
+  annotations:
+    "skaffold.dev/recreate-pods": "true"
+spec:
+  ttlSecondsAfterFinished: 100
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: template-fastapi-app
+        component: disable-istio-injection
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: template-fastapi-app-admin
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Disabling Istio injection on namespace template-fastapi-app..."
+          kubectl label namespace template-fastapi-app istio-injection- --overwrite
+          
+          echo "Istio injection disabled successfully." 
