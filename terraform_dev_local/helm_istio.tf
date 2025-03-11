@@ -89,9 +89,10 @@ resource "helm_release" "istio_cni" {
   version          = "1.23.3"
   repository       = "https://istio-release.storage.googleapis.com/charts"
   description      = "Terraform driven Helm release of Istio CNI Helm chart"
-  namespace        = "kube-system"
-  create_namespace = true
-  wait             = false
+  namespace        = "istio-system"
+  create_namespace = false
+  wait             = true
+  wait_for_jobs    = true
 
   # https://github.com/istio/istio/blob/master/manifests/charts/istio-cni/values.yaml
 
@@ -106,6 +107,46 @@ resource "helm_release" "istio_cni" {
   ]
 
   depends_on = [helm_release.istio_base]
+}
+
+# Install Istio Control Plane (istiod)
+resource "helm_release" "istiod" {
+  count            = var.istio_enabled ? 1 : 0
+  name             = "istiod"
+  chart            = "istiod"
+  version          = "1.23.3"
+  repository       = "https://istio-release.storage.googleapis.com/charts"
+  description      = "Terraform driven Helm release of Istio Control Plane"
+  namespace        = "istio-system"
+  create_namespace = false
+  wait             = true
+  wait_for_jobs    = true
+
+  values = [
+    # file("${path.module}/helm_values/istiod-values.yaml")
+  ]
+
+  depends_on = [helm_release.istio_base, helm_release.istio_cni]
+}
+
+# Install Istio Ingress Gateway
+resource "helm_release" "istio_ingressgateway" {
+  count            = var.istio_enabled ? 1 : 0
+  name             = "istio-ingressgateway"
+  chart            = "gateway"
+  version          = "1.23.3"
+  repository       = "https://istio-release.storage.googleapis.com/charts"
+  description      = "Terraform driven Helm release of Istio Ingress Gateway"
+  namespace        = "istio-system"
+  create_namespace = false
+  wait             = true
+  wait_for_jobs    = true
+
+  values = [
+    # file("${path.module}/helm_values/istio-ingressgateway-values.yaml")
+  ]
+
+  depends_on = [helm_release.istio_base, helm_release.istiod]
 }
 
 # resource "helm_release" "argocd_image_updater" {
