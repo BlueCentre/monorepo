@@ -7,6 +7,8 @@ spec:
   hosts:
   - "template-fastapi-app.template-fastapi-app.svc.cluster.local"
   - "template-fastapi-app"
+  gateways:
+  - template-fastapi-gateway  # Reference to the Gateway
   http:
   # Apply rate limiting headers for the API endpoints
   - match:

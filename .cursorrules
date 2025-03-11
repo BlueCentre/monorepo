@@ -119,6 +119,10 @@ This is a monorepo containing multiple projects with different technologies.
 4. Once everything works, always update the relevant READMEs
 5. Clean up any unused code or configurations that are not used to keep the repository maintainable
 6. Never modify colima runtime or configuration
+7. Always confirm before changing the infrastructure or software architecture
+8. Always work with the existing frameworks already implemented in this repository
+9. Always follow the existing coding styles that already exists
+10. Always follow validation practices
 
 // Common Issues
 - For build errors, check Bazel and Skaffold configuration in the relevant project

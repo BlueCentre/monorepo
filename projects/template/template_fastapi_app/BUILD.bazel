@@ -244,6 +244,7 @@ pkg_tar(
         "Dockerfile.bazel",
         "requirements.txt",
         "sample_seed_data.json",
+        "alembic.ini",
     ],
     # Use package_dir to maintain the correct directory structure
     package_dir = "/",
@@ -260,7 +261,7 @@ pkg_tar(
 # Create a tarball of just the app files with proper directory structure
 pkg_tar(
     name = "app_files_tar",
-    srcs = glob(["app/**/*.py"]),
+    srcs = glob(["app/**/*.py"]) + glob(["migrations/**/*"]),
     # Preserve the directory structure
     strip_prefix = ".",
     package_dir = "/",

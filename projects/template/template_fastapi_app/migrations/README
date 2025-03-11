@@ -1,6 +1,40 @@
-# Database Migrations
+# Generic single-database configuration with Alembic
 
-This directory contains the Alembic database migrations for the project.
+This is a generic Alembic migrations directory, set up for a single database configuration.
+
+## Structure
+
+- `env.py`: Alembic environment configuration
+- `script.py.mako`: Template for migration script generation
+- `versions/`: Directory containing migration scripts
+
+## Commands
+
+To create a new migration:
+
+```
+alembic revision -m "description of changes"
+```
+
+To run migrations:
+
+```
+alembic upgrade head
+```
+
+To downgrade:
+
+```
+alembic downgrade -1
+```
+
+## Integration with FastAPI Application
+
+The migrations are integrated with the application's database models through:
+
+1. The `env.py` file imports the SQLAlchemy `Base` from the application
+2. Migrations can be auto-generated based on model changes
+3. The application runs migrations on startup if configured to do so
 
 ## Migration Structure
 

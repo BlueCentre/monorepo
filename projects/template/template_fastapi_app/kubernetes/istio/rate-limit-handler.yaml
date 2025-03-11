@@ -35,7 +35,7 @@ spec:
             filter:
               name: "envoy.filters.network.http_connection_manager"
       patch:
-        operation: MERGE
+        operation: INSERT_BEFORE
         value:
           name: envoy.filters.http.ratelimit
           typed_config:
@@ -45,8 +45,8 @@ spec:
               grpc_service:
                 envoy_grpc:
                   cluster_name: "outbound|8081||ratelimit.template-fastapi-app.svc.cluster.local"
-            stage: 0
             timeout: 0.25s
+            failure_mode_deny: false
 
 ---
 # EnvoyFilter to extract authentication status for rate limiting
@@ -98,3 +98,30 @@ metadata:
 spec:
   mtls:
     mode: PERMISSIVE  # Can be set to STRICT once all services communicate via mTLS 
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-path-action
+  namespace: template-fastapi-app
+spec:
+  workloadSelector:
+    labels:
+      app: template-fastapi-app
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            route:
+              name: "api-v1-limited"
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  - generic_key:
+                      descriptor_value: "path=/api/v1/limited" 

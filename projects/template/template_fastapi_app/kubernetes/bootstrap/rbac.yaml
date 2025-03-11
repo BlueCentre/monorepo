@@ -25,3 +25,31 @@ roleRef:
   kind: ClusterRole
   name: namespace-manager
   apiGroup: rbac.authorization.k8s.io
+# ---
+# # ClusterRoleBinding to bind the role to the service account
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: namespace-manager-binding
+# subjects:
+# - kind: ServiceAccount
+#   name: default  # The service account mentioned in the error
+#   namespace: default
+# roleRef:
+#   kind: ClusterRole
+#   name: namespace-manager
+#   apiGroup: rbac.authorization.k8s.io
+# ---
+# # ClusterRoleBinding to bind the role to the service account
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: namespace-manager-binding
+# subjects:
+# - kind: ServiceAccount
+#   name: default  # The service account mentioned in the error
+#   namespace: kube-system
+# roleRef:
+#   kind: ClusterRole
+#   name: namespace-manager
+#   apiGroup: rbac.authorization.k8s.io

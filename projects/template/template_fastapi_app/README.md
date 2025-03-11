@@ -710,3 +710,50 @@ Use this token in the Authorization header for authenticated requests:
 curl -X GET "http://localhost:8000/api/v1/users/" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
+## Rate Limiting
+
+This application includes rate-limited endpoints that demonstrate how to protect APIs from abuse using token authentication and rate limiting.
+
+### Rate Limited Endpoints
+
+The application provides two examples of rate-limited endpoints:
+
+1. **IP-based Rate Limiting**: `/api/v1/rate-limited/rate-limited`
+   - Limited to 5 requests per minute per IP address
+   - Requires token authentication
+   - Returns user information on successful access
+
+2. **User-based Rate Limiting**: `/api/v1/rate-limited/rate-limited-user`
+   - Limited to 10 requests per minute per user ID
+   - Requires token authentication
+   - Demonstrates custom key function for per-user rate limiting
+   - Returns user information on successful access
+
+### Implementation Details
+
+The rate limiting is implemented using the `slowapi` package which provides:
+
+- Global rate limiting configuration in `main.py`
+- Per-endpoint rate limiting with custom key functions
+- Automatic integration with FastAPI's exception handling system
+- Customizable rate limit error responses
+
+To use the rate-limited endpoints:
+
+1. First authenticate via `/api/v1/login/access-token` to get a token
+2. Include the token in the Authorization header for subsequent requests
+3. When rate limits are exceeded, the API returns a 429 Too Many Requests response
+
+Example usage:
+
+```bash
+# Get auth token
+curl -X POST "http://localhost:8000/api/v1/login/access-token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin@example.com&password=password"
+
+# Access rate-limited endpoint with token
+curl -X GET "http://localhost:8000/api/v1/rate-limited/rate-limited" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
