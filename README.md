@@ -113,6 +113,40 @@ kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:8
 
 Access the API documentation at http://localhost:8000/docs
 
+## Local Development Environment with Terraform
+
+![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Colima](https://img.shields.io/badge/colima-local_k8s-blue?style=for-the-badge)
+
+The [terraform_dev_local](./terraform_dev_local) directory provides a powerful toolkit for setting up a local Kubernetes development environment with essential components for containerized application development.
+
+### Key Components
+
+- **Cert Manager**: Automated SSL certificate management.
+- **Istio**: Full-featured service mesh for microservices.
+- **OpenTelemetry**: Comprehensive observability stack.
+- **Argo CD**: GitOps continuous delivery.
+- **Telepresence**: Seamless local development with remote clusters.
+
+### Benefits for Developers
+
+- **Consistency**: Same environment for all team members
+- **Modularity**: Enable only what you need
+- **Infrastructure as Code**: Reproducible environment setup
+- **Local Testing**: Test with production-like infrastructure locally
+- **Learning Tool**: Learn Kubernetes ecosystem tools
+
+### Quick Start
+
+```bash
+# Navigate to the directory
+# Configure components in terraform.auto.tfvars (This file allows you to configure the components you want to enable):
+# Apply the configuration
+```
+
+For more details, see the [terraform_dev_local README](./terraform_dev_local/README.md).
+
 ### Recent Improvements
 
 - Added Istio-based rate limiting with comprehensive configuration
