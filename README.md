@@ -18,6 +18,8 @@ This monorepo contains multiple projects organized by language and purpose. It u
 - **Integrated Testing**: Streamlined testing infrastructure
 - **Shared Libraries**: Common code shared across projects
 - **CI/CD Integration**: GitHub Actions workflows for continuous integration
+- **Service Mesh Integration**: Istio-based rate limiting and traffic management
+- **Kubernetes Orchestration**: Skaffold-based development and deployment workflows
 
 ## Repository Structure
 
@@ -33,39 +35,48 @@ monorepo/
 │   │   ├── calculator_flask_app/    # Flask calculator web app
 │   │   ├── devops_fastapi_app/      # FastAPI app with DevOps features
 │   │   ├── echo_fastapi_app/        # Simple FastAPI application
-│   │   └── hello_world_app/         # Basic Python application
-│   └── template/             # Project templates
-│       └── template_fastapi_app/    # FastAPI application template with PostgreSQL
-├── shared/                   # Shared libraries and utilities
-│   ├── java/                 # Shared Java libraries
-│   └── python/               # Shared Python libraries
+│   │   └── helloworld_py_app/       # Basic Python application
+│   ├── template/             # Project templates
+│   │   ├── template_fastapi_app/    # FastAPI application template with PostgreSQL and Istio
+│   │   ├── template_gin_app/        # Gin (Go) application template
+│   │   └── template_typer_app/      # Typer CLI application template
+│   ├── microservices-demo/   # Microservices demonstration projects
+│   └── opentelemetry-demo/   # OpenTelemetry demonstration projects
+├── libs/                     # Shared libraries and utilities
 ├── third_party/              # Third-party dependencies
 ├── tools/                    # Development and build tools
+├── docs/                     # Documentation files
+├── terraform_dev_local/      # Terraform configurations for local development
+├── terraform_lab_gcp/        # Terraform configurations for GCP
 ├── .bazelignore              # Files and directories to ignore in Bazel builds
 ├── .bazelrc                  # Bazel configuration
 ├── BUILD.bazel               # Root BUILD file
 ├── MODULE.bazel              # Bazel module definition
-└── WORKSPACE                 # Bazel workspace definition (legacy)
+├── WORKSPACE                 # Bazel workspace definition (legacy)
+├── quick-start-guide.md      # Quick start guide for new users
+├── README-rate-limiting.md   # Documentation for Istio rate limiting
+└── skaffold.yaml             # Root Skaffold configuration
 ```
 
 ## Project Catalog
 
 | Project | Description | Technologies | Status |
 |---------|-------------|--------------|--------|
-| [template_fastapi_app](./projects/template/template_fastapi_app) | FastAPI application template with PostgreSQL, JWT auth, and OpenTelemetry | Python, FastAPI, PostgreSQL, K8s | ✅ Active |
+| [template_fastapi_app](./projects/template/template_fastapi_app) | FastAPI application template with PostgreSQL, JWT auth, Istio rate limiting, and OpenTelemetry | Python, FastAPI, PostgreSQL, K8s, Istio | ✅ Active |
 | [echo_fastapi_app](./projects/py/echo_fastapi_app) | Simple FastAPI application | Python, FastAPI | ✅ Active |
-| [calculator_cli_app](./projects/py/calculator_cli_app) | Command-line calculator utility | Python | ✅ Active |
+| [calculator_cli_app](./projects/py/calculator_cli_py_app) | Command-line calculator utility | Python | ✅ Active |
 | [devops_fastapi_app](./projects/py/devops_fastapi_app) | FastAPI application with DevOps features | Python, FastAPI | ✅ Active |
 | [calculator_flask_app](./projects/py/calculator_flask_app) | Flask-based calculator web application | Python, Flask | ✅ Active |
-| [hello_world_app](./projects/py/hello_world_app) | Basic Python application | Python | ✅ Active |
-| [simple_java_app](./projects/java/simple_java_app) | Basic Java application without external dependencies | Java | ✅ Active |
-| [java_web_server](./projects/java/java_web_server) | Simple HTTP server in Java | Java | ✅ Active |
+| [helloworld_py_app](./projects/py/helloworld_py_app) | Basic Python application | Python | ✅ Active |
+| [template_gin_app](./projects/template/template_gin_app) | Gin application template | Go, Gin | ✅ Active |
+| [template_typer_app](./projects/template/template_typer_app) | Typer CLI application template | Python, Typer | ✅ Active |
 
 ## Featured Project: FastAPI Template App
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.103.1-009688.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5.svg)
+![Istio](https://img.shields.io/badge/Istio-Rate%20Limiting-466BB0.svg)
 
 The [FastAPI Template App](./projects/template/template_fastapi_app) provides a production-ready template for building robust API services with FastAPI and PostgreSQL. It includes:
 
@@ -77,6 +88,9 @@ The [FastAPI Template App](./projects/template/template_fastapi_app) provides a 
 - **Kubernetes Deployment**: Ready-to-use Kubernetes manifests with Skaffold
 - **OpenTelemetry**: Integrated observability for distributed tracing
 - **API Documentation**: Automatic documentation with Swagger UI and ReDoc
+- **Istio Integration**: Service mesh features including rate limiting
+- **Key Management**: Automatic and manual JWT key rotation for enhanced security
+- **Rate Limiting**: Both application and infrastructure-level rate limiting
 - **Notes API**: Full-featured notes management with CRUD operations
 - **Items API**: Example API for managing items with owner relationships
 - **Seed Data Utilities**: Tools for generating test data for development and demos
@@ -87,8 +101,11 @@ The [FastAPI Template App](./projects/template/template_fastapi_app) provides a 
 # Navigate to the project
 cd projects/template/template_fastapi_app
 
-# Deploy to Kubernetes
-./skaffold.sh run
+# Deploy to Kubernetes (standard mode)
+skaffold run -m template-fastapi-app -p dev
+
+# OR deploy with Istio rate limiting
+skaffold run -m template-fastapi-app -p istio-rate-limit
 
 # Set up port forwarding
 kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80
@@ -98,11 +115,22 @@ Access the API documentation at http://localhost:8000/docs
 
 ### Recent Improvements
 
-- Added complete Notes API with full CRUD operations
-- Enhanced seed data utilities to support both Notes and Items
-- Added file upload endpoint for seed data
-- Updated documentation for testing with ReDoc and Swagger UI
-- Improved error handling and validation
+- Added Istio-based rate limiting with comprehensive configuration
+- Added automatic JWT key rotation for enhanced security
+- Enhanced database connection handling for Kubernetes environments
+- Added comprehensive verification and smoke tests for deployments
+- Updated documentation for rate limiting and Istio integration
+
+## Quick Start Guides
+
+We provide several quick start guides to help you get started with different aspects of the repository:
+
+- [Quick Start Guide for Istio Rate Limiting](quick-start-guide.md) - Step-by-step guide to setting up and testing rate limiting with Istio
+- [Istio Rate Limiting Documentation](README-rate-limiting.md) - Detailed documentation on the rate limiting implementation
+- [Template FastAPI App Documentation](./projects/template/template_fastapi_app/README.md) - Comprehensive guide to the FastAPI template application
+- [Skaffold Usage Guide](./projects/template/template_fastapi_app/SKAFFOLD-USAGE.md) - Detailed guide on using Skaffold with the FastAPI template
+- [Istio Setup Guide](./projects/template/template_fastapi_app/ISTIO-SETUP.md) - Guide for setting up Istio with the FastAPI template
+- [Istio Troubleshooting Guide](./projects/template/template_fastapi_app/ISTIO-TROUBLESHOOTING.md) - Solutions for common Istio integration issues
 
 ## Getting Started
 
@@ -112,7 +140,9 @@ Access the API documentation at http://localhost:8000/docs
 - Java JDK 11+
 - Python 3.9+
 - Docker (for containerized applications)
-- Kubernetes (for deployment of some applications)
+- [Colima](https://github.com/abiosoft/colima) (for local Kubernetes)
+- [Skaffold](https://skaffold.dev/docs/install/) (for Kubernetes deployment)
+- [Istio](https://istio.io/latest/docs/setup/getting-started/) (optional, for service mesh features)
 
 ### Installation
 
@@ -137,116 +167,48 @@ Access the API documentation at http://localhost:8000/docs
 To quickly get started with a specific project:
 
 ```bash
-# Python FastAPI project
+# Python FastAPI template project
 cd projects/template/template_fastapi_app
-./skaffold.sh dev  # Start the development environment
+skaffold dev -m template-fastapi-app  # Start the development environment
 
 # Python CLI app
-bazel run //projects/py/calculator_cli_app
+bazel run //projects/py/calculator_cli_py_app
 
-# Java application
-bazel run //projects/java/simple_java_app:hello
+# Deploy with Istio rate limiting
+skaffold run -m template-fastapi-app -p istio-rate-limit
 ```
 
 ## Development Workflow
 
-### Branch Naming Conventions
+The recommended development workflow uses Skaffold for Kubernetes-based projects and Bazel for direct builds.
 
-- Feature branches: `feature/name-of-feature`
-- Bug fixes: `fix/issue-description`
-- Documentation updates: `docs/what-was-updated`
-- Release branches: `release/version-number`
+### Development with Skaffold
 
-### Typical Development Workflow with Skaffold
+Skaffold is our recommended tool for developing and deploying Kubernetes applications. It provides a seamless development experience with live reload capabilities.
 
-Skaffold enables a highly efficient development workflow for containerized applications with live reload capabilities. Here's a step-by-step guide for a typical development session:
+#### Basic Skaffold Commands
 
-#### Initial Setup
+```bash
+# Build project artifacts
+skaffold build -m <project-name>
 
-1. **Clone the repository and navigate to the project**:
-   ```bash
-   git clone https://github.com/BlueCentre/monorepo.git
-   cd monorepo
-   ```
+# Test project
+skaffold test -m <project-name>
 
-2. **Create a feature branch**:
-   ```bash
-   git checkout -b feature/my-new-feature
-   ```
+# Deploy project
+skaffold run -m <project-name> -p <profile-name>
 
-3. **Navigate to the project you want to work on**:
-   ```bash
-   cd projects/template/template_fastapi_app
-   ```
+# Development mode with live reload
+skaffold dev -m <project-name> -p <profile-name>
 
-#### Development with Live Reload
+# Verify deployment
+skaffold verify -m <project-name>
 
-4. **Start Skaffold in dev mode**:
-   ```bash
-   ./skaffold.sh dev
-   ```
-   This will:
-   - Build the container image
-   - Deploy to your local Kubernetes cluster
-   - Set up file watching for live reload
-   - Stream logs from your application
+# Execute custom actions
+skaffold exec <action-name> -m <profile-name>
+```
 
-5. **Set up port forwarding** (in a separate terminal):
-   ```bash
-   kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80
-   ```
-
-6. **Access your application**:
-   - API: http://localhost:8000/api/v1
-   - Documentation: http://localhost:8000/docs
-
-7. **Make code changes**:
-   - Edit any Python files, templates, or static assets
-   - Skaffold will automatically:
-     - Detect the changes
-     - Rebuild the container with your changes
-     - Update the deployment in Kubernetes
-     - Your changes will be reflected within seconds
-
-#### Testing and Debugging
-
-8. **View application logs in real-time**:
-   Skaffold automatically streams logs from your application in the terminal where you started `skaffold dev`.
-
-9. **Run tests in a separate terminal**:
-   ```bash
-   # For Python applications
-   cd projects/template/template_fastapi_app
-   pytest
-
-   # For Bazel-built applications
-   bazel test //projects/path/to/project/...
-   ```
-
-10. **Debug issues**:
-    - Check the logs for errors
-    - Use your browser's developer tools
-    - For FastAPI applications, errors will be shown in the browser and in the logs
-
-#### Finalizing Changes
-
-11. **Stop Skaffold when you're done** (Ctrl+C in the terminal running Skaffold)
-
-12. **Commit your changes**:
-    ```bash
-    git add .
-    git commit -m "Add my new feature"
-    ```
-
-13. **Push your branch and create a pull request**:
-    ```bash
-    git push origin feature/my-new-feature
-    ```
-    Then create a pull request through the GitHub interface.
-
-#### Example: Modifying the FastAPI Template App
-
-Here's a specific example workflow for modifying the FastAPI Template application:
+#### Example: FastAPI Template App Development
 
 ```bash
 # Clone and set up
@@ -258,7 +220,7 @@ git checkout -b feature/enhanced-api
 cd projects/template/template_fastapi_app
 
 # Start development mode
-./skaffold.sh dev
+skaffold dev -m template-fastapi-app -p dev
 
 # In a separate terminal, set up port forwarding
 kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:80
@@ -276,31 +238,36 @@ git commit -m "Add enhanced item filtering"
 git push origin feature/enhanced-api
 ```
 
-#### Tips for Efficient Development
+### Development with Bazel
 
-- **Keep Skaffold running** while you make changes for the fastest feedback loop
-- **Monitor resource usage** on your local Kubernetes cluster
-- **Use API testing tools** like Postman or the built-in Swagger UI
-- **Consider using database migrations** for schema changes
-- **Commit often** to track your progress
-- **Clean up resources** when you're done by running `skaffold delete`
+For non-containerized applications or when working on shared libraries, use Bazel directly:
 
-### Pull Request Process
+```bash
+# Build a specific target
+bazel build //path/to/target
 
-1. Create a branch from `main` using the naming conventions above
-2. Make your changes, ensuring tests pass locally
-3. Push your branch and create a pull request
-4. Wait for CI checks to pass
-5. Request a code review from team members
-6. Address feedback and update the pull request as needed
-7. Once approved, merge the pull request
+# Run tests for a specific target
+bazel test //path/to/target
 
-### Testing Requirements
+# Run an application
+bazel run //path/to/application
+```
 
-- All new features must have tests
-- All existing tests must pass before a PR can be merged
-- Integration tests should be added for cross-component functionality
-- Performance tests should be added for performance-critical components
+### Validation Practices
+
+Always validate code and configuration changes:
+
+1. Build the project: `bazel build //...`
+2. Run tests: `bazel test //...`
+3. Deploy with Skaffold: `skaffold run -m <project-name> -p dev`
+4. Verify the deployment: `skaffold verify -m <project-name>`
+
+### Branch Naming Conventions
+
+- Feature branches: `feature/name-of-feature`
+- Bug fixes: `fix/issue-description`
+- Documentation updates: `docs/what-was-updated`
+- Release branches: `release/version-number`
 
 ## Building and Running Projects
 
@@ -318,7 +285,7 @@ bazel build //projects/java/simple_java_app/...
 
 ```bash
 # Run a Python application
-bazel run //projects/py/calculator_cli_app
+bazel run //projects/py/calculator_cli_py_app
 
 # Run a Java application
 bazel run //projects/java/simple_java_app:hello
