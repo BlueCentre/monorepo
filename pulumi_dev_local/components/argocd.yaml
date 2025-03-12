@@ -1,0 +1,15 @@
+resources:
+  # Argo CD Helm Chart
+  argocd:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: argo-cd
+      version: "7.8.2"
+      repositoryOpts:
+        repo: https://argoproj.github.io/argo-helm
+      name: argocd
+      namespace: argocd
+      createNamespace: true
+      values:
+        domain: localhost
+        hostname: localhost 

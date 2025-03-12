@@ -1,0 +1,30 @@
+name: cert-manager
+runtime: yaml
+description: Cert Manager for Kubernetes
+
+resources:
+  # Cert Manager Helm Chart
+  certManager:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: cert-manager
+      version: "v1.17.0"
+      repositoryOpts:
+        repo: https://charts.jetstack.io
+      name: cert-manager
+      namespace: cert-manager
+      createNamespace: true
+      values:
+        global:
+          leaderElection:
+            namespace: cert-manager
+        crds:
+          enabled: true
+          keep: true
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
+
+outputs:
+  certManagerStatus:
+    value: "Cert Manager is deployed and ready" 

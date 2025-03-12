@@ -47,6 +47,7 @@ monorepo/
 ├── tools/                    # Development and build tools
 ├── docs/                     # Documentation files
 ├── terraform_dev_local/      # Terraform configurations for local development
+├── pulumi_dev_local/         # Pulumi YAML configurations for local development
 ├── terraform_lab_gcp/        # Terraform configurations for GCP
 ├── .bazelignore              # Files and directories to ignore in Bazel builds
 ├── .bazelrc                  # Bazel configuration
@@ -63,6 +64,8 @@ monorepo/
 | Project | Description | Technologies | Status |
 |---------|-------------|--------------|--------|
 | [template_fastapi_app](./projects/template/template_fastapi_app) | FastAPI application template with PostgreSQL, JWT auth, Istio rate limiting, and OpenTelemetry | Python, FastAPI, PostgreSQL, K8s, Istio | ✅ Active |
+| [terraform_dev_local](./terraform_dev_local) | Local development environment with essential K8s components | Terraform, Kubernetes, Helm | ✅ Active |
+| [pulumi_dev_local](./pulumi_dev_local) | Local development environment with essential K8s components (YAML) | Pulumi, Kubernetes, Helm | ✅ Active |
 | [echo_fastapi_app](./projects/py/echo_fastapi_app) | Simple FastAPI application | Python, FastAPI | ✅ Active |
 | [calculator_cli_app](./projects/py/calculator_cli_py_app) | Command-line calculator utility | Python | ✅ Active |
 | [devops_fastapi_app](./projects/py/devops_fastapi_app) | FastAPI application with DevOps features | Python, FastAPI | ✅ Active |
@@ -113,7 +116,11 @@ kubectl port-forward service/template-fastapi-app -n template-fastapi-app 8000:8
 
 Access the API documentation at http://localhost:8000/docs
 
-## Local Development Environment with Terraform
+## Local Development Environment Options
+
+We provide two options for setting up your local development environment with essential Kubernetes components:
+
+### Terraform-based Local Development Environment
 
 ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
@@ -121,7 +128,7 @@ Access the API documentation at http://localhost:8000/docs
 
 The [terraform_dev_local](./terraform_dev_local) directory provides a powerful toolkit for setting up a local Kubernetes development environment with essential components for containerized application development.
 
-### Key Components
+#### Key Components
 
 - **Cert Manager**: Automated SSL certificate management.
 - **Istio**: Full-featured service mesh for microservices.
@@ -129,23 +136,64 @@ The [terraform_dev_local](./terraform_dev_local) directory provides a powerful t
 - **Argo CD**: GitOps continuous delivery.
 - **Telepresence**: Seamless local development with remote clusters.
 
-### Benefits for Developers
-
-- **Consistency**: Same environment for all team members
-- **Modularity**: Enable only what you need
-- **Infrastructure as Code**: Reproducible environment setup
-- **Local Testing**: Test with production-like infrastructure locally
-- **Learning Tool**: Learn Kubernetes ecosystem tools
-
-### Quick Start
+#### Quick Start
 
 ```bash
 # Navigate to the directory
-# Configure components in terraform.auto.tfvars (This file allows you to configure the components you want to enable):
+cd terraform_dev_local
+
+# Initialize Terraform
+terraform init
+
+# Configure components in terraform.auto.tfvars
 # Apply the configuration
+terraform apply
 ```
 
 For more details, see the [terraform_dev_local README](./terraform_dev_local/README.md).
+
+### Pulumi YAML-based Local Development Environment
+
+![Pulumi](https://img.shields.io/badge/pulumi-%235C4EE5.svg?style=for-the-badge&logo=pulumi&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Colima](https://img.shields.io/badge/colima-local_k8s-blue?style=for-the-badge)
+
+The [pulumi_dev_local](./pulumi_dev_local) directory provides an alternative implementation using Pulumi's YAML language for the same functionality as the Terraform version.
+
+#### Key Features
+
+- **YAML-Based**: Uses Pulumi's YAML language for improved readability
+- **Component Parity**: Same functionality as the Terraform version
+- **Simplified Configuration**: Easy-to-understand configuration files
+- **Modern IaC**: Uses Pulumi's latest features for infrastructure management
+
+#### Key Components
+
+- **Cert Manager**: Automated SSL certificate management
+- **OpenTelemetry Stack**: Complete observability solution with Operator and Collector
+- **Istio**: Full-featured service mesh with Base, CNI, Control Plane (istiod), and Ingress Gateway
+
+#### Quick Start
+
+```bash
+# Navigate to the directory
+cd pulumi_dev_local
+
+# Initialize Pulumi
+pulumi login --local
+pulumi stack init dev
+
+# Set a passphrase for configuration encryption
+export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
+
+# Preview the deployment
+pulumi preview
+
+# Deploy the components
+pulumi up
+```
+
+For more details, see the [pulumi_dev_local README](./pulumi_dev_local/README.md).
 
 ### Recent Improvements
 
@@ -470,10 +518,22 @@ This section outlines planned improvements for the repository, with a focus on e
 - [ ] Improve separation of business logic
 - [ ] Create well-defined service layer
 
+#### Infrastructure Improvements for pulumi_dev_local (Priority: Medium)
+- [ ] Implement Skaffold integration with dedicated profiles for Pulumi operations
+- [ ] Add custom Skaffold actions for infrastructure lifecycle management
+- [ ] Create templated infrastructure configurations for common development scenarios
+- [ ] Develop a simplified CLI wrapper for common Pulumi operations
+- [ ] Implement infrastructure testing and validation hooks
+- [ ] Create comprehensive documentation similar to SKAFFOLD-USAGE.md
+- [ ] Add resource caching mechanisms to improve deployment speeds
+- [ ] Implement monitoring and observability for provisioned resources
+- [ ] Ensure Pulumi stacks align with Skaffold profiles for consistent environments
+- [ ] Add shared component libraries for common infrastructure patterns
+
 ### Implementation Timeline
 
 - **Q2 2024**: Testing and Quality Assurance, Code Quality
-- **Q3 2024**: Security Enhancements, Monitoring and Observability
+- **Q3 2024**: Security Enhancements, Monitoring and Observability, Infrastructure Improvements for pulumi_dev_local
 - **Q4 2024**: Documentation, Developer Experience, Business Logic
 - **Q1 2025**: Performance Optimizations, DevOps, Scalability
 
