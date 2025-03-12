@@ -17,10 +17,12 @@ RUN mkdir -p /app/src
 
 # Copy application code to the src directory
 COPY app /app/src/app
+COPY migrations /app/migrations
+COPY alembic.ini /app/alembic.ini
 COPY run.py /app/src/
 
 # Set environment variables
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app:/app/src
 
 # Expose port 8000
 EXPOSE 8000

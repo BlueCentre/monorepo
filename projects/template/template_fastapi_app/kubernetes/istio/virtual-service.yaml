@@ -1,0 +1,60 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: template-fastapi-app
+  namespace: template-fastapi-app
+spec:
+  hosts:
+  - "template-fastapi-app.template-fastapi-app.svc.cluster.local"
+  - "template-fastapi-app"
+  gateways:
+  - template-fastapi-gateway  # Reference to the Gateway
+  http:
+  # Apply rate limiting headers for the API endpoints
+  - match:
+    - uri:
+        prefix: "/api/v1"
+    route:
+    - destination:
+        host: template-fastapi-app
+        port:
+          number: 80
+    # Add rate limiting metadata that Envoy will use
+    headers:
+      request:
+        add:
+          x-envoy-ratelimited: "true"
+    # This applies custom rate limits based on path
+    name: "api-routes"
+    metadata:
+      filter_metadata:
+        envoy.filters.http.ratelimit:
+          generic_key: "default"
+    
+  # Higher rate limits for health and static endpoints
+  - match:
+    - uri:
+        prefix: "/health"
+    - uri:
+        prefix: "/static"
+    - uri:
+        prefix: "/docs"
+    route:
+    - destination:
+        host: template-fastapi-app
+        port:
+          number: 80
+    name: "utility-routes"
+    # No rate limiting for these paths
+    
+  # Default case for any other endpoints
+  - route:
+    - destination:
+        host: template-fastapi-app
+        port:
+          number: 80
+    name: "default-route"
+    metadata:
+      filter_metadata:
+        envoy.filters.http.ratelimit:
+          generic_key: "default" 

@@ -1,5 +1,6 @@
 apiVersion: skaffold/v4beta6
 kind: Config
+
 requires:
   - path: ./projects/template/template_fastapi_app
   # - path: ./projects/base_fastapi_app    # Nothing to skaffold here!

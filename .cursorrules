@@ -7,19 +7,19 @@ General guidelines
 - Maintain the existing structure of the README.md file
 - Follow consistent formatting for list items
 - Use descriptive names for .cursorrules files and their folders
-- Always validate code and configuration changes and make sure 'bazel build //...', 'bazel test //...', 'skaffold run -m template-fastapi-app -p dev' and automated smoke tests always succeeds
+- Always update the relevant README files after making changes to any code or configurations
 
 // README.md structure
-// The README.md file should maintain the following structure:
-// 1. Title and Awesome badge
-// 2. Logo
-// 3. Short description
-// 4. "Why .cursorrules?" section
-// 5. Table of Contents
-// 6. Rules section (organized by categories)
-// 7. How to Use section
-// 8. Contributing section
-// 9. License section
+Any newly created README.md file should maintain the following structure:
+1. Title and Awesome badge
+2. Logo
+3. Short description
+4. "Why .cursorrules?" section
+5. Table of Contents
+6. Rules section (organized by categories)
+7. How to Use section
+8. Contributing section
+9. License section
 
 Organization of rules
 Rules are organized into the following main categories:
@@ -45,13 +45,6 @@ Each .cursorrules file should follow this structure:
 7. Benefits of using the rules
 8. Additional resources
 
-// Repository structure
-// - README.md: Main documentation file
-// - rules/: Directory containing all .cursorrules files
-//   - README.md: Documentation for the rules directory
-//   - [technology]-cursorrules.md: Individual rule files
-// - .cursorrules: This file, providing guidance for the repository itself
-
 Best practices for .cursorrules files
 - Focus on providing repo-level context and guidelines
 - Include information about project structure and architectural decisions
@@ -76,11 +69,74 @@ Additional insights
 .cursorrules files should be placed in the root of the repository
 The content of .cursorrules files will be appended to the global "Rules for AI" settings in Cursor
 Focus on providing repo-level context and guidelines, not just general coding practices
-.cursorrules can include information about project structure, architectural decisions, and commonly used libraries or methods
+.cursorrules files can include information about project structure, architectural decisions, and commonly used libraries or methods
 Consider including rules for handling specific file types or coding patterns unique to your project
 Rules can cover both code generation and code understanding aspects for Cursor AI
 
-Build tools used
-1. Bazel for building, testing and packaging docker images
-2. Skaffold for development mode and deployments as a replacement for docker-compose
-3. Always use best practice and latest versions for these tools
+Development tools used in this repository
+1. Colima for local kubernetes cluster management
+2. Bazel for building, testing and packaging docker images
+3. Skaffold for development workflow orchestration and a replacement for docker-compose
+4. Sonarcube is used for code quality assurance
+5. Always use best practice and latest versions for these tools
+6. Never downgrade schema or tool versions to resolve issues
+7. Never deviate from our defined guidance or architecture without confirmation
+
+Repository & prompt objectives
+1. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
+2. Always build, test, run and validate end-to-end after any code changes
+3. Once everything works, always update the relevant root and application README files
+4. Clean up any unused code or configurations that are not used to keep the repository maintainable
+5. Never modify colima runtime or configuration
+
+// Monorepo Structure and Organization
+This is a monorepo containing multiple projects with different technologies.
+- All projects are located in the projects/ directory
+- Each project has its own build configuration and deployment manifests
+- Projects are organized by template types, each in its own subdirectory
+- Each project may have its own .cursorrules file with project-specific guidance
+
+// Build Tools and Infrastructure
+- Bazel is used for building, testing and packaging docker images
+- Skaffold is used for development mode and deployments as a replacement for docker-compose
+- Replace any custom scripts using Skaffold exec to trigger custom actions
+- Always use best practice and latest versions for these tools
+- All applications are deployed to Kubernetes using Skaffold only
+- If you need to install third-party packages to support the application, you must use Helm support in Skaffold
+
+// Workflow Guidelines
+- To build a project: skaffold build -m <project-name>
+- To test a project: skaffold test -m <project-name>
+- To run a project: skaffold run -m <project-name>
+- To verify a deployment: skaffold verify -m <project-name>
+- To execute custom actions: skaffold exec <action-name> -m <profile-name>
+- For development mode: skaffold dev -m <project-name>
+
+// Development Rules
+1. Always validate code and configuration changes and make sure 'bazel build //...', 'bazel test //...', 'skaffold run -m template-fastapi-app -p dev' and automated smoke tests always succeeds
+2. Do not use any commands, custom scripts, or any other tools when asked to help implement solutions other than skaffold [build,test,dev,deploy,exec] to update kubernetes resources
+3. Always build, test, deploy and validate end-to-end after any code changes
+4. Once everything works, always update the relevant READMEs
+5. Clean up any unused code or configurations that are not used to keep the repository maintainable
+6. Never modify colima runtime or configuration
+7. Always confirm before changing the infrastructure or software architecture
+8. Always work with the existing frameworks already implemented in this repository
+9. Always follow the existing coding styles that already exists
+10. Always follow validation practices
+
+// Common Issues
+- For build errors, check Bazel and Skaffold configuration in the relevant project
+- For deployment issues, examine the Kubernetes manifests in the project's kubernetes/ directory
+- Check that environment variables are properly configured
+
+// Documentation Guidelines
+- Always use Markdown for documentation and README files
+- Each project should contain its own README.md with project-specific details
+- Always check project-level documentation for technology-specific information
+- Maintain the existing structure of README.md files
+- Follow consistent formatting for list items
+
+// Validation Practices
+- Always validate code and configuration changes
+- Ensure 'bazel build //...', 'bazel test //...', 'skaffold run -m <project-name> -p dev' and automated smoke tests always succeed
+- For Kubernetes deployments, check pod status and logs when troubleshooting

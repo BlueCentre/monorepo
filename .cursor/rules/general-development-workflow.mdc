@@ -1,0 +1,13 @@
+---
+description: General code or configuration changes
+globs: 
+alwaysApply: false
+---
+
+# Your rule content
+
+- Remember to run skaffold build, skaffold test, skaffold run and skaffold verify after every code or configuration change
+- Do not use any shell commands or tools to deploy resources for troubleshooting or debugging
+- Do not write or use custom scripts directly unless it is for a bazel, skaffold, or container applications to use
+- Any time you need custom scripts to troubleshoot or debug, try using skaffold custom actions so that you can trigger it using 'skaffold exec <custom-action-name>'
+- Avoid writing complicated skaffold.yaml files that is hard to read
