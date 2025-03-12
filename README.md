@@ -123,11 +123,11 @@ The [terraform_dev_local](./terraform_dev_local) directory provides a powerful t
 
 ### Key Components
 
-- **Cert Manager**: Automated SSL certificate management
-- **Istio**: Full-featured service mesh for microservices
-- **OpenTelemetry**: Comprehensive observability stack
-- **Argo CD**: GitOps continuous delivery
-- **Telepresence**: Seamless local development with remote clusters
+- **Cert Manager**: Automated SSL certificate management.
+- **Istio**: Full-featured service mesh for microservices.
+- **OpenTelemetry**: Comprehensive observability stack.
+- **Argo CD**: GitOps continuous delivery.
+- **Telepresence**: Seamless local development with remote clusters.
 
 ### Benefits for Developers
 
