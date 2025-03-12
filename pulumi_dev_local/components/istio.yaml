@@ -1,0 +1,73 @@
+name: istio
+runtime: yaml
+description: Complete Istio Service Mesh for Kubernetes with Ingress Gateway
+
+resources:
+  # Istio Base Helm Chart
+  istioBase:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: base
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-base
+      namespace: istio-system
+      createNamespace: true
+      values:
+        base:
+          enableIstioConfigCRDs: true
+        defaultRevision: default
+
+  # Istio CNI Helm Chart
+  istioCni:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: cni
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-cni
+      namespace: istio-system
+      createNamespace: false
+      values:
+        cniBinDir: "/home/kubernetes/bin"
+
+  # Istio Control Plane (istiod) Helm Chart
+  istiod:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: istiod
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istiod
+      namespace: istio-system
+      createNamespace: false
+      values: {}
+
+  # Istio Ingress Gateway Helm Chart
+  istioIngressGateway:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: gateway
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-ingressgateway
+      namespace: istio-system
+      createNamespace: false
+      values:
+        service:
+          type: ClusterIP  # Use ClusterIP for local development
+          ports:
+            - port: 80
+              name: http2
+              targetPort: 8080
+            - port: 443
+              name: https
+              targetPort: 8443
+
+outputs:
+  istioStatus:
+    value: "Complete Istio stack with Ingress Gateway is deployed and ready" 

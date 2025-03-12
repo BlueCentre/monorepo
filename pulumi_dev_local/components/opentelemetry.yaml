@@ -1,0 +1,54 @@
+name: opentelemetry
+runtime: yaml
+description: OpenTelemetry Operator and Collector for Kubernetes observability
+
+resources:
+  # OpenTelemetry Operator Helm Chart
+  opentelemetryOperator:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: opentelemetry-operator
+      version: "0.79.0"
+      repositoryOpts:
+        repo: https://open-telemetry.github.io/opentelemetry-helm-charts
+      name: opentelemetry-operator
+      namespace: opentelemetry
+      createNamespace: true
+      values:
+        crds:
+          create: true
+        manager:
+          collectorImage:
+            repository: "otel/opentelemetry-collector-k8s"
+          leaderElection:
+            enabled: true
+        admissionWebhooks:
+          create: true
+          certManager:
+            enabled: true
+          autoGenerateCert:
+            enabled: true
+            recreate: true
+            certPeriodDays: 365
+
+  # OpenTelemetry Collector Helm Chart
+  opentelemetryCollector:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: opentelemetry-collector
+      version: "0.79.0"
+      repositoryOpts:
+        repo: https://open-telemetry.github.io/opentelemetry-helm-charts
+      name: opentelemetry-collector
+      namespace: opentelemetry
+      createNamespace: true
+      values:
+        mode: deployment
+        replicaCount: 1
+        presets:
+          clusterMetrics:
+            enabled: true
+
+outputs:
+  opentelemetryStatus:
+    value: "OpenTelemetry Operator and Collector are deployed and ready" 

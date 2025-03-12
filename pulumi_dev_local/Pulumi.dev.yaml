@@ -1,0 +1,13 @@
+config:
+  pulumi-dev-local:region: "us-central1"
+  pulumi-dev-local:certManagerEnabled: "true"
+  pulumi-dev-local:openTelemetryEnabled: "true"
+  pulumi-dev-local:istioEnabled: "true"
+  pulumi-dev-local:argocd_enabled: "false"
+  pulumi-dev-local:telepresence_enabled: "false"
+  pulumi-dev-local:external_secrets_enabled: "false"
+  pulumi-dev-local:external_dns_enabled: "false"
+  pulumi-dev-local:datadog_enabled: "false"
+  pulumi-dev-local:teardown: "false"
+  pulumi-dev-local:kubernetes_context: "colima"
+encryptionsalt: v1:2q/j9oCTjH0=:v1:1kTegG+X9Ve/oI2C:/krGKWcHvieQjXhYbuEjybzZfh+sjQ==

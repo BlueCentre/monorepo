@@ -1,0 +1,3 @@
+name: pulumi-dev-local
+runtime: yaml
+description: Local development environment with essential Kubernetes components using Pulumi 
