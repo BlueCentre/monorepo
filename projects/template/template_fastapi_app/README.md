@@ -43,16 +43,29 @@ For a complete development and deployment flow within the monorepo:
 bazel build //... && bazel test //...
 
 # Build and test everything in the application
-skaffold build && skaffold test && skaffold run && skaffold verify
+skaffold build -m template-fastapi-app && skaffold test -m template-fastapi-app
 
-# Deploy the application (with Istio)
-skaffold run <to-fill-in-later>
+# Deploy the application (standard mode)
+skaffold run -m template-fastapi-app -p dev
+
+# Deploy the application with Istio rate limiting
+skaffold run -m template-fastapi-app -p istio-rate-limit
 
 # Verify the deployment
-skaffold verify -m template-fastapi-app -p dev
+skaffold verify -m template-fastapi-app
 ```
 
 The verification steps are designed to work seamlessly in the monorepo context, automatically adapting to the Kubernetes environment created by Skaffold. This ensures consistent verification across all environments, from local development to CI/CD pipelines.
+
+## Related Documentation
+
+This README provides an overview of the application. For more detailed information on specific topics, please refer to these dedicated documents:
+
+- [Skaffold Usage Guide](./SKAFFOLD-USAGE.md) - Detailed instructions for using Skaffold with this application
+- [Istio Setup Guide](./ISTIO-SETUP.md) - Instructions for setting up Istio and enabling rate limiting
+- [Istio Troubleshooting Guide](./ISTIO-TROUBLESHOOTING.md) - Solutions for common Istio-related issues
+- [Quick Start Guide for Istio Rate Limiting](../../../quick-start-guide.md) - Step-by-step guide to setting up and testing rate limiting
+- [Istio Rate Limiting Documentation](../../../README-rate-limiting.md) - Detailed documentation on the rate limiting implementation
 
 ## Development
 
@@ -61,16 +74,10 @@ The verification steps are designed to work seamlessly in the monorepo context, 
 Using Skaffold for Kubernetes:
 
 ```bash
-skaffold dev
-```
-
-Using Skaffold for Kubernetes with multiple applications:
-
-```bash
 skaffold dev -m template-fastapi-app
 ```
 
-Using Skaffold for Kubernetes with multiple applications and profiles:
+Using Skaffold for Kubernetes with profiles:
 
 ```bash
 skaffold dev -m template-fastapi-app -p dev
@@ -283,111 +290,74 @@ For automated testing of the secret rotation mechanism, see the test files:
 - `tests/test_secret_rotation.py`: Tests for the core rotation mechanism
 - `tests/test_key_management_api.py`: Tests for the API endpoints
 
-## API Rate Limiting
+## Rate Limiting
 
-This application includes API rate limiting capabilities using Istio service mesh. The rate limiting feature allows you to:
+This application implements rate limiting at two different levels:
 
-1. Protect your API endpoints from abuse
-2. Implement different rate limits for different endpoints
-3. Configure rate limits based on client identity
-4. Monitor and track rate limiting metrics
+1. **Application-level rate limiting**: Basic protection through FastAPI middleware
+2. **Infrastructure-level rate limiting**: Advanced protection using Istio service mesh
 
-### Development Workflow
+### Application-Level Rate Limiting
 
-Developers can work with this application in two modes:
+The application includes a simple rate limiting middleware that restricts the number of requests based on client IP address. This provides basic protection but has limitations in a distributed environment.
 
-#### Standard Mode (Without Istio)
+Features:
+- IP-based rate limiting
+- Configurable limits per endpoint
+- Custom response headers with rate limit information
+- Simple circuit breaker for high-load scenarios
 
-For regular development without rate limiting:
+### Istio-Based Rate Limiting
 
-```bash
-# Deploy the application without Istio rate limiting
-skaffold run -m template-fastapi-app -p dev
+For more robust protection, we implement advanced rate limiting using Istio service mesh. This approach provides:
 
-# For development with live reload
-skaffold dev -m template-fastapi-app -p dev
-```
+- Global rate limiting across multiple replicas
+- Fine-grained control based on various attributes (path, method, headers, etc.)
+- Different rate limit tiers for authenticated vs. unauthenticated users
+- Integration with Kubernetes pod autoscaling
+- Real-time metrics and monitoring
 
-This will:
-- Deploy the application with standard Kubernetes resources
-- Set up the database and run migrations
-- Configure basic networking without rate limiting
-- Deploy verification jobs to ensure everything is working
-
-#### Rate Limiting Mode (With Istio)
-
-For development with Istio rate limiting enabled:
+To deploy with Istio rate limiting enabled:
 
 ```bash
-# Step 1: Deploy Istio system resources
-skaffold run -m istio-system-resources
+# Enable Istio injection on the namespace
+skaffold exec enable-istio-injection -m template-fastapi-app
 
-# Step 2: Deploy the application with Istio rate limiting
+# Deploy with Istio rate limiting configuration
 skaffold run -m template-fastapi-app -p istio-rate-limit
 
-# Step 3: Verify rate limiting functionality
+# Verify rate limiting is working
 skaffold verify -m template-fastapi-app -p istio-rate-limit
 ```
 
-This will:
-- Deploy the application with standard Kubernetes resources
-- Enable Istio injection on the namespace using a Kubernetes job
-- Deploy Istio rate limiting configurations
-- Set up the rate limiting service and Redis backend
-- Configure the virtual service with rate limiting rules
+For detailed configuration options and customization, see [ISTIO-SETUP.md](./ISTIO-SETUP.md) and [README-rate-limiting.md](../../../README-rate-limiting.md).
 
-### Verifying Rate Limiting
+### Testing Rate Limiting
 
-To verify that rate limiting is working correctly:
+You can test rate limiting functionality using the built-in verification job:
 
 ```bash
-# Verify using Skaffold's built-in verification
+# Run the rate limiting verification
 skaffold verify -m template-fastapi-app -p istio-rate-limit
-
-# Or manually test rate limiting:
-# Port forward to the application
-kubectl port-forward -n template-fastapi-app svc/template-fastapi-app 8000:80
-
-# Make multiple rapid requests to trigger rate limiting
-for i in {1..20}; do curl -i localhost:8000/api/v1/items/; sleep 0.1; done
 ```
 
-With rate limiting enabled, you should see HTTP 429 (Too Many Requests) responses after the configured number of requests.
-
-### Rate Limiting Configuration
-
-The rate limits are configured in the following files:
-
-- `kubernetes/istio/rate-limiting.yaml`: Main rate limiting configuration
-- `kubernetes/istio/virtual-service.yaml`: Routing rules with rate limiting metadata
-- `kubernetes/istio/rate-limit-handler.yaml`: Rate limit handler configuration
-
-You can modify these files to adjust the rate limits for different endpoints.
-
-### Switching Between Modes
-
-To switch from rate-limited mode back to standard mode:
+Or manually test it with curl:
 
 ```bash
-# Disable Istio rate limiting and redeploy the application
-skaffold run -m template-fastapi-app -p disable-istio
+# Get authentication token
+TOKEN=$(curl -s -X POST "http://localhost:8000/api/v1/login/access-token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin@example.com&password=admin" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+
+# Test the rate-limited endpoint (make multiple requests)
+for i in {1..20}; do
+  curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:8000/api/v1/rate-limited/rate-limited"
+  echo ""
+  sleep 0.1
+done
 ```
 
-This will:
-- Disable Istio injection on the namespace using a Kubernetes job
-- Deploy the application without Istio resources
-
-### Troubleshooting
-
-Common issues with rate limiting:
-
-1. **Rate limiting not working**: Ensure Istio is properly installed and the namespace has Istio injection enabled
-2. **429 errors when not expected**: Check the rate limit configuration in `kubernetes/istio/rate-limiting.yaml`
-3. **Istio resources not deploying**: Verify that Istio is installed in your cluster
-
-For more detailed troubleshooting information, see the [ISTIO-TROUBLESHOOTING.md](./ISTIO-TROUBLESHOOTING.md) file which documents known issues and their resolutions.
-
-For more detailed information, see the [ISTIO-SETUP.md](./ISTIO-SETUP.md) file.
+You should see some requests succeed with HTTP 200 and others fail with HTTP 429 (Too Many Requests) once the rate limit is reached.
 
 ## Verification
 
