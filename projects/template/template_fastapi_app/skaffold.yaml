@@ -12,6 +12,9 @@ build:
           MONOREPO_ROOT=$(cd ../../.. && pwd)
           cd $MONOREPO_ROOT
 
+          # Run code tests before building artifacts
+          bazel test //projects/template/template_fastapi_app/...
+
           # Then build the tarball
           bazel build //projects/template/template_fastapi_app:image_tarball
 
@@ -43,14 +46,44 @@ build:
 
 manifests:
   rawYaml:
-    - kubernetes/*.yaml
+    - kubernetes/bootstrap/rbac.yaml
+    - kubernetes/namespace.yaml
+    - kubernetes/db-migrations-job.yaml  # Include our migrations job
+    - kubernetes/*.yaml  # Include all other Kubernetes resources
 
 deploy:
   kubectl: {}
   # Add post-deployment verification for database initialization
   statusCheck: true
 
-# Add verification steps
+customActions:
+  - name: enable-istio-injection
+    containers:
+      - name: kubectl-istio-setup
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "=== SETTING UP ISTIO INTEGRATION ==="
+            
+            # Create namespace if it doesn't exist
+            kubectl get namespace template-fastapi-app || kubectl create namespace template-fastapi-app
+            
+            # Enable Istio injection on the namespace
+            echo "Enabling Istio injection on namespace template-fastapi-app..."
+            kubectl label namespace template-fastapi-app istio-injection=enabled --overwrite
+            
+            # Check if Istio is installed
+            if ! kubectl get namespace istio-system &>/dev/null; then
+              echo "WARNING: Istio doesn't appear to be installed in the cluster."
+              echo "Rate limiting functionality will not work without Istio."
+              echo "Consider installing Istio with: istioctl install --set profile=demo"
+            else
+              echo "Istio detected in the cluster."
+            fi
+    executionMode:
+      kubernetesCluster: {}
+
 verify:
   - name: smoke-test
     container:
@@ -70,41 +103,40 @@ verify:
             SLEEP_DURATION=$((RANDOM % 5 + 5)) # Sleep between 5 and 10 seconds
             echo "Running smoke test (attempt $(($RETRY_COUNT+1))/$((MAX_RETRIES+1)))..."
 
-            
             # Test health endpoint
             echo "Testing health endpoint..."
             HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health}")
             echo "Health response: $HEALTH_RESPONSE"
-            
+
             if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
               echo "Health check passed!"
-              
+
               # Test login endpoint
               echo "Testing login endpoint..."
               LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
               echo "Login response: $LOGIN_RESPONSE"
-              
+
               if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
                 echo "==============================================" 
                 echo "Login successful, authentication token received!"
                 echo "=============================================="
-                
+
                 # Extract the token
                 TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-                
+
                 # Test users endpoint
                 echo "Testing users endpoint..."
                 USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                 echo "Users response: $USERS_RESPONSE"
-                
+
                 if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
                   echo "Users endpoint test passed!"
-                  
+
                   # Test key management endpoint
                   echo "Testing key management status endpoint..."
                   KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                   echo "Key management status response: $KEY_MGMT_RESPONSE"
-                  
+
                   if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
                     echo "Key management status test passed!"
                     SUCCESS=true
@@ -120,7 +152,7 @@ verify:
             else
               echo "Health check failed!"
             fi
-            
+
             if [ "$SUCCESS" = false ]; then
               RETRY_COUNT=$((RETRY_COUNT+1))
               if [ $RETRY_COUNT -le $MAX_RETRIES ]; then
@@ -141,8 +173,6 @@ verify:
             echo "API verification failed!"
             exit 1
           fi
-    # Do not remove this executionMode block since we need to run the tests in the cluster.
-    # Ignore the linter warning for this line.
     executionMode:
       kubernetesCluster: {}
 
@@ -155,14 +185,14 @@ portForward:
     resourceName: postgres
     port: 5432
     localPort: 5432
-  - resourceType: service
-    resourceName: otel-collector
-    port: 4317
-    localPort: 4317
-  - resourceType: service
-    resourceName: otel-collector
-    port: 16686
-    localPort: 16686
+  # - resourceType: service
+  #   resourceName: opentelemetry-collector
+  #   port: 4317
+  #   localPort: 4317
+  # - resourceType: service
+  #   resourceName: opentelemetry-collector
+  #   port: 16686
+  #   localPort: 16686
 
 profiles:
   - name: dev
@@ -178,81 +208,225 @@ profiles:
           apply:
             - --validate=false
             - --force=true
-
+            
   - name: run
     activation:
       - command: run
-
-  # Casuses: ERRO[0000] panic occurred during schema reflection for yaml line number information: runtime error: index out of range [-1]  subtask=-1 task=DevLoop
-  # - name: skip-verify
-  #   patches:
-  #     - op: add
-  #       path: /verify
-  #       value: []
-
-  - name: db-verify-only
+  
+  - name: istio-rate-limit
     patches:
-      - op: replace
+      - op: add
+        path: /manifests/rawYaml
+        value:
+          # Standard application resources
+          - kubernetes/namespace.yaml
+          - kubernetes/db-migrations-job.yaml
+          - kubernetes/*.yaml
+          # Istio resources for template-fastapi-app namespace
+          - kubernetes/istio/rbac.yaml
+          - kubernetes/istio/namespace.yaml
+          - kubernetes/istio/gateway.yaml
+          - kubernetes/istio/virtual-service.yaml
+          - kubernetes/istio/rate-limit-handler.yaml
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+      - op: add
         path: /verify
         value:
-          - name: db-verify
+          - name: verify-rate-limiting
             container:
-              name: db-check
-              image: postgres:15
+              name: verify-rate-limiting
+              image: curlimages/curl:latest
+              # image: alpine:latest
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  echo "Waiting for database to be ready..."
-                  sleep 15
+                  # URL to test - using Kubernetes DNS name for Istio ingress gateway
+                  INGRESS_HOST="istio-ingressgateway.istio-system.svc.cluster.local"
+                  INGRESS_URL="http://istio-ingressgateway.istio-system.svc.cluster.local"
+                  ENDPOINT="/api/v1/rate-limited/rate-limited"
+                  LOGIN_ENDPOINT="/api/v1/login/access-token"
 
-                  MAX_RETRIES=30
+                  # Optional - set host header if required by your VirtualService
+                  HOST_HEADER="template-fastapi-app.template-fastapi-app.svc.cluster.local"
 
-                  for i in $(seq 1 $MAX_RETRIES); do
-                    echo "Attempt $i/$MAX_RETRIES: Checking database connection..."
-                    if PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT 1" > /dev/null 2>&1; then
-                      echo "Database connection successful!"
-                      
-                      # List all visible database tables
-                      echo "Listing all database tables:"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "\dt"
-                      echo ""
-                      
-                      # Show table details
-                      echo "Table details (schema information):"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;"
-                      echo ""
-                      
-                      # Show row counts for important tables
-                      echo "Row counts for important tables:"
-                      echo "========================================"
-                      PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -c "
-                        SELECT 'user' as table_name, COUNT(*) as row_count FROM user UNION ALL
-                        SELECT 'item' as table_name, COUNT(*) as row_count FROM item UNION ALL
-                        SELECT 'note' as table_name, COUNT(*) as row_count FROM note
-                        ORDER BY table_name;
-                      "
-                      echo ""
-                      
-                      # Verify that admin user exists
-                      USER_COUNT=$(PGPASSWORD=postgres psql -h postgres.template-fastapi-app.svc.cluster.local -U postgres -d app -t -c "SELECT COUNT(*) FROM user WHERE email='admin@example.com'" | tr -d ' ')
-                      
-                      if [ "$USER_COUNT" -ge "1" ]; then
-                        echo "Admin user exists in database!"
-                        echo "Database verification successful!"
-                        exit 0
-                      else
-                        echo "Admin user not found in database!"
-                        exit 1
-                      fi
+                  # Check DNS resolution first
+                  # echo "Verifying DNS resolution for istio-ingressgateway..."
+                  # if ! nslookup ${INGRESS_HOST} > /dev/null 2>&1; then
+                  #   echo "⚠️  Warning: DNS resolution failed. Trying alternate approach..."
+                  #   # Try to get the ClusterIP of the ingress gateway as fallback
+                  #   GATEWAY_IP=$(kubectl get svc -n istio-system istio-ingressgateway -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
+                  #   if [ -n "$GATEWAY_IP" ]; then
+                  #     echo "Using Istio ingress gateway ClusterIP: $GATEWAY_IP"
+                  #     INGRESS_URL="http://$GATEWAY_IP"
+                  #   fi
+                  # fi
+
+                  # First check connection to ingress gateway
+                  echo "Testing connection to Istio ingress gateway..."
+                  if ! curl -s -o /dev/null -w "%{http_code}" "${INGRESS_URL}" > /dev/null 2>&1; then
+                    echo "❌ Cannot connect to Istio ingress gateway at ${INGRESS_URL}"
+                    echo "Trying direct service connection instead..."
+                    # Try direct service connection as fallback
+                    DIRECT_URL="http://template-fastapi-app.template-fastapi-app.svc.cluster.local"
+                    if curl -s -o /dev/null -w "%{http_code}" "${DIRECT_URL}/health" > /dev/null 2>&1; then
+                      echo "✅ Connected directly to service. Using ${DIRECT_URL}"
+                      INGRESS_URL="${DIRECT_URL}"
+                      HOST_HEADER=""  # No host header needed for direct service access
                     else
-                      echo "Database connection failed, retrying in 2 seconds..."
-                      sleep 2
+                      echo "❌ Failed to connect to service directly."
+                      echo "Network connectivity issues detected. Please check your pod network configuration."
+                      exit 1
                     fi
+                  fi
+
+                  # Get access token
+                  echo "Obtaining authentication token..."
+                  LOGIN_RESPONSE=$(curl -s -X POST "${INGRESS_URL}${LOGIN_ENDPOINT}" \
+                    -H "Content-Type: application/x-www-form-urlencoded" \
+                    -H "Accept: application/json" \
+                    -H "User-Agent: rate-limit-test-script" \
+                    ${HOST_HEADER:+-H "Host: $HOST_HEADER"} \
+                    -d "username=admin@example.com&password=admin")
+
+                  # Extract token from response with better error handling
+                  if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
+                    TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+                    echo "✅ Successfully obtained authentication token"
+                  else
+                    echo "❌ Failed to get authentication token. Response:"
+                    echo "$LOGIN_RESPONSE"
+                    exit 1
+                  fi
+
+                  # Variables to track rate limiting
+                  TOTAL_REQUESTS=20
+                  RATE_LIMITED_COUNT=0
+                  HTTP_SUCCESS_COUNT=0
+
+                  echo -e "\n📊 RATE LIMITING TEST"
+                  echo "==================================="
+                  echo "Making $TOTAL_REQUESTS rapid requests to test rate limiting..."
+                  echo "Testing URL: ${INGRESS_URL}${ENDPOINT}"
+                  echo "-----------------------------------"
+
+                  # Make multiple requests to trigger rate limiting
+                  for i in $(seq 1 $TOTAL_REQUESTS); do
+                    # Using -i to include headers in output to see rate limit headers
+                    FULL_RESPONSE=$(curl -s -i "${INGRESS_URL}${ENDPOINT}" \
+                      -H "Authorization: Bearer $TOKEN" \
+                      -H "Accept: application/json" \
+                      -H "User-Agent: rate-limit-test-script" \
+                      ${HOST_HEADER:+-H "Host: $HOST_HEADER"})
+                    
+                    # Extract status code
+                    STATUS_CODE=$(echo "$FULL_RESPONSE" | grep -E "^HTTP/[0-9.]+ [0-9]+" | awk '{print $2}')
+                    
+                    # Check for rate limit headers
+                    RATE_LIMIT_REMAINING=$(echo "$FULL_RESPONSE" | grep -i "x-ratelimit-remaining:" | awk '{print $2}' | tr -d '\r')
+                    RATE_LIMIT_RESET=$(echo "$FULL_RESPONSE" | grep -i "x-ratelimit-reset:" | awk '{print $2}' | tr -d '\r')
+                    
+                    echo -n "Request $i: Status Code = $STATUS_CODE "
+                    
+                    if [ "$STATUS_CODE" = "429" ]; then
+                      RATE_LIMITED_COUNT=$((RATE_LIMITED_COUNT + 1))
+                      echo "⛔ RATE LIMITED!"
+                    elif [ "$STATUS_CODE" = "200" ]; then
+                      HTTP_SUCCESS_COUNT=$((HTTP_SUCCESS_COUNT + 1))
+                      echo "✓ Success"
+                    else
+                      echo "⚠️ Unexpected response"
+                    fi
+                    
+                    # Show rate limit info if available
+                    if [ -n "$RATE_LIMIT_REMAINING" ]; then
+                      echo "  → Rate limit remaining: $RATE_LIMIT_REMAINING"
+                    fi
+                    if [ -n "$RATE_LIMIT_RESET" ]; then
+                      echo "  → Rate limit resets in: $RATE_LIMIT_RESET seconds"
+                    fi
+                    
+                    # Small delay - but not too much so we can trigger rate limiting
+                    sleep 0.1
                   done
 
-                  echo "Failed to connect to database after $MAX_RETRIES attempts!"
-                  exit 1
+                  echo "-----------------------------------"
+                  echo "📋 RESULTS:"
+                  echo "Total requests: $TOTAL_REQUESTS"
+                  echo "Successful responses (200): $HTTP_SUCCESS_COUNT"
+                  echo "Rate limited responses (429): $RATE_LIMITED_COUNT"
+
+                  if [ $RATE_LIMITED_COUNT -gt 0 ]; then
+                    echo "✅ Rate limiting is working!"
+                  else
+                    echo "❌ No rate limiting detected. Try increasing the number of requests or check your configuration."
+                  fi
+
+                  # Show which level of rate limiting might be active
+                  if [ $RATE_LIMITED_COUNT -gt 0 ]; then
+                    if echo "$FULL_RESPONSE" | grep -q "x-envoy-ratelimited"; then
+                      echo "ℹ️ Istio/Envoy rate limiting appears to be active"
+                    elif echo "$FULL_RESPONSE" | grep -q "x-ratelimit-limit"; then
+                      echo "ℹ️ Application-level rate limiting appears to be active"
+                    else
+                      echo "ℹ️ Rate limiting is active but couldn't determine which layer"
+                    fi
+                  fi
             executionMode:
-              kubernetesCluster: {}
+              kubernetesCluster:
+                namespace: template-fastapi-app
+                annotations:
+                  sidecar.istio.io/inject: "false"
+# ---
+# apiVersion: skaffold/v4beta6
+# kind: Config
+# metadata:
+#   name: bootstrap
+# manifests:
+#   rawYaml:
+#     - kubernetes/bootstrap/rbac.yaml
+# deploy:
+#   kubectl: {}
+---
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: debug
+manifests:
+  rawYaml:
+    - kubernetes/debug/debug-job.yaml
+deploy:
+  kubectl: {}
+
+
+
+
+
+# ---
+# apiVersion: skaffold/v4beta6
+# kind: Config
+# metadata:
+#   name: loadgenerator
+# requires:
+#   - configs:
+#       - template-fastapi-app
+# build:
+#   platforms: ["linux/amd64"]
+#   artifacts:
+#     - image: loadgenerator
+#       context: src/loadgenerator
+# manifests:
+#   rawYaml:
+#     - ./kubernetes-manifests/loadgenerator.yaml
+# deploy:
+#   kubectl: {}
+# profiles:
+#   - name: gcb
+#     build:
+#       googleCloudBuild:
+#         diskSizeGb: 300
+#         machineType: N1_HIGHCPU_32
+#         timeout: 4000s

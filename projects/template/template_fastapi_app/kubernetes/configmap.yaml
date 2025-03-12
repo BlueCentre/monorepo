@@ -14,6 +14,6 @@ data:
   PUBSUB_TOPIC_EXAMPLE: "example"
   PUBSUB_SUBSCRIPTION_EXAMPLE: "example-subscription"
   ENABLE_TELEMETRY: "true"
-  OTLP_EXPORTER_ENDPOINT: "http://opentelemetry-collector.istio-system.svc.cluster.local:4317"
+  OTLP_EXPORTER_ENDPOINT: "http://opentelemetry-collector.opentelemetry.svc.cluster.local:4317"
   OTLP_SERVICE_NAME: "template-fastapi-app"
   ENVIRONMENT: "production" 

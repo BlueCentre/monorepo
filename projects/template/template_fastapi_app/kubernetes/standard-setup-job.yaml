@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: standard-setup
+  namespace: template-fastapi-app
+  labels:
+    app: standard-setup
+    component: setup
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+      - name: kubectl-standard-setup
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "=== SETTING UP STANDARD DEPLOYMENT ==="
+
+          # Create namespace if it doesn't exist
+          kubectl get namespace template-fastapi-app || kubectl create namespace template-fastapi-app
+
+          # Ensure Istio injection is disabled to avoid any sidecar issues
+          if kubectl get namespace template-fastapi-app -o jsonpath='{.metadata.labels.istio-injection}' 2>/dev/null | grep -q "enabled"; then
+            echo "Removing Istio injection label from namespace for clean deployment..."
+            kubectl label namespace template-fastapi-app istio-injection- --overwrite
+          fi
+
+          # Remove any leftover Istio resources from previous deployments
+          echo "Cleaning up any leftover Istio resources..."
+          kubectl delete virtualservice,destinationrule,envoyfilter -n template-fastapi-app --all --ignore-not-found
+
+          echo "Standard deployment environment prepared successfully."
+      restartPolicy: Never
+  backoffLimit: 1
