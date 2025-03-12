@@ -141,14 +141,8 @@ The [terraform_dev_local](./terraform_dev_local) directory provides a powerful t
 
 ```bash
 # Navigate to the directory
-cd terraform_dev_local
-
-# Initialize Terraform
-terraform init
-
-# Configure components in terraform.auto.tfvars
+# Configure components in terraform.auto.tfvars (This file allows you to configure the components you want to enable):
 # Apply the configuration
-terraform apply
 ```
 
 For more details, see the [terraform_dev_local README](./terraform_dev_local/README.md).
