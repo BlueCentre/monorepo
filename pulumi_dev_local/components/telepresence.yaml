@@ -1,0 +1,11 @@
+resources:
+  # Telepresence Helm Chart
+  telepresence:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: traffic-manager
+      repositoryOpts:
+        repo: https://app.getambassador.io
+      name: traffic-manager
+      namespace: ambassador
+      createNamespace: true 

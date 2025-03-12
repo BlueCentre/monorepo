@@ -188,3 +188,4 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
+terraform_dev_local/terraform.tfstate.backup
