@@ -20,6 +20,7 @@ This monorepo contains multiple projects organized by language and purpose. It u
 - **CI/CD Integration**: GitHub Actions workflows for continuous integration
 - **Service Mesh Integration**: Istio-based rate limiting and traffic management
 - **Kubernetes Orchestration**: Skaffold-based development and deployment workflows
+- **Infrastructure as Code**: Terraform or Pulumi options to manage essential Kubernetes components
 
 ## Repository Structure
 
@@ -551,4 +552,4 @@ For more details, see our [Contribution Guide](CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
