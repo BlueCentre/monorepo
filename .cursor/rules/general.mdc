@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+// Awesome CursorRules
+// A curated list of awesome .cursorrules files for enhancing Cursor AI experience
+// https://github.com/PatrickJS/awesome-cursorrules/tree/main/rules
+
+# Organization of rules
+
+Rules are organized into the following main categories:
+- Build Tools and Development
+- Language-Specific
+- Testing and Validation
+- Frontend Frameworks and Libraries
+- Backend and Full-Stack
+- Mobile Development
+- CSS and Styling
+- State Management
+- Database and API
+- Other
+
+# File structure for .cursorrules files
+
+Each .cursorrules file should follow this structure:
+1. Title and brief description
+2. Project structure information
+3. General guidelines
+4. Implementation details
+5. Example content
+6. How to use instructions
+7. Benefits of using the rules
+8. Additional resources
+
+# Best practices for .cursorrules files
+
+- Focus on providing repo-level context and guidelines
+- Include information about project structure and architectural decisions
+- Document commonly used libraries or methods
+- Include rules for handling specific file types or coding patterns
+- Cover both code generation and code understanding aspects
+- Keep rules concise and focused on practical use cases
+- Use comments to explain complex rules or provide context
+
+# Contributing guidelines
+
+When contributing new .cursorrules files:
+1. Follow the naming conventions
+2. Place the file in the appropriate category
+3. Include all the required sections
+4. Provide clear and concise guidance
+5. Focus on project-specific instructions and best practices
+6. Update the main README.md to include your new file
+7. Ensure your file follows the established structure and formatting
+
+## Cursor Specific
+- Automatically suggest addtions for .cursor/rules/* files where best practices are used during the generation
