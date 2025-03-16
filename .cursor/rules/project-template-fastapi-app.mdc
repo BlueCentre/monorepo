@@ -1,3 +1,9 @@
+---
+description: 
+globs: projects/template/template_fastapi_app/**,projects/**/*fastapi*/**
+alwaysApply: false
+---
+
 # Template FastAPI Application
 # Rules for AI assistance in Cursor
 

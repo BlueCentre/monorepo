@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Monorepo Structure and Organization
+
+This is a monorepo containing multiple projects with different technologies.
+- All projects are located in the projects/ directory
+- Each project has its own build configuration and deployment manifests
+- Projects are organized by template types, each in its own subdirectory
+- Each project may have its own .cursorrules file with project-specific guidance
