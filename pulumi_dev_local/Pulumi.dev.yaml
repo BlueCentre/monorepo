@@ -5,7 +5,7 @@ config:
   pulumi-dev-local:istioEnabled: "true"
   pulumi-dev-local:argocd_enabled: "false"
   pulumi-dev-local:telepresence_enabled: "false"
-  pulumi-dev-local:external_secrets_enabled: "false"
+  pulumi-dev-local:external_secrets_enabled: "true"
   pulumi-dev-local:external_dns_enabled: "false"
   pulumi-dev-local:datadog_enabled: "false"
   pulumi-dev-local:teardown: "false"

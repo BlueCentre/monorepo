@@ -24,7 +24,7 @@ resource "helm_release" "external_dns" {
       {
         cfSecretName     = "cf-secret",
         cfSecretKey      = "cloudflare-api-key",
-        txtOwnerId       = "flyr-lab-${var.tenant}-${var.environment}-${var.stack}",
+        txtOwnerId       = "bluecentre-dev-${var.tenant}-${var.environment}-${var.stack}",
         annotationFilter = "external-dns.alpha.kubernetes.io/sync-enabled in (true)",
       }
     )
@@ -49,7 +49,7 @@ spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
-    name: external-secret-cluster-lab-secrets
+    name: external-secret-cluster-fake-secrets
   target:
     name: cf-secret
     creationPolicy: Owner

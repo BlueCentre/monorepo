@@ -21,7 +21,7 @@ The configuration allows developers to selectively enable and deploy:
 | **OpenTelemetry** | Observability stack with Operator and Collector for metrics, tracing, and logging | ✅ Active | 
 | **Argo CD** | GitOps continuous delivery tool | ✅ Active |
 | **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
-| **External Secrets** | Integration with external secret management systems | 🔄 Inactive |
+| **External Secrets** | Integration with external secret management systems | ✅ Active |
 | **External DNS** | Automated DNS configuration | 🔄 Inactive |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
 
@@ -40,9 +40,57 @@ pulumi_dev_local/
 │   ├── opentelemetry.yaml  # OpenTelemetry component
 │   ├── istio.yaml          # Istio component
 │   ├── argocd.yaml         # Argo CD component
-│   └── telepresence.yaml   # Telepresence component
+│   ├── telepresence.yaml   # Telepresence component
+│   └── external-secrets.yaml # External Secrets component
 └── README.md               # Documentation
 ```
+
+### Enabling and Disabling Components
+
+This Pulumi setup allows you to easily enable or disable components through configuration:
+
+1. **Update Pulumi.dev.yaml**:
+   
+   The `Pulumi.dev.yaml` file contains the configuration for each component:
+
+   ```yaml
+   config:
+     pulumi-dev-local:certManagerEnabled: "true"
+     pulumi-dev-local:openTelemetryEnabled: "true"
+     pulumi-dev-local:istioEnabled: "true"
+     pulumi-dev-local:external_secrets_enabled: "true"
+     pulumi-dev-local:argocd_enabled: "false"
+     pulumi-dev-local:telepresence_enabled: "false"
+     pulumi-dev-local:external_dns_enabled: "false"
+     pulumi-dev-local:datadog_enabled: "false"
+   ```
+
+   Set a component to `"true"` to enable it or `"false"` to disable it.
+
+2. **Default Settings in main.yaml**:
+
+   You can also modify the default settings in `main.yaml`:
+
+   ```yaml
+   variables:
+     certManagerEnabled:
+       type: boolean
+       default: true
+     openTelemetryEnabled:
+       type: boolean
+       default: true
+     externalSecretsEnabled:
+       type: boolean
+       default: true
+   ```
+
+3. **Adding New Components**:
+
+   When adding a new component, follow these steps:
+   - Create a new YAML file in the `components/` directory
+   - Add the component reference to `main.yaml`
+   - Add the corresponding variable to enable/disable it
+   - Update the `Pulumi.dev.yaml` file with the new configuration
 
 ### Components System
 

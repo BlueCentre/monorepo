@@ -23,7 +23,7 @@ variables:
     default: false
   externalSecretsEnabled:
     type: boolean
-    default: false
+    default: true
   externalDnsEnabled:
     type: boolean
     default: false
@@ -170,6 +170,15 @@ resources:
             - port: 443
               name: https
               targetPort: 8443
+
+  # External Secrets Operator
+  externalSecrets:
+    type: pulumi:pulumi:Stack
+    properties:
+      resource: ${externalSecretsEnabled}
+      stackName: external-secrets
+    options:
+      provider: ${kubernetes:context}
 
 
 outputs:
