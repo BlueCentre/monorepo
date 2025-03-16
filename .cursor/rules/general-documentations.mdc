@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# General documentation guidelines
+
+- Always use Markdown for documentation and README files
+- Maintain the existing structure of the README.md file
+- Follow consistent formatting for list items
+- Each project should contain its own README.md with project-specific details
+- Always check project-level documentation for technology-specific information
+- Always update the relevant README files after making changes to any code or configurations
+- Use descriptive names for .cursorrules files and their folders
+
+# README.md structure
+
+Any newly created README.md file should maintain the following structure:
+1. Title and Awesome badge
+2. Logo
+3. Short description
+4. "Why .cursorrules?" section
+5. Table of Contents
+6. Rules section (organized by categories)
+7. How to Use section
+8. Contributing section
+9. License section

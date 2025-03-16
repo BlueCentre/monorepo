@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Development Troubleshooting Guidelines
+
+- Do not create or directly use any custom shell scripts or tools to deploy resources onto kubernetes for troubleshooting or debugging
+- Custom scripts should only be created for use by bazel, skaffold, or within container applications when necessary
+- Any time you need custom scripts to troubleshoot or debug, use skaffold custom actions in the relevant skaffold profile so that you can trigger it using the command 'skaffold exec <custom-action-name> -p <relevant-profile>'
+- For build errors, check Bazel and Skaffold configurations in the relevant project
+- For deployment issues, examine the Kubernetes manifests in the project's own directory if one exists
+- For Kubernetes deployments, check pod status and logs when troubleshooting
+- Check that environment variables are properly configured
