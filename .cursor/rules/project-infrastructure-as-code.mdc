@@ -1,10 +1,31 @@
 ---
-description:
-globs:
-alwaysApply: true
+description: 
+globs: terraform_dev_local/**,pulumi_dev_local/**
+alwaysApply: false
 ---
 
-# Your rule content
+# Infrastructure as code workflow guidance
 
-- You can @ files here
-- You can use markdown but dont have to
+- Never create or use custom scripts and commands unless they already exist, or explicitly told otherwise
+- Always execute the workflow relevant to either terraform or pulumi where change is made
+- Maintain feature parity in terms of helm charts, helm values, and the state if enabled or disabled
+- Terraform apply is never in broken state
+- Pulumi up is never in broken state
+- Using basel or skaffold is not recommended or suitable for infrastructure as code
+
+# Terraform Workflow & Command Reference
+
+- To initialize and pull down terraform modules and providers: terraform init
+- To verify a terraform plan: terraform plan
+- To apply terraform deployment: terraform apply -y
+- To destroy terraform deployment: terrafor destroy -y
+
+# Pulumi Workflow & Command Reference
+
+- To verify a pulumi plan: pulumi preview
+- To apply pulumi deployment: pulumi up -y
+- To destroy pulumi deployment: pulumi down -y
+
+# Troubleshooting Pulumi Workflows
+
+- Use the default password "pulumi-dev-passphrase" running pulumi non-interactive
