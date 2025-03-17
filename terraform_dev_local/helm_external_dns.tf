@@ -24,7 +24,7 @@ resource "helm_release" "external_dns" {
       {
         cfSecretName     = "cf-secret",
         cfSecretKey      = "cloudflare-api-key",
-        txtOwnerId       = "bluecentre-dev-${var.tenant}-${var.environment}-${var.stack}",
+        txtOwnerId       = "bluecentre-dev",
         annotationFilter = "external-dns.alpha.kubernetes.io/sync-enabled in (true)",
       }
     )
@@ -63,6 +63,7 @@ spec:
     - secretKey: cloudflare-api-key
       remoteRef:
         key: CLOUDFLARE_API_TOKEN
+        version: v1
   EOF
   depends_on = [
     helm_release.external_secrets,

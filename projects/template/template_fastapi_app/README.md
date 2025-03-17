@@ -17,6 +17,7 @@ A production-ready FastAPI application template showcasing best practices for bu
 - **Robust Database Connectivity**: Handles complex Kubernetes environments with automatic connection string parsing
 - **Secret Rotation**: Automatic and manual rotation of JWT keys and database credentials for enhanced security
 - **API Rate Limiting**: Infrastructure-level protection against abuse using Istio service mesh
+- **Automatic DNS Management**: Integration with external-DNS for automated DNS record creation
 
 ## Monorepo Integration
 
@@ -66,6 +67,7 @@ This README provides an overview of the application. For more detailed informati
 - [Istio Troubleshooting Guide](./ISTIO-TROUBLESHOOTING.md) - Solutions for common Istio-related issues
 - [Quick Start Guide for Istio Rate Limiting](../../../quick-start-guide.md) - Step-by-step guide to setting up and testing rate limiting
 - [Istio Rate Limiting Documentation](../../../README-rate-limiting.md) - Detailed documentation on the rate limiting implementation
+- [External-DNS Integration](EXTERNAL-DNS.md) - Instructions for integrating external-DNS for automated DNS record creation
 
 ## Development
 
@@ -165,6 +167,8 @@ For more detailed information, see:
 - [Monorepo Integration Guide](docs/monorepo-integration.md)
 - [Deployment Guide](docs/deployment.md)
 - [API Documentation](docs/api.md)
+- [Istio Setup Guide](ISTIO-SETUP.md)
+- [External-DNS Integration](EXTERNAL-DNS.md)
 
 ## License
 

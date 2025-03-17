@@ -33,7 +33,7 @@ resource "helm_release" "external_secrets" {
   count            = var.external_secrets_enabled ? 1 : 0
   name             = "external-secrets"
   chart            = "external-secrets"
-  version          = "0.10.4"
+  version          = "0.14.4"
   repository       = "https://charts.external-secrets.io"
   description      = "Terraform driven Helm release of external-secrets Helm chart"
   namespace        = "external-secrets"
@@ -69,35 +69,9 @@ spec:
   provider:
     fake:
       data:
-      - key: "/foo/bar"
-        value: "HELLO1"
+      - key: "CLOUDFLARE_API_TOKEN"
+        value: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
         version: "v1"
-      - key: "/foo/bar"
-        value: "HELLO2"
-        version: "v2"
-      - key: "/foo/baz"
-        valueMap:
-          foo: example
-          other: thing
----
-apiVersion: external-secrets.io/v1alpha1
-kind: ExternalSecret
-metadata:
-  name: example
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    name: fake
-    kind: ClusterSecretStore
-  target:
-    name: secret-to-be-created
-  data:
-  - secretKey: foo_bar
-    remoteRef:
-      key: /foo/bar
-      version: v1
-  dataFrom:
-  - key: /foo/baz
 EOF
   depends_on = [helm_release.external_secrets]
 }

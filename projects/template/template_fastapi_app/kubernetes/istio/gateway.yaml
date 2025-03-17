@@ -4,6 +4,9 @@ kind: Gateway
 metadata:
   name: template-fastapi-gateway
   namespace: template-fastapi-app
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
 spec:
   selector:
     istio: ingressgateway
@@ -13,7 +16,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "*"  # or specific hosts if desired
+    - "api-james.ipv1337.dev"  # or specific hosts if desired
 
 # Updated VirtualService (needs 'gateways' field)
 # apiVersion: networking.istio.io/v1alpha3

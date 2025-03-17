@@ -4,7 +4,7 @@ globs:
 alwaysApply: true
 ---
 
-# General Development Workflow 
+# General Application Development Workflow 
 
 While developing new features, enhancements, updates, or refactoring always follow these steps:
 1. Remember to run skaffold build and make sure it is successful before continuing
@@ -14,7 +14,7 @@ While developing new features, enhancements, updates, or refactoring always foll
 5. Always update and maintain relevant documentation once these steps are completed
 6. Update Cursor Rules when you learn anything new that helps solve an issue
 
-# Workflow & Command Reference
+# Application Development Workflow & Command Reference
 
 - To build a project: skaffold build -m <project-module> -p <module-profile>
 - To test a project: skaffold test -m <project-module> -p <module-profile>
