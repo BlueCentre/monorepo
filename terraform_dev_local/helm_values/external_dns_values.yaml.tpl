@@ -38,9 +38,10 @@ triggerLoopOnEvent: true
 annotationFilter: ${annotationFilter}
 
 sources:
-- service
-- ingress
-- gateway-httproute
+- istio-gateway
+# - service
+# - ingress
+# - gateway-httproute
 
 # USAGE: service, ingress, gateway-httproute
 # annotations:

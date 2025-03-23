@@ -21,8 +21,8 @@ The configuration allows developers to selectively enable and deploy:
 | **OpenTelemetry** | Observability stack with Operator and Collector for metrics, tracing, and logging | ✅ Active | 
 | **Argo CD** | GitOps continuous delivery tool | ✅ Active |
 | **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
-| **External Secrets** | Integration with external secret management systems | 🔄 Inactive |
-| **External DNS** | Automated DNS configuration | 🔄 Inactive |
+| **External Secrets** | Integration with external secret management systems | ✅ Active |
+| **External DNS** | Automated DNS configuration | ✅ Active |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
 
 ## Modular Structure
@@ -40,9 +40,76 @@ pulumi_dev_local/
 │   ├── opentelemetry.yaml  # OpenTelemetry component
 │   ├── istio.yaml          # Istio component
 │   ├── argocd.yaml         # Argo CD component
-│   └── telepresence.yaml   # Telepresence component
+│   ├── telepresence.yaml   # Telepresence component
+│   └── external-secrets.yaml # External Secrets component
+├── values/                 # Helm chart values
+│   ├── cert-manager.yaml   # Cert Manager values
+│   ├── external-dns.yaml   # External DNS values
+│   ├── external-secrets.yaml # External Secrets values
+│   ├── istio.yaml          # Istio values
+│   └── monitoring.yaml     # Prometheus/Grafana values
 └── README.md               # Documentation
 ```
+
+### Helm Values Management
+
+This project uses external YAML files for managing Helm chart values, located in the `values/` directory. This approach offers several benefits:
+
+1. **Separation of Configuration**: Keeps Helm values separate from deployment logic
+2. **Improved Maintainability**: Makes it easier to update and maintain values without changing code
+3. **Consistency**: Uses the same format and structure across all components
+4. **Portability**: Values can be reused with other IaC tools if needed
+
+Each component in `pkg/applications/` automatically loads values from its corresponding YAML file when deployed. Runtime overrides can still be applied when needed.
+
+For more details on our Helm best practices, see [Pulumi Helm Best Practices](./docs/pulumi_helm_best_practices.md).
+
+### Enabling and Disabling Components
+
+This Pulumi setup allows you to easily enable or disable components through configuration:
+
+1. **Update Pulumi.dev.yaml**:
+   
+   The `Pulumi.dev.yaml` file contains the configuration for each component:
+
+   ```yaml
+   config:
+     pulumi-dev-local:certManagerEnabled: "true"
+     pulumi-dev-local:openTelemetryEnabled: "true"
+     pulumi-dev-local:istioEnabled: "true"
+     pulumi-dev-local:external_secrets_enabled: "true"
+     pulumi-dev-local:argocd_enabled: "false"
+     pulumi-dev-local:telepresence_enabled: "false"
+     pulumi-dev-local:external_dns_enabled: "false"
+     pulumi-dev-local:datadog_enabled: "false"
+   ```
+
+   Set a component to `"true"` to enable it or `"false"` to disable it.
+
+2. **Default Settings in main.yaml**:
+
+   You can also modify the default settings in `main.yaml`:
+
+   ```yaml
+   variables:
+     certManagerEnabled:
+       type: boolean
+       default: true
+     openTelemetryEnabled:
+       type: boolean
+       default: true
+     externalSecretsEnabled:
+       type: boolean
+       default: true
+   ```
+
+3. **Adding New Components**:
+
+   When adding a new component, follow these steps:
+   - Create a new YAML file in the `components/` directory
+   - Add the component reference to `main.yaml`
+   - Add the corresponding variable to enable/disable it
+   - Update the `Pulumi.dev.yaml` file with the new configuration
 
 ### Components System
 
@@ -190,7 +257,7 @@ To change the passphrase for an existing stack:
    # Set the old passphrase
    export PULUMI_CONFIG_PASSPHRASE="old-passphrase"
    
-   # Export the stack to a file
+   # Export the stack** with the new passphrase:
    pulumi stack export --file stack.json
    ```
 
@@ -355,6 +422,92 @@ The Ingress Gateway can be accessed locally through port-forwarding:
 kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 ```
 
+## External Secrets and External DNS
+
+The Pulumi configuration now includes both External Secrets (version 0.14.4) and External DNS (version 1.15.0) Helm charts, matching the versions used in the terraform_dev_local configuration.
+
+### External Secrets Operator
+
+External Secrets Operator is installed with the following configuration:
+- Installs CRDs
+- Creates ClusterExternalSecret and ClusterSecretStore CRDs
+- Creates a service account for the operator
+- Disables webhook and cert controller for local development
+
+### External DNS
+
+External DNS is configured to:
+- Use Cloudflare as the provider
+- Pull API token from a Kubernetes secret (cf-secret)
+- Use bluecentre-dev as the TXT owner ID
+- Sync records with a 30-minute interval
+- Only process resources with the annotation `external-dns.alpha.kubernetes.io/sync-enabled: "true"`
+- Monitor istio-gateway resources for DNS entries
+
+### Manual Post-Deployment Steps
+
+After deploying with Pulumi, you need to manually create the following resources:
+
+1. A ClusterSecretStore to serve as a fake secret provider:
+
+```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: external-secret-cluster-fake-secrets
+  namespace: external-secrets
+spec:
+  provider:
+    fake:
+      data:
+      - key: "CLOUDFLARE_API_TOKEN"
+        value: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
+        version: "v1"
+```
+
+2. An ExternalSecret to retrieve the Cloudflare API token:
+
+```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: cf-external-secret
+  namespace: external-dns
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: external-secret-cluster-fake-secrets
+  target:
+    name: cf-secret
+    creationPolicy: Owner
+    template:
+      metadata:
+        labels:
+          service: external-dns
+        annotations:
+          reloader.stakater.com/match: "true"
+  data:
+    - secretKey: cloudflare-api-key
+      remoteRef:
+        key: CLOUDFLARE_API_TOKEN
+        version: v1
+```
+
+These resources can be applied using `kubectl apply -f <filename>` after the Helm charts are deployed.
+
+Alternatively, use the provided post-deployment script:
+
+```bash
+# First deploy with Pulumi
+pulumi up
+
+# Then run the post-deployment script
+./post-deploy.sh
+```
+
+The script will create the necessary custom resources for external-secrets and external-dns integration.
+
 ## How Developers Can Use It
 
 ### Component Selection and Configuration
@@ -442,4 +595,39 @@ Feel free to enhance this Pulumi configuration with additional components or imp
 
 ## License
 
-This project is licensed under the terms of the Apache 2.0 license. 
+This project is licensed under the terms of the Apache 2.0 license.
+
+# Pulumi Go Infrastructure
+
+This directory contains the Pulumi infrastructure code written in Go. Pulumi enables infrastructure as code using general-purpose programming languages, offering an alternative to Terraform's HCL syntax.
+
+## Features
+
+- Kubernetes resources provisioning
+- Component-based architecture for reusability
+- Full feature parity with the Terraform implementation
+
+## Getting Started
+
+1. Ensure you have Pulumi CLI installed
+2. Configure your Pulumi backend (local or cloud)
+3. Navigate to this directory
+4. Run `pulumi up` to deploy resources
+
+## Development Workflow
+
+1. Make changes to the Go code in this directory
+2. Build and test using: `skaffold build -m pulumi-go -p dev`
+3. Run the deployment: `skaffold run -m pulumi-go -p dev`
+4. Verify the deployment: `skaffold verify -m pulumi-go -p dev`
+
+## Project Structure
+
+- `main.go` - Entry point for Pulumi program
+- `components/` - Reusable infrastructure components
+- `resources/` - Kubernetes resource definitions
+
+## Notes
+
+- The implementation maintains feature parity with the Terraform implementation in `terraform_dev_local/`
+- Always run `skaffold build` and ensure it's successful before proceeding with other commands 

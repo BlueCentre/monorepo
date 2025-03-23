@@ -168,4 +168,48 @@ This will:
 1. Disable Istio injection on the namespace using a Kubernetes job
 2. Deploy the application without Istio resources
 
-This approach ensures that all validation and setup steps are handled by Kubernetes jobs within the cluster, making it consistent across all environments from local development to CI/CD pipelines. 
+This approach ensures that all validation and setup steps are handled by Kubernetes jobs within the cluster, making it consistent across all environments from local development to CI/CD pipelines.
+
+## DNS Integration with External-DNS
+
+The template application supports automatic DNS record creation for Istio Gateways using external-dns.
+
+### Prerequisites
+
+- External-DNS deployed in your cluster with the following configuration:
+  - `--source=istio-gateway` added to the sources
+  - Domain filter configured if needed (e.g., `--domain-filter=yourdomain.com`)
+  - Proper RBAC permissions to access Istio Gateway resources
+
+### Configuration
+
+The Istio Gateway and VirtualService resources are already configured with the necessary annotations:
+
+```yaml
+annotations:
+  external-dns.alpha.kubernetes.io/hostname: "your-api-hostname.example.com"
+  external-dns.alpha.kubernetes.io/sync-enabled: "true"
+```
+
+When you deploy using the `istio-rate-limit` profile, these resources are created and external-dns will automatically create DNS records pointing to your Istio ingress gateway's external IP address.
+
+### Troubleshooting
+
+If DNS records aren't being created:
+
+1. Verify external-dns has `istio-gateway` in its sources:
+   ```bash
+   kubectl get deployment -n external-dns -o yaml | grep -A 20 args
+   ```
+
+2. Check external-dns logs for errors:
+   ```bash
+   kubectl logs -n external-dns $(kubectl get pods -n external-dns -l app=external-dns -o name | head -n 1)
+   ```
+
+3. Confirm the Gateway resource exists and has the proper annotations:
+   ```bash
+   kubectl get gateway -n template-fastapi-app -o yaml
+   ```
+
+For more detailed information about external-dns configuration, see the [EXTERNAL-DNS.md](EXTERNAL-DNS.md) documentation. 

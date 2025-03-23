@@ -3,6 +3,9 @@ kind: VirtualService
 metadata:
   name: template-fastapi-app
   namespace: template-fastapi-app
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
 spec:
   hosts:
   - "template-fastapi-app.template-fastapi-app.svc.cluster.local"

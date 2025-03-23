@@ -1,0 +1,48 @@
+# Prometheus Values
+prometheus:
+  server:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    retention: 1d
+    persistentVolume:
+      enabled: false  # Disable PV for local development
+  alertmanager:
+    enabled: false  # Disable in local dev
+  nodeExporter:
+    enabled: false  # Not needed for local
+
+# Grafana Values
+grafana:
+  admin:
+    existingSecret: grafana-admin-credentials
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: false  # Disable PV for local development
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-server
+          access: proxy
+          isDefault: true
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default

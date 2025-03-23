@@ -1,0 +1,7 @@
+name: pulumi_dev_local
+description: A Go program to deploy a Helm chart onto a Kubernetes cluster
+runtime: go
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: helm-kubernetes-go

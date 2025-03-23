@@ -1,0 +1,250 @@
+name: pulumi-dev-local
+runtime: yaml
+description: Local development environment for Kubernetes using Pulumi
+
+variables:
+  region:
+    type: string
+    default: "us-central1"
+  certManagerEnabled:
+    type: boolean
+    default: true
+  openTelemetryEnabled:
+    type: boolean
+    default: true
+  istioEnabled:
+    type: boolean
+    default: true
+  argocdEnabled:
+    type: boolean
+    default: false
+  telepresenceEnabled:
+    type: boolean
+    default: false
+  externalSecretsEnabled:
+    type: boolean
+    default: true
+  externalDnsEnabled:
+    type: boolean
+    default: true
+  datadogEnabled:
+    type: boolean
+    default: false
+  teardown:
+    type: boolean
+    default: false
+  kubernetesContext:
+    type: string
+    default: "colima"
+
+resources:
+  # Kubernetes Provider
+  kubernetesProvider:
+    type: pulumi:providers:kubernetes
+    properties:
+      context: colima
+      enableServerSideApply: true
+
+  # Cert Manager Helm Chart
+  certManager:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: cert-manager
+      version: "v1.17.0"
+      repositoryOpts:
+        repo: https://charts.jetstack.io
+      name: cert-manager
+      namespace: cert-manager
+      createNamespace: true
+      values:
+        global:
+          leaderElection:
+            namespace: cert-manager
+        crds:
+          enabled: true
+          keep: true
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
+
+  # OpenTelemetry Operator Helm Chart
+  opentelemetryOperator:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: opentelemetry-operator
+      version: "0.79.0"
+      repositoryOpts:
+        repo: https://open-telemetry.github.io/opentelemetry-helm-charts
+      name: opentelemetry-operator
+      namespace: opentelemetry
+      createNamespace: true
+      values:
+        crds:
+          create: true
+        manager:
+          collectorImage:
+            repository: "otel/opentelemetry-collector-k8s"
+          leaderElection:
+            enabled: true
+        admissionWebhooks:
+          create: true
+          certManager:
+            enabled: true
+          autoGenerateCert:
+            enabled: true
+            recreate: true
+            certPeriodDays: 365
+
+  # OpenTelemetry Collector Helm Chart
+  opentelemetryCollector:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: opentelemetry-collector
+      version: "0.79.0"
+      repositoryOpts:
+        repo: https://open-telemetry.github.io/opentelemetry-helm-charts
+      name: opentelemetry-collector
+      namespace: opentelemetry
+      createNamespace: true
+      values:
+        mode: deployment
+        replicaCount: 1
+        presets:
+          clusterMetrics:
+            enabled: true
+
+  # Istio Base Helm Chart
+  istioBase:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: base
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-base
+      namespace: istio-system
+      createNamespace: true
+      values:
+        base:
+          enableIstioConfigCRDs: true
+        defaultRevision: default
+
+  # Istio CNI Helm Chart
+  istioCni:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: cni
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-cni
+      namespace: istio-system
+      createNamespace: false
+      values:
+        cniBinDir: "/home/kubernetes/bin"
+
+  # Istio Control Plane (istiod) Helm Chart
+  istiod:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: istiod
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istiod
+      namespace: istio-system
+      createNamespace: false
+      values: {}
+
+  # Istio Ingress Gateway Helm Chart
+  istioIngressGateway:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: gateway
+      version: "1.23.3"
+      repositoryOpts:
+        repo: https://istio-release.storage.googleapis.com/charts
+      name: istio-ingressgateway
+      namespace: istio-system
+      createNamespace: false
+      values:
+        service:
+          type: ClusterIP # Use ClusterIP for local development
+          ports:
+            - port: 80
+              name: http2
+              targetPort: 8080
+            - port: 443
+              name: https
+              targetPort: 8443
+
+  # External Secrets Operator Helm Chart
+  externalSecrets:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: external-secrets
+      version: "0.14.4"
+      repositoryOpts:
+        repo: https://charts.external-secrets.io
+      name: external-secrets
+      namespace: external-secrets
+      createNamespace: true
+      values:
+        installCRDs: true
+        leaderElect: true
+        crds:
+          createClusterExternalSecret: true
+          createClusterSecretStore: true
+        serviceAccount:
+          create: true
+        webhook:
+          create: false
+        certController:
+          create: false
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "512Mi"
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+    options:
+      ignoreChanges:
+        - skipAwait
+
+  # External DNS Helm Chart
+  externalDns:
+    type: kubernetes:helm.sh/v3:Release
+    properties:
+      chart: external-dns
+      version: "1.15.0"
+      repositoryOpts:
+        repo: https://kubernetes-sigs.github.io/external-dns/
+      name: external-dns
+      namespace: external-dns
+      createNamespace: true
+      values:
+        provider: cloudflare
+        env:
+          - name: CF_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: cf-secret
+                key: cloudflare-api-key
+        txtOwnerId: bluecentre-dev
+        policy: sync
+        interval: 30m
+        triggerLoopOnEvent: true
+        annotationFilter: "external-dns.alpha.kubernetes.io/sync-enabled in (true)"
+        sources:
+          - istio-gateway
+    options:
+      ignoreChanges:
+        - skipAwait
+
+outputs:
+  status:
+    value: "Local development environment is configured with essential Kubernetes components."
+  teardown_status:
+    value: "Teardown mode enabled, resources will be removed."
+    condition: ${teardown}

@@ -21,7 +21,7 @@ The configuration allows developers to selectively enable and deploy:
 | **OpenTelemetry** | Application monitoring and distributed tracing | ✅ Active | 
 | **Argo CD** | GitOps continuous delivery tool | ✅ Active |
 | **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
-| **External Secrets** | Integration with external secret management systems | 🔄 Inactive |
+| **External Secrets** | Integration with external secret management systems | ✅ Active |
 | **External DNS** | Automated DNS configuration | 🔄 Inactive |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
 
@@ -44,28 +44,52 @@ The configuration allows developers to selectively enable and deploy:
 
 2. **Configure Components**:
 
-   Edit `terraform.auto.tfvars` to enable the components you need:
+   Edit `terraform.auto.tfvars` to enable or disable the components you need:
 
    ```terraform
+   # Active components
    cert_manager_enabled = true
+   external_secrets_enabled = true
    opentelemetry_enabled = true
    istio_enabled = true
-   # argocd_enabled = true  # Uncomment to enable
+   
+   # Inactive components
+   # external_dns_enabled = true
+   # datadog_enabled = true
+   # telepresence_enabled = true
+   # argocd_enabled = true
    ```
 
-3. **Apply Configuration**:
+3. **Activate Component Configuration Files**:
+
+   Some components have their Terraform files marked as inactive with a `.inactive` extension.
+   When enabling such components, you need to activate their configuration files:
+
+   ```bash
+   # To enable a component with an inactive file (example: external-secrets)
+   cp helm_external_secrets.tf.inactive helm_external_secrets.tf
+   
+   # To disable a currently active component
+   mv helm_component_name.tf helm_component_name.tf.inactive
+   ```
+
+   This step is important because the `.tf` files contain the actual Helm chart deployment
+   configurations, while the variables in `terraform.auto.tfvars` control whether these 
+   deployments should be active.
+
+4. **Apply Configuration**:
 
    ```bash
    terraform apply
    ```
 
-4. **Verify Installation**:
+5. **Verify Installation**:
 
    ```bash
    kubectl get pods --all-namespaces
    ```
 
-5. **Clean Up When Done**:
+6. **Clean Up When Done**:
 
    ```bash
    # Set teardown = true in terraform.auto.tfvars
@@ -148,4 +172,55 @@ Feel free to enhance this Terraform configuration with additional components or 
 
 ## License
 
-This project is licensed under the terms of the Apache 2.0 license. 
+This project is licensed under the terms of the Apache 2.0 license.
+
+# Terraform Development Local Infrastructure
+
+This directory contains infrastructure as code (IaC) managed by Terraform.
+
+## Workflow
+
+Infrastructure as code uses native Terraform workflows directly:
+
+1. **Initialize**: One-time setup of your Terraform environment
+   ```
+   cd terraform_dev_local
+   terraform init
+   ```
+
+2. **Plan**: Preview changes before applying
+   ```
+   terraform plan
+   ```
+
+3. **Apply**: Apply the infrastructure changes
+   ```
+   terraform apply
+   ```
+
+4. **Verify**: Ensure the deployed resources are working correctly
+   ```
+   terraform output [output-name]
+   ```
+
+5. **Clean Up**: When needed, destroy the created resources
+   ```
+   terraform destroy
+   ```
+
+## Project Structure
+
+- `main.tf` - Entry point for infrastructure definition
+- `modules/` - Reusable Terraform modules
+- `variables.tf` - Input variable definitions
+- `outputs.tf` - Output variable definitions
+- `terraform.tfvars` - Variable values for local development
+
+## Feature Parity
+
+This Terraform implementation maintains feature parity with the Pulumi implementation in `pulumi_dev_local`.
+
+## Note
+
+- Infrastructure as code uses its own native workflows and does NOT use Skaffold or Bazel
+- Application deployment is handled separately using application-specific workflows 
