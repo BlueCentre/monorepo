@@ -1,4 +1,5 @@
 config:
+  kubernetes:context: colima
   dev-local-infrastructure:region: "us-central1"
   dev-local-infrastructure:cert_manager_enabled: "true"
   dev-local-infrastructure:external_secrets_enabled: "true"
@@ -9,6 +10,7 @@ config:
   dev-local-infrastructure:telepresence_enabled: "false"
   dev-local-infrastructure:istio_enabled: "true"
   dev-local-infrastructure:argocd_enabled: "false"
+  dev-local-infrastructure:cnpg_enabled: "true"
   dev-local-infrastructure:teardown: "false"
   dev-local-infrastructure:kubernetes_context: "colima"
   dev-local-infrastructure:cert_manager_version: "v1.17.0"
@@ -16,8 +18,8 @@ config:
   dev-local-infrastructure:external_dns_version: "1.15.0"
   dev-local-infrastructure:opentelemetry_version: "0.79.0"
   dev-local-infrastructure:istio_version: "1.23.3"
+  dev-local-infrastructure:cnpg_version: "0.23.2"
   dev-local-infrastructure:cloudflare_api_token: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
-  kubernetes:context: colima
   monitoring:namespace: monitoring
   database:namespace: database
   ingress:namespace: ingress-nginx
