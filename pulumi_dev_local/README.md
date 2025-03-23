@@ -22,7 +22,7 @@ The configuration allows developers to selectively enable and deploy:
 | **Argo CD** | GitOps continuous delivery tool | ✅ Active |
 | **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
 | **External Secrets** | Integration with external secret management systems | ✅ Active |
-| **External DNS** | Automated DNS configuration | 🔄 Inactive |
+| **External DNS** | Automated DNS configuration | ✅ Active |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
 
 ## Modular Structure
