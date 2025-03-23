@@ -33,15 +33,22 @@ This monorepo contains multiple projects with different technologies:
 monorepo/
 ├── projects/                 # All projects organized by category
 │   ├── base/                 # Base project templates and utilities
+│   │   └── base_fastapi_app/ # Base FastAPI project to extend
+│   ├── bazel/                # Bazel-specific project examples
+│   ├── go/                   # Go language projects
+│   │   └── devops_go_app/    # Simple Go application example
 │   ├── java/                 # Java applications and libraries
 │   │   ├── simple_java_app/  # Basic Java application
-│   │   └── java_web_server/  # Simple HTTP server in Java
+│   │   ├── example1_java_app/# Java example application 1
+│   │   ├── example2_java_app/# Java example application 2
+│   │   ├── hello_springboot_app/ # Spring Boot hello world application
+│   │   └── rs_springboot_app/    # Spring Boot RESTful service application
 │   ├── py/                   # Python applications and libraries
-│   │   ├── calculator_cli_app/      # CLI calculator utility
-│   │   ├── calculator_flask_app/    # Flask calculator web app
-│   │   ├── devops_fastapi_app/      # FastAPI app with DevOps features
-│   │   ├── echo_fastapi_app/        # Simple FastAPI application
-│   │   └── helloworld_py_app/       # Basic Python application
+│   │   ├── calculator_cli_py_app/  # CLI calculator utility
+│   │   ├── calculator_flask_app/   # Flask calculator web app
+│   │   ├── devops_fastapi_app/     # FastAPI app with DevOps features
+│   │   ├── echo_fastapi_app/       # Simple FastAPI application
+│   │   └── helloworld_py_app/      # Basic Python application
 │   ├── template/             # Project templates
 │   │   ├── template_fastapi_app/    # FastAPI application template with PostgreSQL and Istio
 │   │   ├── template_gin_app/        # Gin (Go) application template
@@ -73,12 +80,19 @@ monorepo/
 | [terraform_dev_local](./terraform_dev_local) | Local development environment with essential K8s components | Terraform, Kubernetes, Helm | ✅ Active |
 | [pulumi_dev_local](./pulumi_dev_local) | Local development environment with essential K8s components (YAML) | Pulumi, Kubernetes, Helm | ✅ Active |
 | [echo_fastapi_app](./projects/py/echo_fastapi_app) | Simple FastAPI application | Python, FastAPI | ✅ Active |
-| [calculator_cli_app](./projects/py/calculator_cli_py_app) | Command-line calculator utility | Python | ✅ Active |
+| [calculator_cli_py_app](./projects/py/calculator_cli_py_app) | Command-line calculator utility | Python | ✅ Active |
 | [devops_fastapi_app](./projects/py/devops_fastapi_app) | FastAPI application with DevOps features | Python, FastAPI | ✅ Active |
 | [calculator_flask_app](./projects/py/calculator_flask_app) | Flask-based calculator web application | Python, Flask | ✅ Active |
 | [helloworld_py_app](./projects/py/helloworld_py_app) | Basic Python application | Python | ✅ Active |
 | [template_gin_app](./projects/template/template_gin_app) | Gin application template | Go, Gin | ✅ Active |
 | [template_typer_app](./projects/template/template_typer_app) | Typer CLI application template | Python, Typer | ✅ Active |
+| [simple_java_app](./projects/java/simple_java_app) | Basic Java application | Java | ✅ Active |
+| [hello_springboot_app](./projects/java/hello_springboot_app) | Spring Boot hello world application | Java, Spring Boot | ✅ Active |
+| [rs_springboot_app](./projects/java/rs_springboot_app) | Spring Boot RESTful service application | Java, Spring Boot, REST | ✅ Active |
+| [base_fastapi_app](./projects/base/base_fastapi_app) | Base FastAPI project to extend | Python, FastAPI | ✅ Active |
+| [devops_go_app](./projects/go/devops_go_app) | Simple Go application example | Go | ✅ Active |
+| [microservices-demo](./projects/microservices-demo) | Microservices demonstration projects | Various | ✅ Active |
+| [opentelemetry-demo](./projects/opentelemetry-demo) | OpenTelemetry demonstration projects | Various | ✅ Active |
 
 ## Featured Project: FastAPI Template App
 
@@ -144,10 +158,12 @@ The [terraform_dev_local](./terraform_dev_local) directory provides a powerful t
 
 #### Key Components
 
-- **Cert Manager**: Automated SSL certificate management.
-- **Istio**: Full-featured service mesh for microservices.
-- **OpenTelemetry**: Comprehensive observability stack.
-- **Argo CD**: GitOps continuous delivery.
+- **Cert Manager** (v1.17.0): Automated SSL certificate management.
+- **External Secrets** (v0.14.4): Integration with external secret management systems.
+- **External DNS** (v1.15.0): Automated DNS configuration.
+- **OpenTelemetry** (v0.79.0): Comprehensive observability stack.
+- **Istio** (v1.23.3): Full-featured service mesh for microservices.
+- **Argo CD** (v7.8.2): GitOps continuous delivery.
 - **Telepresence**: Seamless local development with remote clusters.
 
 #### Quick Start
@@ -183,9 +199,12 @@ The [pulumi_dev_local](./pulumi_dev_local) directory provides an alternative imp
 
 #### Key Components
 
-- **Cert Manager**: Automated SSL certificate management
-- **OpenTelemetry Stack**: Complete observability solution with Operator and Collector
-- **Istio**: Full-featured service mesh with Base, CNI, Control Plane (istiod), and Ingress Gateway
+- **Cert Manager** (v1.17.0): Automated SSL certificate management
+- **External Secrets** (v0.14.4): Integration with external secret management systems
+- **External DNS** (v1.15.0): Automated DNS configuration
+- **OpenTelemetry Stack** (v0.79.0): Complete observability solution with Operator and Collector
+- **Istio** (v1.23.3): Full-featured service mesh with Base, CNI, Control Plane (istiod), and Ingress Gateway
+- **Argo CD** (v7.8.2): GitOps continuous delivery tool
 
 #### Quick Start
 
@@ -217,16 +236,16 @@ This monorepo provides two options for managing your local Kubernetes infrastruc
 
 The following components can be enabled or disabled in both Terraform and Pulumi configurations:
 
-| Component | Description |
-|-----------|-------------|
-| cert-manager | Automates certificate management |
-| external-secrets | Manages external secrets (e.g., from cloud providers) |
-| external-dns | Synchronizes Kubernetes Ingress with DNS providers |
-| opentelemetry | Provides telemetry and observability |
-| datadog | Monitoring and observability platform |
-| telepresence | Local development tool for Kubernetes microservices |
-| istio | Service mesh for traffic management, security, and observability |
-| argocd | GitOps continuous delivery tool |
+| Component | Description | Terraform Version | Pulumi Version |
+|-----------|-------------|------------------|----------------|
+| cert-manager | Automates certificate management | v1.17.0 | v1.17.0 |
+| external-secrets | Manages external secrets (e.g., from cloud providers) | v0.14.4 | v0.14.4 |
+| external-dns | Synchronizes Kubernetes Ingress with DNS providers | v1.15.0 | v1.15.0 |
+| opentelemetry | Provides telemetry and observability | v0.79.0 | v0.79.0 |
+| datadog | Monitoring and observability platform | - | - |
+| telepresence | Local development tool for Kubernetes microservices | - | - |
+| istio | Service mesh for traffic management, security, and observability | v1.23.3 | v1.23.3 |
+| argocd | GitOps continuous delivery tool | v7.8.2 | v7.8.2 |
 
 ### Enabling/Disabling Components in Terraform
 
