@@ -246,6 +246,7 @@ The following components can be enabled or disabled in both Terraform and Pulumi
 | istio | Service mesh for traffic management, security, and observability | v1.23.3 | v1.23.3 |
 | argocd | GitOps continuous delivery tool | v7.8.2 | v7.8.2 |
 | telepresence | Local development tool for Kubernetes microservices | - | - |
+| cnpg | PostgreSQL operator for Kubernetes | v0.23.2 | v0.23.2 |
 
 ### Enabling/Disabling Components in Terraform
 
