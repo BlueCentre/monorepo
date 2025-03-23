@@ -128,6 +128,11 @@ variable "argocd_enabled" {
   default = false
 }
 
+variable "cnpg_enabled" {
+  type    = bool
+  default = true
+}
+
 
 variable "workspace_bootstrapped" {
   description = "Value is true if the workspace has been bootstrapped"
@@ -146,4 +151,10 @@ variable "kubernetes_context" {
   description = "Set to kubernetes context"
   type        = string
   default     = "colima"
+}
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token"
+  type        = string
+  default     = "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
 }

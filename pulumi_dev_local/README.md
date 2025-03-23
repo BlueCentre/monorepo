@@ -24,6 +24,7 @@ The configuration allows developers to selectively enable and deploy:
 | **External Secrets** | Integration with external secret management systems | ✅ Active |
 | **External DNS** | Automated DNS configuration | ✅ Active |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
+| **CloudNativePG** | Kubernetes operator for PostgreSQL database clusters | ✅ Active |
 
 ## Modular Structure
 
@@ -41,13 +42,15 @@ pulumi_dev_local/
 │   ├── istio.yaml          # Istio component
 │   ├── argocd.yaml         # Argo CD component
 │   ├── telepresence.yaml   # Telepresence component
-│   └── external-secrets.yaml # External Secrets component
+│   ├── external-secrets.yaml # External Secrets component
+│   └── cnpg.yaml           # CloudNativePG component
 ├── values/                 # Helm chart values
 │   ├── cert-manager.yaml   # Cert Manager values
 │   ├── external-dns.yaml   # External DNS values
 │   ├── external-secrets.yaml # External Secrets values
 │   ├── istio.yaml          # Istio values
-│   └── monitoring.yaml     # Prometheus/Grafana values
+│   ├── monitoring.yaml     # Prometheus/Grafana values
+│   └── cnpg.yaml           # CloudNativePG values
 └── README.md               # Documentation
 ```
 
@@ -82,6 +85,7 @@ This Pulumi setup allows you to easily enable or disable components through conf
      pulumi-dev-local:telepresence_enabled: "false"
      pulumi-dev-local:external_dns_enabled: "false"
      pulumi-dev-local:datadog_enabled: "false"
+     pulumi-dev-local:cnpg_enabled: "true"
    ```
 
    Set a component to `"true"` to enable it or `"false"` to disable it.
@@ -99,6 +103,9 @@ This Pulumi setup allows you to easily enable or disable components through conf
        type: boolean
        default: true
      externalSecretsEnabled:
+       type: boolean
+       default: true
+     cnpgEnabled:
        type: boolean
        default: true
    ```
