@@ -70,7 +70,7 @@ spec:
     fake:
       data:
       - key: "CLOUDFLARE_API_TOKEN"
-        value: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
+        value: "${var.cloudflare_api_token}"
         version: "v1"
 EOF
   depends_on = [helm_release.external_secrets]

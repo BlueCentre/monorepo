@@ -38,6 +38,7 @@ func main() {
 		ingressEnabled := conf.GetBool("ingress_controller_enabled")
 		argocdEnabled := conf.GetBool("argocd_enabled")
 		telepresenceEnabled := conf.GetBool("telepresence_enabled")
+		cnpgEnabled := conf.GetBool("cnpg_enabled")
 
 		// Setup base components
 		var certManagerRelease pulumi.Resource
@@ -100,6 +101,13 @@ func main() {
 		// Database setup
 		if databaseEnabled {
 			if err := applications.DeployDatabase(ctx, k8sProvider); err != nil {
+				return err
+			}
+		}
+
+		// CloudNativePG setup
+		if cnpgEnabled {
+			if _, err := applications.DeployCloudNativePG(ctx, k8sProvider); err != nil {
 				return err
 			}
 		}

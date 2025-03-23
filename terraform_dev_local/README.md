@@ -22,8 +22,9 @@ The configuration allows developers to selectively enable and deploy:
 | **Argo CD** | GitOps continuous delivery tool | ✅ Active |
 | **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
 | **External Secrets** | Integration with external secret management systems | ✅ Active |
-| **External DNS** | Automated DNS configuration | 🔄 Inactive |
+| **External DNS** | Automated DNS configuration | ✅ Active |
 | **Datadog** | Application monitoring and analytics | 🔄 Inactive |
+| **CloudNativePG** | Kubernetes operator for PostgreSQL database clusters | ✅ Active |
 
 ## Getting Started
 
@@ -52,6 +53,7 @@ The configuration allows developers to selectively enable and deploy:
    external_secrets_enabled = true
    opentelemetry_enabled = true
    istio_enabled = true
+   cnpg_enabled = true
    
    # Inactive components
    # external_dns_enabled = true

@@ -1,0 +1,34 @@
+# CloudNativePG operator configuration
+cnpg_enabled: true
+cnpg_version: "0.23.2"
+cnpg:
+  namespace: "cnpg-system"
+  create_namespace: true
+  chart_name: "cloudnative-pg"
+  repository_url: "https://cloudnative-pg.github.io/charts"
+  values:
+    config:
+      clusterWide: true
+    webhook:
+      timeoutSeconds: 30
+      certManager:
+        enabled: true
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      fsGroup: 65534
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi" 
