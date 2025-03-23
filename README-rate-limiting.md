@@ -17,7 +17,7 @@ Rate limiting is a critical feature for protecting APIs from abuse and ensuring 
 
 1. Install Istio with the demo profile:
    ```bash
-   istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.25.0 -y
+   istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3 -y
    ```
 
 2. Enable Istio injection for your namespace:

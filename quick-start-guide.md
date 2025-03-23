@@ -7,12 +7,12 @@ This guide shows how to run the application with and without Istio rate limiting
 1. Kubernetes cluster (local or remote)
 2. Docker installed and running
 3. Skaffold installed
-4. Istio CLI (istioctl) installed
+4. Istio CLI (istioctl) installed (version 1.23.3 recommended)
 
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/monorepo.git
+git clone https://github.com/BlueCentre/monorepo.git
 cd monorepo
 ```
 

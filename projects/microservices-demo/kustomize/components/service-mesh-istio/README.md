@@ -136,7 +136,7 @@ Cloud Service Mesh (CSM) provides a service mesh experience that includes a full
 
    ```sh
    # Install istio 1.17 or above
-   istioctl install --set profile=minimal -y
+   istioctl install --set profile=minimal --set hub=docker.io/istio --set tag=1.23.3 -y
 
    # Enable sidecar injection for Kubernetes namespace(s) where microservices-demo is deployed
    kubectl label namespace default istio-injection=enabled
@@ -236,62 +236,3 @@ Once the service mesh and namespace injection are configured, you can then deplo
 
    The output should be similar to:
    ```
-   NAME                                         READY   STATUS    RESTARTS   AGE
-   pod/adservice-6cbd9794f9-8c4gv               2/2     Running   0          47s
-   pod/cartservice-667bbd5f6-84j8v              2/2     Running   0          47s
-   pod/checkoutservice-547557f445-bw46n         2/2     Running   0          47s
-   pod/currencyservice-6bd8885d9c-2cszv         2/2     Running   0          47s
-   pod/emailservice-64997dcf97-8fpsd            2/2     Running   0          47s
-   pod/frontend-c54778dcf-wbgmr                 2/2     Running   0          46s
-   pod/istio-gateway-istio-8577b948c6-cxl8j     1/1     Running   0          45s
-   pod/loadgenerator-ccfd4d598-jh6xj            2/2     Running   0          46s
-   pod/paymentservice-79b77cd7c-6hth7           2/2     Running   0          46s
-   pod/productcatalogservice-5f75795545-nk5wv   2/2     Running   0          46s
-   pod/recommendationservice-56dd4c7df5-gnwwr   2/2     Running   0          46s
-   pod/redis-cart-799c85c644-pxsvt              2/2     Running   0          46s
-   pod/shippingservice-64f8df74f5-7wllf         2/2     Running   0          45s
-
-   NAME                                              CLASS   ADDRESS          READY   AGE
-   gateway.gateway.networking.k8s.io/istio-gateway   istio   35.247.123.146   True    45s
-
-   NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                        AGE
-   service/adservice               ClusterIP      10.68.231.142   <none>           9555/TCP                       49s
-   service/cartservice             ClusterIP      10.68.184.25    <none>           7070/TCP                       49s
-   service/checkoutservice         ClusterIP      10.68.177.213   <none>           5050/TCP                       49s
-   service/currencyservice         ClusterIP      10.68.249.87    <none>           7000/TCP                       49s
-   service/emailservice            ClusterIP      10.68.205.123   <none>           5000/TCP                       49s
-   service/frontend                ClusterIP      10.68.94.203    <none>           80/TCP                         48s
-   service/istio-gateway-istio     LoadBalancer   10.68.147.158   35.247.123.146   15021:30376/TCP,80:30332/TCP   45s
-   service/kubernetes              ClusterIP      10.68.0.1       <none>           443/TCP                        65m
-   service/paymentservice          ClusterIP      10.68.114.19    <none>           50051/TCP                      48s
-   service/productcatalogservice   ClusterIP      10.68.240.153   <none>           3550/TCP                       48s
-   service/recommendationservice   ClusterIP      10.68.117.97    <none>           8080/TCP                       48s
-   service/redis-cart              ClusterIP      10.68.189.126   <none>           6379/TCP                       48s
-   service/shippingservice         ClusterIP      10.68.221.62    <none>           50051/TCP                      48s
-   ```
-
-1. Find the external IP address of your Istio gateway.
-
-   ```sh
-   INGRESS_HOST="$(kubectl get gateway istio-gateway \
-       -o jsonpath='{.status.addresses[*].value}')"
-   ```
-
-1. Navigate to the frontend in a web browser.
-
-   ```
-   http://$INGRESS_HOST
-   ```
-
-# Additional service mesh demos using Online Boutique 
-
-- [Canary deployment](https://github.com/GoogleCloudPlatform/istio-samples/tree/master/istio-canary-gke)
-- [Security (mTLS, JWT, Authorization)](https://github.com/GoogleCloudPlatform/istio-samples/tree/master/security-intro)
-- [Cloud Operations (Stackdriver)](https://github.com/GoogleCloudPlatform/istio-samples/tree/master/istio-stackdriver)
-- [Stackdriver metrics (Open source Istio)](https://github.com/GoogleCloudPlatform/istio-samples/tree/master/stackdriver-metrics)
-
-# Related resources
-
-- [Deploying classic istio-ingressgateway in ASM](https://cloud.google.com/service-mesh/docs/gateways#deploy_gateways)
-- [Uninstall Istio via istioctl](https://istio.io/latest/docs/setup/install/istioctl/#uninstall-istio)
-- [Uninstall Cloud Service Mesh](https://cloud.google.com/service-mesh/docs/uninstall)
