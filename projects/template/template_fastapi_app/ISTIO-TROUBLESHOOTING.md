@@ -25,7 +25,7 @@ kubectl get pods -n template-fastapi-app -o jsonpath='{.items[*].spec.containers
 **Resolution Steps:**
 1. Deploy the Istio control plane components:
    ```bash
-   istioctl install --set profile=demo
+   istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3
    ```
 2. Verify the Istio control plane is running:
    ```bash
@@ -137,7 +137,7 @@ After addressing all the issues above, follow this workflow to verify that rate 
 
 1. Deploy Istio control plane:
    ```bash
-   istioctl install --set profile=demo
+   istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3
    ```
 
 2. Deploy the application with Istio rate limiting:

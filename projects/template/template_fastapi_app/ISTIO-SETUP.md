@@ -16,7 +16,7 @@ We've implemented a comprehensive rate limiting solution using Istio service mes
 - Kubernetes cluster with kubectl configured
 - Skaffold installed
 - Bazel installed
-- For Istio deployment: Istio installed on the cluster
+- For Istio deployment: Istio (version 1.23.3) installed on the cluster
 
 ## Deployment Options
 
@@ -136,7 +136,7 @@ With rate limiting enabled, you should see HTTP 429 (Too Many Requests) response
 
 ### Common Issues with Istio Deployment
 
-1. **Istio not installed**: Install Istio with `istioctl install --set profile=demo`
+1. **Istio not installed**: Install Istio with `istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3`
 2. **Rate limiting not working**: Ensure the namespace has Istio injection enabled with `kubectl get namespace template-fastapi-app --show-labels`
 3. **429 errors when not expected**: Check the rate limit configuration in `kubernetes/istio/rate-limiting.yaml`
 4. **Istio resources not deploying**: Verify that Istio is installed in your cluster

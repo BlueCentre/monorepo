@@ -599,7 +599,7 @@ If you encounter issues during any step, here are common problems and solutions:
 5. **Istio-related deployment failures**
    - If using `istio-rate-limit-actions` profile when Istio is not installed:
      - Switch to `no-istio` profile: `skaffold run -m template-fastapi-app -p no-istio`
-   - If Istio is needed: Install it with `istioctl install --set profile=demo`
+   - If Istio is needed: Install it with `istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3`
 
 #### Verification Issues
 
