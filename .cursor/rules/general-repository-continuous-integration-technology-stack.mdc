@@ -8,10 +8,10 @@ alwaysApply: true
 
 1. Colima for local kubernetes cluster management on macos
 2. Bazel for building, testing and packaging docker images
-3. Skaffold for development workflow orchestration and a replacement for docker-compose
-4. Sonarcube is used for code quality assurance
-5. Terraform for infrastructure as code used to deploy helm charts to the local kubernetes cluster
-6. Pulumi for infrastructure as code using general-purpose programming languages
+3. Skaffold for application development workflow orchestration and a replacement for docker-compose
+4. Terraform for infrastructure as code using HCL
+5. Pulumi for infrastructure as code using general-purpose programming languages (Go)
+6. Sonarcube is used for code quality assurance
 7. Always use best practice and latest versions for these tools
 8. Never downgrade schema or tool versions to resolve issues
 9. Never deviate from our defined guidance or architecture without confirmation 

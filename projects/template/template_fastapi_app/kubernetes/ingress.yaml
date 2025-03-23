@@ -5,16 +5,19 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
 spec:
   rules:
-  - host: api.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: template-fastapi-app
-            port:
-              number: 80
-# Removed Jaeger UI ingress as we're now using Istio for tracing 
+    - host: api-james.ipv1337.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: template-fastapi-app
+                port:
+                  number: 80
+# Removed Jaeger UI ingress as we're now using Istio for tracing
+

@@ -4,11 +4,9 @@
 [![Documentation Status](https://img.shields.io/badge/docs-up--to--date-brightgreen)](https://github.com/BlueCentre/monorepo/wiki)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-A modern monorepo architecture using Bazel for building and testing multiple projects across different languages and frameworks. This repository contains reusable components, project templates, and production-ready applications organized in a structured way.
-
 ## Overview
 
-This monorepo contains multiple projects organized by language and purpose. It uses Bazel as the build system to ensure consistent, reproducible builds across all projects. The repository structure facilitates code sharing, standardization, and simplified dependency management across multiple applications and services.
+A monorepo built with Bazel that supports multiple languages and frameworks. Uses Skaffold for consistent local and CI/CD development workflows. Contains reusable components, templates, and production applications.
 
 ### Key Features
 
@@ -23,6 +21,13 @@ This monorepo contains multiple projects organized by language and purpose. It u
 - **Infrastructure as Code**: Terraform or Pulumi options to manage essential Kubernetes components
 
 ## Repository Structure
+
+This monorepo contains multiple projects with different technologies:
+- All projects are located in the `projects/` directory
+- Infrastructure as code is supported through both:
+  - Terraform (HCL) in `terraform_dev_local/`
+  - Pulumi (Go) in `pulumi_dev_local/`
+- Each technology stack maintains feature parity to provide flexibility in infrastructure management
 
 ```
 monorepo/
@@ -48,7 +53,7 @@ monorepo/
 ├── tools/                    # Development and build tools
 ├── docs/                     # Documentation files
 ├── terraform_dev_local/      # Terraform configurations for local development
-├── pulumi_dev_local/         # Pulumi YAML configurations for local development
+├── pulumi_dev_local/         # Pulumi configurations for local development
 ├── terraform_lab_gcp/        # Terraform configurations for GCP
 ├── .bazelignore              # Files and directories to ignore in Bazel builds
 ├── .bazelrc                  # Bazel configuration
@@ -98,6 +103,14 @@ The [FastAPI Template App](./projects/template/template_fastapi_app) provides a 
 - **Notes API**: Full-featured notes management with CRUD operations
 - **Items API**: Example API for managing items with owner relationships
 - **Seed Data Utilities**: Tools for generating test data for development and demos
+
+### Recent Improvements
+
+- Added Istio-based rate limiting with comprehensive configuration
+- Added automatic JWT key rotation for enhanced security
+- Enhanced database connection handling for Kubernetes environments
+- Added comprehensive verification and smoke tests for deployments
+- Updated documentation for rate limiting and Istio integration
 
 ### Getting Started
 
@@ -196,13 +209,100 @@ pulumi up
 
 For more details, see the [pulumi_dev_local README](./pulumi_dev_local/README.md).
 
-### Recent Improvements
+## Managing Infrastructure Components
 
-- Added Istio-based rate limiting with comprehensive configuration
-- Added automatic JWT key rotation for enhanced security
-- Enhanced database connection handling for Kubernetes environments
-- Added comprehensive verification and smoke tests for deployments
-- Updated documentation for rate limiting and Istio integration
+This monorepo provides two options for managing your local Kubernetes infrastructure components: Terraform and Pulumi. You can choose either based on your preference or team requirements. Both configurations support the same set of components that can be enabled or disabled based on your needs.
+
+### Available Components
+
+The following components can be enabled or disabled in both Terraform and Pulumi configurations:
+
+| Component | Description |
+|-----------|-------------|
+| cert-manager | Automates certificate management |
+| external-secrets | Manages external secrets (e.g., from cloud providers) |
+| external-dns | Synchronizes Kubernetes Ingress with DNS providers |
+| opentelemetry | Provides telemetry and observability |
+| datadog | Monitoring and observability platform |
+| telepresence | Local development tool for Kubernetes microservices |
+| istio | Service mesh for traffic management, security, and observability |
+| argocd | GitOps continuous delivery tool |
+
+### Enabling/Disabling Components in Terraform
+
+1. Navigate to the `terraform_dev_local` directory:
+   ```bash
+   cd terraform_dev_local
+   ```
+
+2. Edit the `terraform.auto.tfvars` file to enable or disable components:
+   ```terraform
+   # Enable components by setting them to true
+   cert_manager_enabled = true
+   external_secrets_enabled = true 
+   
+   # Disable components by setting them to false or by commenting the line
+   # external_dns_enabled = true
+   ```
+
+3. For some components, you may need to rename the corresponding `.tf.inactive` file:
+   ```bash
+   # To enable a component that has an inactive file
+   cp helm_external_secrets.tf.inactive helm_external_secrets.tf
+   
+   # To disable a component that's currently active
+   mv helm_external_secrets.tf helm_external_secrets.tf.inactive
+   ```
+
+4. Apply the changes:
+   ```bash
+   terraform apply
+   ```
+
+### Enabling/Disabling Components in Pulumi
+
+1. Navigate to the `pulumi_dev_local` directory:
+   ```bash
+   cd pulumi_dev_local
+   ```
+
+2. Enable or disable components by updating the `Pulumi.dev.yaml` configuration:
+   ```yaml
+   config:
+     pulumi-dev-local:certManagerEnabled: "true"
+     pulumi-dev-local:external_secrets_enabled: "true"
+     pulumi-dev-local:external_dns_enabled: "false"
+   ```
+
+3. Alternatively, you can modify the defaults in `main.yaml`:
+   ```yaml
+   variables:
+     certManagerEnabled:
+       type: boolean
+       default: true
+     externalSecretsEnabled:
+       type: boolean
+       default: true
+   ```
+
+4. Apply the changes:
+   ```bash
+   pulumi up
+   ```
+
+### Example: Enabling External Secrets
+
+#### In Terraform:
+1. Set `external_secrets_enabled = true` in `terraform_dev_local/terraform.auto.tfvars`
+2. Ensure `helm_external_secrets.tf` exists (rename from `.tf.inactive` if needed)
+3. Run `terraform apply`
+
+#### In Pulumi:
+1. Set `pulumi-dev-local:external_secrets_enabled: "true"` in `pulumi_dev_local/Pulumi.dev.yaml`
+2. Ensure `externalSecretsEnabled` is set to `true` in `pulumi_dev_local/main.yaml`
+3. Run `pulumi up`
+
+Using these steps, you can customize your local Kubernetes environment by enabling only the components you need for your specific use case.
 
 ## Quick Start Guides
 

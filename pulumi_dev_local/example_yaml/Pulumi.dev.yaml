@@ -4,19 +4,12 @@ config:
   dev-local-infrastructure:external_secrets_enabled: "true"
   dev-local-infrastructure:external_dns_enabled: "true"
   dev-local-infrastructure:opentelemetry_enabled: "true"
-  dev-local-infrastructure:monitoring_enabled: "false"
   dev-local-infrastructure:datadog_enabled: "false"
   dev-local-infrastructure:telepresence_enabled: "false"
   dev-local-infrastructure:istio_enabled: "true"
   dev-local-infrastructure:argocd_enabled: "false"
   dev-local-infrastructure:teardown: "false"
   dev-local-infrastructure:kubernetes_context: "colima"
-  dev-local-infrastructure:cert_manager_version: "v1.17.0"
-  dev-local-infrastructure:external_secrets_version: "0.14.4"
-  dev-local-infrastructure:external_dns_version: "1.15.0"
-  dev-local-infrastructure:opentelemetry_version: "0.79.0"
-  dev-local-infrastructure:istio_version: "1.23.3"
-  dev-local-infrastructure:cloudflare_api_token: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
   kubernetes:context: colima
   monitoring:namespace: monitoring
   database:namespace: database

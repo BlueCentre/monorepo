@@ -1,0 +1,3 @@
+encryptionsalt: v1:GSXDbN3DFcg=:v1:hRAELoCLpiCFl/39:lDxe9/Rpotzgc87HNyHldTJYfPOKGg==
+config:
+  pulumi_dev_local:k8sNamespace: default
