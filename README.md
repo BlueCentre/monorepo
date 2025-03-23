@@ -22,6 +22,13 @@ A monorepo built with Bazel that supports multiple languages and frameworks. Use
 
 ## Repository Structure
 
+This monorepo contains multiple projects with different technologies:
+- All projects are located in the `projects/` directory
+- Infrastructure as code is supported through both:
+  - Terraform (HCL) in `terraform_dev_local/`
+  - Pulumi (Go) in `pulumi_dev_local/`
+- Each technology stack maintains feature parity to provide flexibility in infrastructure management
+
 ```
 monorepo/
 ├── projects/                 # All projects organized by category

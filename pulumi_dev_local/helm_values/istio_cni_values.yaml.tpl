@@ -1,1 +1,0 @@
-cniBinDir: ${cniBinDir}

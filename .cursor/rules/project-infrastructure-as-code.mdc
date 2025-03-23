@@ -11,7 +11,8 @@ alwaysApply: false
 - Maintain feature parity in terms of helm charts, helm values, and the state if enabled or disabled
 - Terraform apply is never in broken state
 - Pulumi up is never in broken state
-- Using basel or skaffold is not recommended or suitable for infrastructure as code
+- Do not use basel or skaffold since they are not suitable for infrastructure as code workflows
+- When developing new components, always destroy and recreate to fully validate completeness
 
 # Terraform Workflow & Command Reference
 

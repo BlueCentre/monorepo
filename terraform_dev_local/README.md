@@ -172,4 +172,55 @@ Feel free to enhance this Terraform configuration with additional components or 
 
 ## License
 
-This project is licensed under the terms of the Apache 2.0 license. 
+This project is licensed under the terms of the Apache 2.0 license.
+
+# Terraform Development Local Infrastructure
+
+This directory contains infrastructure as code (IaC) managed by Terraform.
+
+## Workflow
+
+Infrastructure as code uses native Terraform workflows directly:
+
+1. **Initialize**: One-time setup of your Terraform environment
+   ```
+   cd terraform_dev_local
+   terraform init
+   ```
+
+2. **Plan**: Preview changes before applying
+   ```
+   terraform plan
+   ```
+
+3. **Apply**: Apply the infrastructure changes
+   ```
+   terraform apply
+   ```
+
+4. **Verify**: Ensure the deployed resources are working correctly
+   ```
+   terraform output [output-name]
+   ```
+
+5. **Clean Up**: When needed, destroy the created resources
+   ```
+   terraform destroy
+   ```
+
+## Project Structure
+
+- `main.tf` - Entry point for infrastructure definition
+- `modules/` - Reusable Terraform modules
+- `variables.tf` - Input variable definitions
+- `outputs.tf` - Output variable definitions
+- `terraform.tfvars` - Variable values for local development
+
+## Feature Parity
+
+This Terraform implementation maintains feature parity with the Pulumi implementation in `pulumi_dev_local`.
+
+## Note
+
+- Infrastructure as code uses its own native workflows and does NOT use Skaffold or Bazel
+- Application deployment is handled separately using application-specific workflows 
