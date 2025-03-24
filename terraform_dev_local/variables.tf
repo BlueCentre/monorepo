@@ -158,3 +158,9 @@ variable "cloudflare_api_token" {
   type        = string
   default     = "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
 }
+
+variable "datadog_api_key" {
+  description = "Datadog API key"
+  type        = string
+  default     = "REPLACE_WITH_DATADOG_API_KEY"
+}
