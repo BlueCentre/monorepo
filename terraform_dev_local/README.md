@@ -225,4 +225,42 @@ This Terraform implementation maintains feature parity with the Pulumi implement
 ## Note
 
 - Infrastructure as code uses its own native workflows and does NOT use Skaffold or Bazel
-- Application deployment is handled separately using application-specific workflows 
+- Application deployment is handled separately using application-specific workflows
+
+## Component Details
+
+### External Secrets
+
+The External Secrets Operator (ESO) is a Kubernetes operator that integrates external secret management systems with Kubernetes. This implementation includes:
+
+- **External Secrets Operator** (v0.14.4): Core operator to manage external secrets
+- **Fake Secret Stores**: Simulated secret stores for development purposes:
+  - **Cloudflare Secret Store**: Created conditionally when both `external_secrets_enabled` and `external_dns_enabled` are set to `true`
+  - **Datadog Secret Store**: Created conditionally when both `external_secrets_enabled` and `datadog_enabled` are set to `true`
+
+External Secrets automatically creates Kubernetes secrets by fetching values from the configured secret stores. This implementation:
+
+1. Deploys the External Secrets Operator using the official Helm chart
+2. Creates secret stores for development purposes (no external secret management system needed)
+3. Configures ExternalSecret resources that fetch values from these stores
+
+#### Configuration
+
+In `terraform.auto.tfvars`:
+
+```terraform
+# Enable/disable the entire External Secrets component
+external_secrets_enabled = true
+# Enable/disable Cloudflare integration (affects Cloudflare secret store creation)
+external_dns_enabled = false
+# Enable/disable Datadog integration (affects Datadog secret store creation)
+datadog_enabled = false
+# Secret values used in the fake secret stores
+cloudflare_api_token = "your-api-token"
+datadog_api_key = "your-api-key"
+datadog_app_key = "your-app-key"
+```
+
+When using External Secrets with External DNS, the ExternalSecret automatically creates a Kubernetes secret containing the Cloudflare API token that External DNS uses for DNS record management. Similarly, when Datadog is enabled, it creates a secret with Datadog credentials. 
+
+With the recommended configuration above, the External Secrets Operator will be installed, but no secret stores will be created since both `external_dns_enabled` and `datadog_enabled` are set to `false`. 
