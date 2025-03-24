@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -86,9 +84,11 @@ func main() {
 			}
 		}
 
+		// Datadog setup
 		if datadogEnabled {
-			// TODO: Implement DataDog
-			fmt.Println("DataDog support not yet implemented")
+			if _, err := applications.DeployDatadog(ctx, k8sProvider); err != nil {
+				return err
+			}
 		}
 
 		// Service mesh setup
