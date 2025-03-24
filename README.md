@@ -239,10 +239,10 @@ The following components can be enabled or disabled in both Terraform and Pulumi
 | Component | Description | Terraform Version | Pulumi Version |
 |-----------|-------------|------------------|----------------|
 | cert-manager | Automates certificate management | v1.17.0 | v1.17.0 |
-| external-secrets | Manages external secrets (e.g., from cloud providers) | v0.14.4 | v0.14.4 |
-| external-dns | Synchronizes Kubernetes Ingress with DNS providers | v1.15.0 | v1.15.0 |
+| external-secrets | Manages external secrets with conditional creation of Cloudflare and Datadog secret stores | v0.14.4 | v0.14.4 |
+| external-dns | Synchronizes Kubernetes Ingress with DNS providers (uses Cloudflare API token from external-secrets) | v1.15.0 | v1.15.0 |
 | opentelemetry | Provides telemetry and observability | v0.79.0 | v0.79.0 |
-| datadog | Monitoring and observability platform | - | - |
+| datadog | Monitoring and observability platform (uses API keys from external-secrets when enabled) | - | - |
 | istio | Service mesh for traffic management, security, and observability | v1.23.3 | v1.23.3 |
 | argocd | GitOps continuous delivery tool | v7.8.2 | v7.8.2 |
 | telepresence | Local development tool for Kubernetes microservices | - | - |
@@ -673,3 +673,16 @@ For more details, see our [Contribution Guide](CONTRIBUTING.md).
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Recent Updates
+
+- **External Secrets Operator Integration Improvement**: 
+  - Fixed conditional creation of ClusterSecretStores based on component enablement
+  - Cloudflare secret store now only created when External DNS is enabled
+  - Datadog secret store now only created when Datadog is enabled
+  - Updated all documentation with detailed explanations of the integration
+  
+- **Component Configuration Documentation**:
+  - Enhanced documentation for all infrastructure components
+  - Added detailed explanation of External Secrets integration with other components
+  - Updated component configuration examples in both Terraform and Pulumi

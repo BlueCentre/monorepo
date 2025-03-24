@@ -49,7 +49,7 @@ spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
-    name: external-secret-cluster-fake-secrets
+    name: external-secret-cluster-fake-cloudflare-secrets
   target:
     name: cf-secret
     creationPolicy: Owner

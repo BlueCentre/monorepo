@@ -129,7 +129,8 @@ spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
-    name: external-secret-cluster-lab-secrets
+    name: external-secret-cluster-fake-datadog-secrets
+    # name: external-secret-cluster-lab-secrets # NOTE: This is for the lab environment in GCP
   target:
     creationPolicy: Owner
     name: datadog
@@ -137,12 +138,15 @@ spec:
   - secretKey: token
     remoteRef:
       key: DATADOG_API_KEY
+      version: v1
   - secretKey: api-key
     remoteRef:
       key: DATADOG_API_KEY
+      version: v1
   - secretKey: app-key
     remoteRef:
       key: DATADOG_APP_KEY
+      version: v1
 EOF
   depends_on = [
     helm_release.external_secrets,

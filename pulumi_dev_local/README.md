@@ -3,28 +3,34 @@
 [![Pulumi](https://img.shields.io/badge/pulumi-%235C4EE5.svg?style=for-the-badge&logo=pulumi&logoColor=white)](https://www.pulumi.com/)
 [![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Colima](https://img.shields.io/badge/colima-local_k8s-blue?style=for-the-badge)](https://github.com/abiosoft/colima)
+[![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)](https://golang.org/)
 
-A Pulumi YAML-based toolkit for provisioning and managing essential Kubernetes components for local containerized application development.
+A Pulumi Go-based toolkit for provisioning and managing essential Kubernetes components for local containerized application development.
 
 ## Overview
 
-This directory contains a comprehensive set of Pulumi YAML configurations designed to provision and manage essential Kubernetes components for containerized application development in a local environment (specifically using Colima). This setup provides a consistent, reproducible way to deploy commonly used infrastructure components that support modern application development workflows.
+This directory contains a comprehensive Pulumi implementation written in Go, designed to provision and manage essential Kubernetes components for containerized application development in a local environment (specifically using Colima). This setup provides a consistent, reproducible way to deploy commonly used infrastructure components that support modern application development workflows.
+
+The Go implementation offers improved type safety, enhanced error handling, and powerful programmatic control over infrastructure deployment compared to the YAML-based approach, while maintaining the same component feature set and configuration flexibility.
 
 ## Key Components Available
 
 The configuration allows developers to selectively enable and deploy:
 
-| Component | Description | Status |
-|-----------|-------------|--------|
-| **Cert Manager** | Automates the management and issuance of TLS certificates | ✅ Active |
-| **Istio** | Complete service mesh with Base, CNI, Control Plane, and Ingress Gateway | ✅ Active |
-| **OpenTelemetry** | Observability stack with Operator and Collector for metrics, tracing, and logging | ✅ Active | 
-| **Argo CD** | GitOps continuous delivery tool | ✅ Active |
-| **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active |
-| **External Secrets** | Integration with external secret management systems | ✅ Active |
-| **External DNS** | Automated DNS configuration | ✅ Active |
-| **Datadog** | Application monitoring and analytics | 🔄 Inactive |
-| **CloudNativePG** | Kubernetes operator for PostgreSQL database clusters | ✅ Active |
+| Component | Description | Status | Default |
+|-----------|-------------|--------|---------|
+| **Cert Manager** | Automates the management and issuance of TLS certificates | ✅ Active | ✅ Enabled |
+| **Istio** | Complete service mesh with Base, CNI, Control Plane, and Ingress Gateway | ✅ Active | ✅ Enabled |
+| **OpenTelemetry** | Observability stack with Operator and Collector for metrics, tracing, and logging | ✅ Active | ✅ Enabled | 
+| **External Secrets** | Integration with external secret management systems | ✅ Active | ✅ Enabled |
+| **CloudNativePG** | Kubernetes operator for PostgreSQL database clusters | ✅ Active | ✅ Enabled |
+| **Argo CD** | GitOps continuous delivery tool | ✅ Active | ❌ Disabled |
+| **Telepresence** | Local development tool for remote Kubernetes connections | ✅ Active | ❌ Disabled |
+| **External DNS** | Automated DNS configuration for Kubernetes services | ✅ Active | ❌ Disabled |
+| **Datadog** | Application monitoring and analytics platform | ✅ Active | ❌ Disabled |
+| **Monitoring** | Prometheus and Grafana stack for metrics monitoring | ✅ Active | ❌ Disabled |
+
+**Note**: "Active" status means the component is implemented and ready to use. The "Default" column indicates whether the component is enabled by default in the current configuration. Engineers can enable disabled components by setting their respective flags to `"true"` in `Pulumi.dev.yaml`.
 
 ## Modular Structure
 
@@ -32,26 +38,38 @@ The Pulumi configuration has been organized in a modular way to improve maintain
 
 ```
 pulumi_dev_local/
-├── Pulumi.yaml             # Project configuration
-├── Pulumi.dev.yaml         # Stack configuration
-├── main.yaml               # Main configuration file (assembled from components)
-├── build.sh                # Script to build main.yaml from components
-├── components/             # Directory for component files
-│   ├── cert-manager.yaml   # Cert Manager component
-│   ├── opentelemetry.yaml  # OpenTelemetry component
-│   ├── istio.yaml          # Istio component
-│   ├── argocd.yaml         # Argo CD component
-│   ├── telepresence.yaml   # Telepresence component
-│   ├── external-secrets.yaml # External Secrets component
-│   └── cnpg.yaml           # CloudNativePG component
-├── values/                 # Helm chart values
-│   ├── cert-manager.yaml   # Cert Manager values
-│   ├── external-dns.yaml   # External DNS values
+├── main.go                # Main Go program entry point
+├── Pulumi.yaml            # Project configuration
+├── Pulumi.dev.yaml        # Stack configuration
+├── go.mod                 # Go module definition
+├── go.sum                 # Go module dependencies
+├── COMPONENTS.md          # Detailed component documentation
+├── docs/                  # Additional documentation
+├── values/                # Helm chart values YAML files
+│   ├── cert-manager.yaml  # Cert Manager values
+│   ├── external-dns.yaml  # External DNS values
 │   ├── external-secrets.yaml # External Secrets values
-│   ├── istio.yaml          # Istio values
-│   ├── monitoring.yaml     # Prometheus/Grafana values
-│   └── cnpg.yaml           # CloudNativePG values
-└── README.md               # Documentation
+│   ├── istio.yaml         # Istio values
+│   ├── monitoring.yaml    # Prometheus/Grafana values
+│   ├── cnpg.yaml          # CloudNativePG values
+│   └── datadog.yaml       # Datadog values
+└── pkg/                   # Go package directory
+    ├── applications/      # Individual component implementations
+    │   ├── argocd.go      # Argo CD component
+    │   ├── cert_manager.go # Cert Manager component
+    │   ├── cnpg.go        # CloudNativePG component
+    │   ├── datadog.go     # Datadog component
+    │   ├── external_dns.go # External DNS component
+    │   ├── external_secrets.go # External Secrets component
+    │   ├── external_secrets_store.go # Secret store utilities
+    │   ├── ingress.go     # Ingress component
+    │   ├── istio.go       # Istio component
+    │   ├── monitoring.go  # Monitoring component
+    │   ├── opentelemetry.go # OpenTelemetry component
+    │   ├── telepresence.go # Telepresence component
+    │   └── utils.go       # Shared utilities
+    ├── resources/         # Kubernetes resource definitions
+    └── utils/             # Utility functions
 ```
 
 ### Helm Values Management
@@ -77,90 +95,60 @@ This Pulumi setup allows you to easily enable or disable components through conf
 
    ```yaml
    config:
-     pulumi-dev-local:certManagerEnabled: "true"
-     pulumi-dev-local:openTelemetryEnabled: "true"
-     pulumi-dev-local:istioEnabled: "true"
-     pulumi-dev-local:external_secrets_enabled: "true"
-     pulumi-dev-local:argocd_enabled: "false"
-     pulumi-dev-local:telepresence_enabled: "false"
-     pulumi-dev-local:external_dns_enabled: "false"
-     pulumi-dev-local:datadog_enabled: "false"
-     pulumi-dev-local:cnpg_enabled: "true"
+     dev-local-infrastructure:cert_manager_enabled: "true"
+     dev-local-infrastructure:opentelemetry_enabled: "true"
+     dev-local-infrastructure:istio_enabled: "true"
+     dev-local-infrastructure:external_secrets_enabled: "true"
+     dev-local-infrastructure:external_dns_enabled: "false"
+     dev-local-infrastructure:datadog_enabled: "false"
+     # dev-local-infrastructure:argocd_enabled: "true"  # Uncomment to enable
    ```
 
    Set a component to `"true"` to enable it or `"false"` to disable it.
 
-2. **Default Settings in main.yaml**:
+### Go-Based Implementation
 
-   You can also modify the default settings in `main.yaml`:
+This Pulumi configuration uses Go as the implementation language, providing several benefits:
 
-   ```yaml
-   variables:
-     certManagerEnabled:
-       type: boolean
-       default: true
-     openTelemetryEnabled:
-       type: boolean
-       default: true
-     externalSecretsEnabled:
-       type: boolean
-       default: true
-     cnpgEnabled:
-       type: boolean
-       default: true
-   ```
-
-3. **Adding New Components**:
-
-   When adding a new component, follow these steps:
-   - Create a new YAML file in the `components/` directory
-   - Add the component reference to `main.yaml`
-   - Add the corresponding variable to enable/disable it
-   - Update the `Pulumi.dev.yaml` file with the new configuration
-
-### Components System
-
-Each Kubernetes component is defined in its own YAML file in the `components` directory. This modular approach provides several benefits:
-
-1. **Improved Readability**: Each component's configuration is in its own file, making it easier to understand.
-2. **Better Maintainability**: Updates to a single component only require changes to that component's file.
-3. **Simplified Addition of New Components**: Adding a new component involves creating a new file in the components directory.
-
-### Building the Configuration
-
-The `build.sh` script assembles the final `main.yaml` configuration by combining the individual component files:
-
-```bash
-# Build the configuration
-./build.sh
-
-# Preview the result
-pulumi preview
-```
-
-The script reads the component files and creates a unified configuration file that includes all the enabled components. This approach allows for:
-
-1. **Selective Component Inclusion**: Components can be conditionally included based on configuration.
-2. **Consistent Structure**: All components follow the same structure and naming conventions.
-3. **Simplified Maintenance**: Changes to a component only require updating a single file.
+1. **Type Safety**: Go's strong typing helps prevent configuration errors.
+2. **Better Modularity**: Each component is defined in its own Go file in the `pkg/applications/` directory.
+3. **Advanced Logic**: Complex conditional logic can be implemented for component deployments.
+4. **Better Testability**: Go code can be tested with standard testing frameworks.
+5. **Extended Functionality**: Direct access to the Kubernetes API server when needed.
 
 ### Customizing Components
 
 To customize a component:
 
-1. Edit the relevant component file in the `components` directory
-2. Run `./build.sh` to rebuild the main configuration
+1. Edit the relevant component file in the `pkg/applications/` directory
+2. Modify the corresponding values YAML file in the `values/` directory
 3. Run `pulumi preview` to see the changes
 4. Apply the changes with `pulumi up`
+
+For example, to customize the Istio component:
+
+1. Edit `pkg/applications/istio.go` to modify deployment logic
+2. Edit `values/istio.yaml` to change Helm values
+3. Run `pulumi preview` to verify changes
+4. Run `pulumi up` to apply changes
 
 ### Adding a New Component
 
 To add a new component:
 
-1. Create a new YAML file in the `components` directory following the existing pattern
-2. Add the component to the `build.sh` script
-3. Run `./build.sh` to rebuild the main configuration
-4. Preview and apply the changes
+1. Create a new Go file in the `pkg/applications/` directory
+2. Create a new values YAML file in the `values/` directory if needed
+3. Add the component initialization to `main.go`
+4. Add appropriate configuration options to `Pulumi.dev.yaml`
+5. Preview and apply the changes
+
+For example, to add a new component called "example-component":
+
+1. Create `pkg/applications/example_component.go`
+2. Create `values/example-component.yaml` with Helm values
+3. Update `main.go` to include the new component
+4. Add `dev-local-infrastructure:example_component_enabled: "true"` to `Pulumi.dev.yaml`
+5. Run `pulumi preview` and `pulumi up`
 
 ## Getting Started
 
@@ -192,41 +180,34 @@ To add a new component:
 
    ```yaml
    config:
-     pulumi-dev-local:certManagerEnabled: true
-     pulumi-dev-local:openTelemetryEnabled: true
-     pulumi-dev-local:istioEnabled: true
-     # pulumi-dev-local:argocdEnabled: true  # Uncomment to enable
+     dev-local-infrastructure:cert_manager_enabled: "true"
+     dev-local-infrastructure:opentelemetry_enabled: "true"
+     dev-local-infrastructure:istio_enabled: "true"
+     dev-local-infrastructure:external_secrets_enabled: "true"
+     dev-local-infrastructure:external_dns_enabled: "false"
+     dev-local-infrastructure:datadog_enabled: "false"
+     # dev-local-infrastructure:argocd_enabled: "true"  # Uncomment to enable
    ```
 
-4. **Build the Configuration**:
-
-   ```bash
-   # Make the build script executable if needed
-   chmod +x build.sh
-   
-   # Build the configuration from components
-   ./build.sh
-   ```
-
-5. **Preview the Deployment**:
+4. **Preview the Deployment**:
 
    ```bash
    pulumi preview
    ```
 
-6. **Deploy Resources**:
+5. **Deploy Resources**:
 
    ```bash
    pulumi up
    ```
 
-7. **Verify Installation**:
+6. **Verify Installation**:
 
    ```bash
    kubectl get pods --all-namespaces
    ```
 
-8. **Clean Up When Done**:
+7. **Clean Up When Done**:
 
    ```bash
    # Set teardown = true in Pulumi.dev.yaml
@@ -431,7 +412,7 @@ kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 
 ## External Secrets and External DNS
 
-The Pulumi configuration now includes both External Secrets (version 0.14.4) and External DNS (version 1.15.0) Helm charts, matching the versions used in the terraform_dev_local configuration.
+The Pulumi configuration includes External Secrets (version 0.14.4) and External DNS (version 1.15.0) Helm charts, matching the versions used in the terraform_dev_local configuration.
 
 ### External Secrets Operator
 
@@ -440,6 +421,8 @@ External Secrets Operator is installed with the following configuration:
 - Creates ClusterExternalSecret and ClusterSecretStore CRDs
 - Creates a service account for the operator
 - Disables webhook and cert controller for local development
+
+**Note:** With the current configuration, External Secrets Operator is enabled (`external_secrets_enabled: "true"`), but no secret stores will be created since both `external_dns_enabled` and `datadog_enabled` are set to `"false"`.
 
 ### External DNS
 
@@ -451,9 +434,11 @@ External DNS is configured to:
 - Only process resources with the annotation `external-dns.alpha.kubernetes.io/sync-enabled: "true"`
 - Monitor istio-gateway resources for DNS entries
 
+**Note:** External DNS is currently disabled in the configuration (`external_dns_enabled: "false"`).
+
 ### Manual Post-Deployment Steps
 
-After deploying with Pulumi, you need to manually create the following resources:
+If you decide to enable External DNS (`external_dns_enabled: "true"`), you would need to manually create the following resources after deployment:
 
 1. A ClusterSecretStore to serve as a fake secret provider:
 
@@ -501,12 +486,13 @@ spec:
         version: v1
 ```
 
-These resources can be applied using `kubectl apply -f <filename>` after the Helm charts are deployed.
+These resources can be applied using `kubectl apply -f <filename>` after enabling and deploying the External DNS component.
 
-Alternatively, use the provided post-deployment script:
+Alternatively, you would use the provided post-deployment script after enabling the component:
 
 ```bash
-# First deploy with Pulumi
+# First update the configuration and deploy with Pulumi
+# Edit Pulumi.dev.yaml to set external_dns_enabled: "true"
 pulumi up
 
 # Then run the post-deployment script
@@ -515,126 +501,17 @@ pulumi up
 
 The script will create the necessary custom resources for external-secrets and external-dns integration.
 
-## How Developers Can Use It
+### Enabling Components in Your Configuration
 
-### Component Selection and Configuration
+To enable External DNS or Datadog integration with External Secrets, update the `Pulumi.dev.yaml` file:
 
-Developers can easily enable or disable components by modifying the `Pulumi.dev.yaml` file. This modular approach lets developers pick only the components they need for their specific development scenario.
+```yaml
+config:
+  # Enable External DNS integration (will create Cloudflare secret store)
+  dev-local-infrastructure:external_dns_enabled: "true"
+  
+  # Enable Datadog integration (will create Datadog secret store)
+  dev-local-infrastructure:datadog_enabled: "true"
+```
 
-### Local Kubernetes Integration
-
-The setup is designed to work with Colima (a lightweight Kubernetes environment for macOS) through the `kubernetes_context` variable, allowing developers to:
-
-- Run a production-like Kubernetes environment locally
-- Test containerized applications in an environment similar to production
-- Learn and experiment with Kubernetes features without affecting shared environments
-
-### Development Workflow Support
-
-Several components specifically enhance the development workflow:
-
-- **Telepresence**: Allows developers to run a single service locally while connecting to a remote Kubernetes cluster
-- **Istio**: Provides advanced traffic routing capabilities useful for testing microservices
-- **Cert Manager**: Handles SSL certificates, including for local development
-- **Argo CD**: Enables GitOps workflow for continuous deployment
-
-### Observability Tools
-
-The setup includes tools for monitoring and debugging:
-
-- **OpenTelemetry**: For distributed tracing and metrics collection
-- **Istio**: Provides service mesh monitoring
-
-## Benefits for Containerized Application Development
-
-1. **Consistency**: Every developer gets the same environment with the same versions of components
-
-2. **Modularity**: Only deploy what you need for your specific development task
-
-3. **Local Testing**: Test integrations with production-like services locally
-
-4. **Learning Tool**: Great way to learn Kubernetes and related ecosystem tools
-
-5. **Infrastructure as Code**: Environment setup is documented and reproducible
-
-6. **Rapid Onboarding**: New team members can quickly get a development environment matching the team's setup
-
-## Practical Tips for Developers
-
-1. **Start Small**: Begin with just the components you need (e.g., just cert-manager and istio)
-
-2. **Learn the Tools**: Use this as an opportunity to understand Kubernetes ecosystem tools
-
-3. **Extend as Needed**: The modular design makes it easy to add more components as your applications grow
-
-4. **Use YAML Configuration**: The setup uses YAML configuration which is easy to understand and modify
-
-5. **Version Control**: Keep your local configurations in version control to track changes and share with team members
-
-## Differences from Terraform Implementation
-
-This Pulumi implementation offers the same functionality as the Terraform version with some key differences:
-
-1. **YAML-Based**: Uses Pulumi's YAML language for improved readability and simplicity
-2. **Standard Kubernetes Resources**: Leverages Pulumi's native Kubernetes provider
-3. **Simplified Dependencies**: More straightforward dependency management
-4. **Native Conditionals**: Uses Pulumi's built-in conditional support for resource creation
-
-## Troubleshooting
-
-### Common Issues
-
-- **Passphrase Required**: Pulumi requires a passphrase for configuration encryption. Set it using the `PULUMI_CONFIG_PASSPHRASE` environment variable. See the [Managing the Pulumi Passphrase](#managing-the-pulumi-passphrase) section for detailed instructions.
-- **YAML Format Issues**: Ensure your YAML syntax is correct. Pulumi YAML has specific formatting requirements.
-- **Helm Chart Version Conflicts**: If you encounter version conflicts, check the specific Helm chart version in the `main.yaml` file.
-- **Kubernetes Context Issues**: Ensure your `kubernetesContext` variable in `Pulumi.dev.yaml` matches your actual Kubernetes context.
-- **Resource Limitations**: Local Kubernetes clusters may have resource limitations. Adjust your component selection accordingly.
-
-### Tips
-
-- Check component-specific logs with `kubectl logs -n <namespace> <pod-name>`
-- Use `pulumi preview` to see what changes will be made before applying them
-- Refer to the official documentation for each component for detailed configuration options
-
-## Contributing
-
-Feel free to enhance this Pulumi configuration with additional components or improvements. Please follow the existing file structure and naming conventions.
-
-## License
-
-This project is licensed under the terms of the Apache 2.0 license.
-
-# Pulumi Go Infrastructure
-
-This directory contains the Pulumi infrastructure code written in Go. Pulumi enables infrastructure as code using general-purpose programming languages, offering an alternative to Terraform's HCL syntax.
-
-## Features
-
-- Kubernetes resources provisioning
-- Component-based architecture for reusability
-- Full feature parity with the Terraform implementation
-
-## Getting Started
-
-1. Ensure you have Pulumi CLI installed
-2. Configure your Pulumi backend (local or cloud)
-3. Navigate to this directory
-4. Run `pulumi up` to deploy resources
-
-## Development Workflow
-
-1. Make changes to the Go code in this directory
-2. Build and test using: `skaffold build -m pulumi-go -p dev`
-3. Run the deployment: `skaffold run -m pulumi-go -p dev`
-4. Verify the deployment: `skaffold verify -m pulumi-go -p dev`
-
-## Project Structure
-
-- `main.go` - Entry point for Pulumi program
-- `components/` - Reusable infrastructure components
-- `resources/` - Kubernetes resource definitions
-
-## Notes
-
-- The implementation maintains feature parity with the Terraform implementation in `terraform_dev_local/`
-- Always run `skaffold build` and ensure it's successful before proceeding with other commands 
+Then run `pulumi up` to apply the changes.

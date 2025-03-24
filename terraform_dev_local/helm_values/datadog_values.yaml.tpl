@@ -1,78 +1,44 @@
 # https://github.com/DataDog/helm-charts/blob/main/charts/datadog/values.yaml
 
+# Configuration for the Datadog agent
+# See https://github.com/DataDog/helm-charts/blob/main/charts/datadog/values.yaml for reference
+
+# Target system for the agent
 targetSystem: "linux"
-providers:
-  gke:
-    autopilot: true
+
+# Datadog API and APP key configuration
 datadog:
   apiKeyExistingSecret: datadog
   appKeyExistingSecret: datadog
   collectEvents: false
-  # https://app.datadoghq.com/infrastructure?netviz=sent_vol%3A%3A%2Ctcp_r_pct%3A%3A%2Crtt%3A%3A&tab=logs&text=flyr_tenant%3Ademo
+  # Tags for all metrics, logs, and traces
   tags:
-    - flyr_tenant:demo
-    - flyr_owner:platform
+    - tenant:monorepo
+    - owner:ipv1337
     - env:dev
-  containerExclude: "kube_namespace:.*"
-  containerInclude: "kube_namespace:composer-.* name:airflow-worker.*"
+  # Log collection configuration
   logs:
     enabled: true
     containerCollectAll: true
     autoMultiLineDetection: true
+  # APM configuration
   apm:
     portEnabled: true
+
+# Cluster Agent configuration
 clusterAgent:
   enabled: true
   admissionController:
     enabled: true
-    requests:
-        cpu: 150m
-        memory: 300Mi
-kube-state-metrics:
-  resources:
-    requests:
-        cpu: 150m
-        memory: 300Mi
-clusterChecksRunner:
-  resources:
-    requests:
-      cpu: 150m
-      memory: 300Mi
+
+# Agent resource configuration
 agents:
   containers:
-    initContainers:
-      resources:
-        requests:
-          cpu: 150m
-          memory: 300Mi
-    securityAgent:
-      resources:
-        requests:
-            cpu: 150m
-            memory: 300Mi
-    systemProbe:
-      resources:
-        requests:
-            cpu: 150m
-            memory: 300Mi
-    traceAgent:
-      resources:
-        requests:
-            cpu: 150m
-            memory: 300Mi
-    processAgent:
-      resources:
-        requests:
-            cpu: 150m
-            memory: 300Mi
     agent:
-      readinessProbe:
-        initialDelaySeconds: 60
-        periodSeconds: 30
-        timeoutSeconds: 5
-        successThreshold: 1
-        failureThreshold: 6
       resources:
         requests:
-            cpu: 150m
-            memory: 300Mi
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi

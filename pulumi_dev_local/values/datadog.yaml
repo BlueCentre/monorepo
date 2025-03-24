@@ -1,0 +1,36 @@
+# Datadog agent configuration
+datadog_enabled: false
+datadog_version: "3.74.1"
+datadog:
+  namespace: "datadog"
+  create_namespace: true
+  chart_name: "datadog"
+  repository_url: "https://helm.datadoghq.com"
+  values:
+    targetSystem: "linux"
+    datadog:
+      apiKeyExistingSecret: datadog
+      appKeyExistingSecret: datadog
+      collectEvents: false
+      tags:
+        - env:dev
+      logs:
+        enabled: true
+        containerCollectAll: true
+        autoMultiLineDetection: true
+      apm:
+        portEnabled: true
+    clusterAgent:
+      enabled: true
+      admissionController:
+        enabled: true
+    agents:
+      containers:
+        agent:
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
