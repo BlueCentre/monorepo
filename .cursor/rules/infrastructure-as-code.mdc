@@ -1,7 +1,7 @@
 ---
 description: 
-globs: terraform_dev_local/,pulumi_dev_local/
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
  # Infrastructure as Code Component Implementation Guidelines
 

@@ -1,5 +1,4 @@
 config:
-  # kubernetes:context: colima
   dev-local-infrastructure:region: "us-central1"
   dev-local-infrastructure:cert_manager_enabled: "true"
   dev-local-infrastructure:external_secrets_enabled: "true"
@@ -20,10 +19,12 @@ config:
   dev-local-infrastructure:opentelemetry_version: "0.79.0"
   dev-local-infrastructure:datadog_version: "3.74.1"
   dev-local-infrastructure:istio_version: "1.23.3"
+  dev-local-infrastructure:redis_version: "18.19.1"
   dev-local-infrastructure:cnpg_version: "0.23.2"
   dev-local-infrastructure:cloudflare_api_token: "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
   dev-local-infrastructure:datadog_api_key: "REPLACE_WITH_DATADOG_API_KEY"
   dev-local-infrastructure:datadog_app_key: "REPLACE_WITH_DATADOG_APP_KEY"
+  dev-local-infrastructure:redis_password: "REPLACE_WITH_REDIS_PASSWORD"
   monitoring:namespace: monitoring
   database:namespace: database
   ingress:namespace: ingress-nginx

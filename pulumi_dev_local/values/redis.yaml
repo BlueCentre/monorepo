@@ -15,14 +15,16 @@ auth:
   enabled: true
   sentinel: false
   usePasswordFiles: false
-  # Password is set via the redis_password config value
+  # password will be provided by config
 
 # Redis master configuration
 master:
   persistence:
     enabled: true
     size: 8Gi
+    medium: ""
     path: /data
+    storageClass: ""
   service:
     type: ClusterIP
     ports:

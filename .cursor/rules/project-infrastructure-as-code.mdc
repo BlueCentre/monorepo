@@ -1,7 +1,7 @@
 ---
 description: 
-globs: terraform_dev_local/**,pulumi_dev_local/**
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 
 # Infrastructure as code workflow guidance
@@ -21,11 +21,31 @@ alwaysApply: false
 - To apply terraform deployment: terraform apply -y
 - To destroy terraform deployment: terrafor destroy -y
 
+# Terraform Implementation Standards
+
+When implementing or modifying Terraform components:
+- Follow the guidelines in [Terraform Infrastructure Implementation](mdc:.cursor/rules/terraform-infrastructure-implementation.mdc)
+- Use standardized resource naming conventions
+- Implement proper variable definitions in variables.tf
+- Externalize Helm values in template files
+- Follow standard resource structure and module organization
+- Document all components in COMPONENTS.md
+
 # Pulumi Workflow & Command Reference
 
 - To verify a pulumi plan: pulumi preview
 - To apply pulumi deployment: pulumi up -y
 - To destroy pulumi deployment: pulumi down -y
+
+# Pulumi Implementation Standards
+
+When implementing or modifying Pulumi components:
+- Follow the guidelines in [Pulumi Infrastructure Implementation](mdc:.cursor/rules/pulumi-infrastructure-implementation.mdc)
+- Always use the utils package for configuration management
+- Always use the resources package for resource creation
+- Store static configuration in YAML files and only override dynamic values in code
+- Follow the standard component structure and naming conventions
+- Document all components in COMPONENTS.md
 
 # Troubleshooting Pulumi Workflows
 
