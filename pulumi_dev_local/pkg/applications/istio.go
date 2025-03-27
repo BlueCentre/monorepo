@@ -86,7 +86,7 @@ func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider) error {
 		Values: map[string]interface{}{
 			"cniBinDir": "/home/kubernetes/bin",
 		},
-		Wait:    true,
+		Wait:    false,
 		Timeout: 300,
 	}, pulumi.DependsOn([]pulumi.Resource{istioBase}))
 
