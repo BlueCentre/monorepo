@@ -494,7 +494,7 @@ profiles:
                   fi
             executionMode:
               kubernetesCluster:
-                jobManifestPath: kubernetes/verify/rate-limit-verify-job.yaml
+                jobManifestPath: projects/template/template_fastapi_app/kubernetes/verify/rate-limit-verify-job.yaml
 # ---
 # apiVersion: skaffold/v4beta6
 # kind: Config

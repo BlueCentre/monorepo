@@ -8,7 +8,6 @@ import (
 
 	"github.com/james/monorepo/pulumi_dev_local/pkg/resources"
 	"github.com/james/monorepo/pulumi_dev_local/pkg/utils"
-	// Add this import for generic Kubernetes resources
 )
 
 // DeployIstio deploys Istio service mesh components

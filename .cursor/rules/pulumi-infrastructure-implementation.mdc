@@ -1,0 +1,106 @@
+---
+description: 
+globs: pulumi_dev_local/**
+alwaysApply: false
+---
+
+# Pulumi Infrastructure Implementation Best Practices
+
+## Component Development Guidelines
+
+When implementing new Pulumi components or modifying existing ones, follow these consistent patterns:
+
+1. **Always use utility packages** instead of direct Pulumi SDK calls:
+   - Use `utils.NewConfig(ctx)` for configuration management
+   - Use helper methods like `GetString()`, `GetBool()`, `GetInt()` with proper defaults
+   - Never use raw `config.New(ctx, "")` and conditional logic for defaults
+
+2. **Always use the resources package abstractions** for resource creation:
+   - Use `resources.DeployHelmChart()` instead of raw `helm.NewRelease()`
+   - Use `resources.CreateK8sNamespace()` instead of direct namespace creation
+   - Use `resources.CreateK8sManifest()` for applying raw YAML manifests
+
+3. **Externalize configuration in YAML files**:
+   - Store static Helm chart values in `values/{component-name}.yaml`
+   - Only override dynamic values in code (passwords, credentials, etc.)
+   - Use the `ValuesFile` parameter to automatically load values
+
+4. **Follow the standard component structure**:
+   - Define a single exported function named `Deploy{ComponentName}`
+   - Accept `ctx *pulumi.Context` and `provider *kubernetes.Provider` parameters
+   - Return `(pulumi.Resource, error)` for consistent error handling
+
+5. **Implement proper cleanup for components**:
+   - Use the resources package cleanup features for CRDs and webhooks
+   - Set proper dependencies between resources using `pulumi.DependsOn`
+
+## Example Implementation Pattern
+
+```go
+package applications
+
+import (
+    "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes"
+    "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+    "github.com/james/monorepo/pulumi_dev_local/pkg/resources"
+    "github.com/james/monorepo/pulumi_dev_local/pkg/utils"
+)
+
+// Deploy{ComponentName} deploys the component with standard configuration
+func Deploy{ComponentName}(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Resource, error) {
+    // Use config utils implementation
+    cfg := utils.NewConfig(ctx)
+
+    // Get configuration with defaults
+    enabled := cfg.GetBool("{component_name}_enabled", false)
+    if !enabled {
+        return nil, nil
+    }
+
+    // Get dynamic values from configuration
+    password := cfg.GetString("{component_name}_password", "default-password")
+
+    // Use resources package for deployment
+    return resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+        Name:            "{component-name}",
+        ChartName:       "{chart-name}",
+        Version:         cfg.GetString("{component_name}_version", ""),
+        RepositoryURL:   "https://charts.example.com/repo",
+        Namespace:       cfg.GetNamespace("{component_name}_namespace", "{component-name}"),
+        CreateNamespace: true,
+        ValuesFile:      "{component-name}",  // Will load values/{component-name}.yaml
+        // Only override dynamic values from configuration
+        Values: map[string]interface{}{
+            "auth": map[string]interface{}{
+                "password": password,
+            },
+        },
+    })
+}
+```
+
+## Refactoring Existing Components
+
+When refactoring existing components to follow these guidelines:
+
+1. First identify if the component uses utils and resources packages
+2. Create a values YAML file with all static configuration
+3. Update the component to use the resources package abstractions
+4. Reduce the code to only override dynamic values
+5. Test the refactored component with `pulumi preview` before applying changes
+
+## Benefits of Following These Guidelines
+
+- **Consistency**: All components follow the same patterns and practices
+- **Maintainability**: Easier to update and modify components over time
+- **Reduced Duplication**: Common patterns are centralized in utility packages
+- **Better Error Handling**: Consistent approach to error handling across components
+- **Configuration Separation**: Clear separation between code and configuration
+- **Simplified Testing**: Easier to test individual components
+
+## Documentation
+
+Always refer to these detailed documentation resources:
+- [Pulumi Utilities Documentation](mdc:pulumi_dev_local/docs/pulumi_utilities.md)
+- [Resources Package Documentation](mdc:pulumi_dev_local/docs/resources_package.md)
+- [Pulumi Helm Best Practices](mdc:pulumi_dev_local/docs/pulumi_helm_best_practices.md)

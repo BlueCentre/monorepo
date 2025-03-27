@@ -62,7 +62,7 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 				"enabled": false,
 			},
 			"webhook": map[string]interface{}{
-				"timeoutSeconds": 30,
+				"timeoutSeconds": 30, // Timeout value must be between 1 and 30 seconds
 			},
 			"podDisruptionBudget": map[string]interface{}{
 				"enabled":      true,
