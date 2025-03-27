@@ -124,4 +124,35 @@ spec:
             rate_limits:
               - actions:
                   - generic_key:
-                      descriptor_value: "path=/api/v1/limited" 
+                      descriptor_value: "path=/api/v1/limited"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-specific-endpoint
+  namespace: template-fastapi-app
+spec:
+  workloadSelector:
+    labels:
+      app: template-fastapi-app
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            route:
+              path: "/api/v1/rate-limited/rate-limited"
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  - request_headers:
+                      header_name: ":path"
+                      descriptor_key: "path"
+                  - generic_key:
+                      descriptor_value: "/api/v1/rate-limited/rate-limited"
+                disable_key: "x-disable-ratelimit" 

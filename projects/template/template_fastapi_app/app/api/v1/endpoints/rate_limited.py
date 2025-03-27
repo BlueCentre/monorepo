@@ -21,7 +21,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/rate-limited", response_model=Dict[str, Any])
-@limiter.limit("5/minute")
+@limiter.limit("3/minute")
 async def rate_limited_endpoint(
     request: Request,
     response: Response,
@@ -30,7 +30,7 @@ async def rate_limited_endpoint(
     """
     Rate-limited endpoint that requires token authentication.
     
-    Limited to 5 requests per minute per IP address.
+    Limited to 3 requests per minute per IP address.
     
     Args:
         request: The request object, needed for rate limiter.

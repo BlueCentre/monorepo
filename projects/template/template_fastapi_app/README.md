@@ -16,7 +16,7 @@ A production-ready FastAPI application template showcasing best practices for bu
 - **Logging & Telemetry**: Built-in observability with OpenTelemetry
 - **Robust Database Connectivity**: Handles complex Kubernetes environments with automatic connection string parsing
 - **Secret Rotation**: Automatic and manual rotation of JWT keys and database credentials for enhanced security
-- **API Rate Limiting**: Infrastructure-level protection against abuse using Istio service mesh
+- **API Rate Limiting**: Multi-layered protection with both application-level (SlowAPI) and infrastructure-level (Istio) rate limiting
 - **Automatic DNS Management**: Integration with external-DNS for automated DNS record creation
 
 ## Monorepo Integration
@@ -65,6 +65,7 @@ This README provides an overview of the application. For more detailed informati
 - [Skaffold Usage Guide](./SKAFFOLD-USAGE.md) - Detailed instructions for using Skaffold with this application
 - [Istio Setup Guide](./ISTIO-SETUP.md) - Instructions for setting up Istio and enabling rate limiting
 - [Istio Troubleshooting Guide](./ISTIO-TROUBLESHOOTING.md) - Solutions for common Istio-related issues
+- [Rate Limiting Documentation](./RATE-LIMITING.md) - Comprehensive guide to application and infrastructure-level rate limiting
 - [Quick Start Guide for Istio Rate Limiting](../../../quick-start-guide.md) - Step-by-step guide to setting up and testing rate limiting
 - [Istio Rate Limiting Documentation](../../../README-rate-limiting.md) - Detailed documentation on the rate limiting implementation
 - [External-DNS Integration](EXTERNAL-DNS.md) - Instructions for integrating external-DNS for automated DNS record creation
