@@ -45,6 +45,9 @@ pulumi_dev_local/
 ├── go.sum                 # Go module dependencies
 ├── COMPONENTS.md          # Detailed component documentation
 ├── docs/                  # Additional documentation
+│   ├── pulumi_helm_best_practices.md # Helm chart best practices
+│   ├── pulumi_utilities.md # Utilities documentation
+│   └── resources_package.md # Resources package documentation
 ├── values/                # Helm chart values YAML files
 │   ├── cert-manager.yaml  # Cert Manager values
 │   ├── external-dns.yaml  # External DNS values
@@ -115,6 +118,25 @@ This Pulumi configuration uses Go as the implementation language, providing seve
 3. **Advanced Logic**: Complex conditional logic can be implemented for component deployments.
 4. **Better Testability**: Go code can be tested with standard testing frameworks.
 5. **Extended Functionality**: Direct access to the Kubernetes API server when needed.
+
+### Utility Packages
+
+This project provides several utility packages that make component implementation more consistent and efficient:
+
+1. **Configuration Utilities**: Simplifies working with Pulumi configuration by adding type conversion and default value handling.
+2. **YAML Utilities**: Streamlines loading and merging of Helm chart values from YAML files.
+
+These utilities help ensure consistent patterns across all components and reduce boilerplate code. For more details, see [Pulumi Utilities Documentation](./docs/pulumi_utilities.md).
+
+### Resources Package
+
+This project also includes a specialized `resources` package that provides high-level abstractions for creating and managing Kubernetes resources:
+
+1. **Helm Chart Deployment**: Standardized Helm chart deployment with value loading, cleanup capabilities, and proper error handling.
+2. **Kubernetes Resource Creation**: Simplified creation of namespaces, ConfigMaps, and other Kubernetes resources.
+3. **YAML Manifest Deployment**: Easy deployment of raw YAML manifests to Kubernetes.
+
+The resources package serves as an abstraction layer between the raw Pulumi Kubernetes SDK and our application-specific code, promoting consistency and reducing duplication. For more details, see [Resources Package Documentation](./docs/resources_package.md).
 
 ### Customizing Components
 

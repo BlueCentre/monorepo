@@ -32,12 +32,12 @@ func main() {
 		opentelemetryEnabled := conf.GetBool("opentelemetry_enabled")
 		datadogEnabled := conf.GetBool("datadog_enabled")
 		istioEnabled := conf.GetBool("istio_enabled")
+		redisEnabled := conf.GetBool("redis_enabled")
 		databaseEnabled := conf.GetBool("database_enabled")
 		ingressEnabled := conf.GetBool("ingress_controller_enabled")
 		argocdEnabled := conf.GetBool("argocd_enabled")
 		telepresenceEnabled := conf.GetBool("telepresence_enabled")
 		cnpgEnabled := conf.GetBool("cnpg_enabled")
-		redisEnabled := conf.GetBool("redis_enabled")
 
 		// Setup base components
 		var certManagerRelease pulumi.Resource
@@ -75,6 +75,7 @@ func main() {
 			}
 		}
 
+		// OpenTelemetry setup
 		if opentelemetryEnabled {
 			if err := applications.DeployOpenTelemetry(ctx, k8sProvider, certManagerRelease); err != nil {
 				return err
