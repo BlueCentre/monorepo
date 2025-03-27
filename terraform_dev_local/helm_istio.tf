@@ -192,3 +192,189 @@ resource "helm_release" "istio_ingressgateway" {
 
 # BUGS:
 # - depends_on does not work so apply twice is needed
+
+# Deploy EnvoyFilter for rate limiting if Redis is enabled
+resource "kubernetes_manifest" "rate_limit_service" {
+  count = var.istio_enabled && var.redis_enabled ? 1 : 0
+
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "EnvoyFilter"
+    metadata = {
+      name      = "rate-limit-service"
+      namespace = "istio-system"
+    }
+    spec = {
+      workloadSelector = {
+        labels = {
+          istio = "ingressgateway"
+        }
+      }
+      configPatches = [
+        {
+          applyTo = "CLUSTER"
+          match = {
+            context = "GATEWAY"
+          }
+          patch = {
+            operation = "ADD"
+            value = {
+              name            = "rate_limit_service"
+              type            = "STRICT_DNS"
+              connect_timeout = "10s"
+              lb_policy       = "ROUND_ROBIN"
+              http2_protocol_options = {}
+              load_assignment = {
+                cluster_name = "rate_limit_service"
+                endpoints = [
+                  {
+                    lb_endpoints = [
+                      {
+                        endpoint = {
+                          address = {
+                            socket_address = {
+                              address   = "redis-master.redis.svc.cluster.local"
+                              port_value = 6379
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+
+  depends_on = [
+    helm_release.istio_base,
+    helm_release.istiod,
+    helm_release.istio_ingressgateway,
+    helm_release.redis
+  ]
+}
+
+# Deploy EnvoyFilter for rate limiting config if Redis is enabled
+resource "kubernetes_manifest" "filter_ratelimit" {
+  count = var.istio_enabled && var.redis_enabled ? 1 : 0
+
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "EnvoyFilter"
+    metadata = {
+      name      = "filter-ratelimit"
+      namespace = "istio-system"
+    }
+    spec = {
+      workloadSelector = {
+        labels = {
+          istio = "ingressgateway"
+        }
+      }
+      configPatches = [
+        {
+          applyTo = "HTTP_FILTER"
+          match = {
+            context = "GATEWAY"
+            listener = {
+              filterChain = {
+                filter = {
+                  name = "envoy.filters.network.http_connection_manager"
+                }
+              }
+            }
+          }
+          patch = {
+            operation = "INSERT_BEFORE"
+            value = {
+              name = "envoy.filters.http.ratelimit"
+              typed_config = {
+                "@type"           = "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit"
+                domain            = "redis-rate-limit"
+                failure_mode_deny = true
+                rate_limit_service = {
+                  grpc_service = {
+                    envoy_grpc = {
+                      cluster_name = "rate_limit_service"
+                    }
+                    timeout = "10s"
+                  }
+                  transport_api_version = "V3"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+
+  depends_on = [
+    helm_release.istio_base,
+    helm_release.istiod,
+    helm_release.istio_ingressgateway,
+    helm_release.redis
+  ]
+}
+
+# Deploy EnvoyFilter for ratelimit configuration if Redis is enabled
+resource "kubernetes_manifest" "ratelimit_config" {
+  count = var.istio_enabled && var.redis_enabled ? 1 : 0
+
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "EnvoyFilter"
+    metadata = {
+      name      = "ratelimit-config" 
+      namespace = "istio-system"
+    }
+    spec = {
+      workloadSelector = {
+        labels = {
+          istio = "ingressgateway"
+        }
+      }
+      configPatches = [
+        {
+          applyTo = "VIRTUAL_HOST"
+          match = {
+            context = "GATEWAY"
+            routeConfiguration = {
+              vhost = {
+                name = "*:80"
+              }
+            }
+          }
+          patch = {
+            operation = "MERGE"
+            value = {
+              rate_limits = [
+                {
+                  actions = [
+                    {
+                      request_headers = {
+                        header_name   = ":path"
+                        descriptor_key = "path"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+
+  depends_on = [
+    helm_release.istio_base,
+    helm_release.istiod,
+    helm_release.istio_ingressgateway,
+    helm_release.redis
+  ]
+}

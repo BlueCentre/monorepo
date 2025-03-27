@@ -164,3 +164,16 @@ variable "datadog_api_key" {
   type        = string
   default     = "REPLACE_WITH_DATADOG_API_KEY"
 }
+
+variable "redis_enabled" {
+  description = "Enable Redis for Istio rate limiting"
+  type        = bool
+  default     = false
+}
+
+variable "redis_password" {
+  description = "Password for Redis authentication"
+  type        = string
+  default     = "redis-password"
+  sensitive   = true
+}

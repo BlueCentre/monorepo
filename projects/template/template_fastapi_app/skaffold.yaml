@@ -377,9 +377,8 @@ profiles:
                   fi
             executionMode:
               kubernetesCluster:
-                namespace: template-fastapi-app
-                annotations:
-                  sidecar.istio.io/inject: "false"
+                jobManifestPath: projects/template/template_fastapi_app/kubernetes/verify/rate-limit-verify-job.yaml
+
 # ---
 # apiVersion: skaffold/v4beta6
 # kind: Config
@@ -390,21 +389,16 @@ profiles:
 #     - kubernetes/bootstrap/rbac.yaml
 # deploy:
 #   kubectl: {}
----
-apiVersion: skaffold/v4beta6
-kind: Config
-metadata:
-  name: debug
-manifests:
-  rawYaml:
-    - kubernetes/debug/debug-job.yaml
-deploy:
-  kubectl: {}
-
-
-
-
-
+# ---
+# apiVersion: skaffold/v4beta6
+# kind: Config
+# metadata:
+#   name: debug
+# manifests:
+#   rawYaml:
+#     - kubernetes/debug/debug-job.yaml
+# deploy:
+#   kubectl: {}
 # ---
 # apiVersion: skaffold/v4beta6
 # kind: Config
