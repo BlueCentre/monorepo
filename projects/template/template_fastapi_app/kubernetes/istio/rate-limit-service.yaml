@@ -7,16 +7,33 @@ data:
   config.yaml: |
     domain: template-fastapi-app-domain
     descriptors:
-      - key: path
-        value: /api/v1/limited
+      # Global rate limit for all API endpoints
+      - key: generic_key
+        value: default
         rate_limit:
           unit: minute
-          requests_per_unit: 5
-      - key: auth_header
-        value: limited-user
+          requests_per_unit: 20
+      
+      # Rate limit for our specific test endpoint
+      - key: generic_key
+        value: "/api/v1/rate-limited/rate-limited"
         rate_limit:
           unit: minute
           requests_per_unit: 3
+      
+      # Path-based rate limits
+      - key: path
+        value: /api/v1/rate-limited/rate-limited
+        rate_limit:
+          unit: minute
+          requests_per_unit: 3
+      
+      # Auth-based rate limits with different values
+      - key: auth
+        value: authenticated
+        rate_limit:
+          unit: minute
+          requests_per_unit: 15
 ---
 apiVersion: apps/v1
 kind: Deployment

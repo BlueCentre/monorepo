@@ -63,18 +63,18 @@ def test_rate_limited_endpoint(client: TestClient, normal_user_token_headers: Di
 def test_rate_limited_endpoint_rate_limit(client: TestClient, normal_user_token_headers: Dict[str, str]) -> None:
     """
     Test the rate limit on the rate-limited endpoint.
-    Send 6 requests in succession. The 6th should return a 429 Too Many Requests.
+    Send 4 requests in succession. The 4th should return a 429 Too Many Requests.
     This tests that the rate limit is properly enforced.
     """
-    # Send 5 requests (rate limit is 5 per minute)
-    for _ in range(5):
+    # Send 3 requests (rate limit is 3 per minute)
+    for _ in range(3):
         response = client.get(
             f"{settings.API_V1_STR}/rate-limited/rate-limited",
             headers=normal_user_token_headers,
         )
         assert response.status_code == 200
     
-    # Send the 6th request, which should be rate limited
+    # Send the 4th request, which should be rate limited
     response = client.get(
         f"{settings.API_V1_STR}/rate-limited/rate-limited",
         headers=normal_user_token_headers,
@@ -158,7 +158,7 @@ def test_rate_limit_reset(client: TestClient, normal_user_token_headers: Dict[st
     This test is marked as slow because it needs to wait for the rate limit window to expire.
     """
     # First exhaust the rate limit
-    for _ in range(5):
+    for _ in range(3):
         client.get(
             f"{settings.API_V1_STR}/rate-limited/rate-limited",
             headers=normal_user_token_headers,
