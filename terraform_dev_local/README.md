@@ -264,3 +264,33 @@ datadog_app_key = "your-app-key"
 When using External Secrets with External DNS, the ExternalSecret automatically creates a Kubernetes secret containing the Cloudflare API token that External DNS uses for DNS record management. Similarly, when Datadog is enabled, it creates a secret with Datadog credentials. 
 
 With the recommended configuration above, the External Secrets Operator will be installed, but no secret stores will be created since both `external_dns_enabled` and `datadog_enabled` are set to `false`. 
+
+## Redis for Istio Rate Limiting
+
+The Bitnami Redis Helm chart is included to support rate limiting in Istio. By default, this chart is disabled but can be enabled for testing and validation of rate limiting functionalities.
+
+### Usage
+
+1. Enable Redis by setting `redis_enabled = true` in `terraform.auto.tfvars`
+2. Apply the configuration with `terraform apply`
+
+Redis will be deployed in the `istio-system` namespace and configured for use with Istio's rate limiting service.
+
+### Configuration Options
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| redis_enabled | Enable or disable Redis deployment | false |
+| redis_password | Password for Redis authentication | "redis-password" |
+
+### Testing Rate Limiting
+
+After deploying Redis, you can validate the rate limiting functionality by:
+
+```bash
+# Test connection to Redis
+kubectl exec -it -n istio-system deploy/redis-master -- redis-cli -a $(kubectl get secret -n istio-system redis -o jsonpath="{.data.redis-password}" | base64 --decode)
+
+# Verify rate limiting is working in the template-fastapi-app
+skaffold verify -m template-fastapi-app -p istio-rate-limit
+```
