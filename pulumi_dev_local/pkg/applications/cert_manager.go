@@ -51,7 +51,7 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 		Values: map[string]interface{}{
 			"crds": map[string]interface{}{
 				"enabled": true,
-				"keep":    false,
+				"keep":    true,
 			},
 			"global": map[string]interface{}{
 				"leaderElection": map[string]interface{}{
@@ -61,15 +61,16 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 			"startupapicheck": map[string]interface{}{
 				"enabled": false,
 			},
-			// "prometheus": map[string]interface{}{
-			// 	"enabled": false,
-			// },
-			// "webhook": map[string]interface{}{
-			// 	"timeoutSeconds": 30,
-			// },
+			"webhook": map[string]interface{}{
+				"timeoutSeconds": 30,
+			},
+			"podDisruptionBudget": map[string]interface{}{
+				"enabled":      true,
+				"minAvailable": 1,
+			},
 		},
 		Wait:          true, // Set to true to ensure it's fully deployed before OpenTelemetry
-		Timeout:       300,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: CertManagerCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{ns}))

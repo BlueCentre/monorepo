@@ -515,3 +515,51 @@ config:
 ```
 
 Then run `pulumi up` to apply the changes.
+
+## Redis for Istio Rate Limiting
+
+The Bitnami Redis Helm chart is included to support rate limiting in Istio and provide Redis services for applications. It is deployed in a dedicated `redis` namespace with multi-tenant capabilities.
+
+### Usage
+
+1. Enable Redis by setting `redis_enabled` to `"true"` in `Pulumi.dev.yaml`
+2. Apply the configuration with `pulumi up`
+
+Redis will be deployed in the dedicated `redis` namespace and configured for use with both Istio's rate limiting service and as a general-purpose Redis instance for applications.
+
+### Configuration Options
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| redis_enabled | Enable or disable Redis deployment | "false" |
+| redis_password | Password for Redis authentication | "redis-password" |
+
+### Connecting to Redis
+
+Application developers can connect to Redis using:
+
+```bash
+# Host and port configuration
+REDIS_HOST=redis-master.redis.svc.cluster.local
+REDIS_PORT=6379
+
+# Test connection to Redis
+kubectl exec -it -n redis deploy/redis-master -- redis-cli -a $(kubectl get secret -n redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)
+```
+
+### Multi-tenant Usage
+
+The Redis deployment includes:
+- Network policies allowing connections from all namespaces
+- Appropriate security contexts for secure multi-tenant usage
+- High availability with 1 master and 2 replicas
+- AOF persistence enabled for better durability
+
+### Testing Rate Limiting
+
+To verify Redis is working with Istio rate limiting:
+
+```bash
+# Test rate limiting functionality in the template-fastapi-app
+skaffold verify -m template-fastapi-app -p istio-rate-limit
+```

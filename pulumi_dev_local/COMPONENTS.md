@@ -63,6 +63,7 @@ The OpenTelemetry deployment includes a complete observability solution:
 - Istio CNI
 - Istio Control Plane (istiod)
 - Istio Ingress Gateway
+- Rate Limiting EnvoyFilters (when Redis is enabled)
 
 **Namespace**: istio-system
 
@@ -91,10 +92,17 @@ Istio provides a complete service mesh solution:
     - HTTPS port: 443 (targeting 8443)
     - Service type: ClusterIP (for local development)
 
+- **Rate Limiting Configuration**:
+  - Three EnvoyFilter resources for rate limiting:
+    - `rate-limit-service`: Defines Redis as the rate limiting storage backend
+    - `filter-ratelimit`: Configures the rate limit filter for HTTP traffic
+    - `ratelimit-config`: Sets up the rate limit action based on request path
+
 - **Deployment Details**:
   - All components deployed via Helm charts from https://istio-release.storage.googleapis.com/charts
   - Running in dedicated namespace: istio-system
   - Ingress Gateway can be accessed through port-forwarding
+  - Rate limiting is configured to use Redis in the dedicated `redis` namespace
 
 - **Port Forwarding Example**:
   ```bash
@@ -188,4 +196,53 @@ Automated DNS configuration for Kubernetes services.
 ### Datadog
 
 **Status**: 🔄 Planned  
-Application monitoring and analytics platform. 
+Application monitoring and analytics platform.
+
+## Redis
+
+**Status**: ✅ Active  
+**Version**: 18.19.1  
+**Namespace**: redis
+
+Redis is a popular open-source, in-memory data structure store that can be used as a database, cache, message broker, and streaming engine. It supports various data structures such as strings, hashes, lists, sets, sorted sets, and more.
+
+**Implementation**:  
+Redis is implemented in the cluster using the Bitnami Redis Helm chart. It is deployed in a dedicated `redis` namespace to serve both the Istio rate limiting functionality and to provide Redis services for applications.
+
+**Configuration**:  
+- Deployed in the `redis` namespace
+- 1 master and 2 replicas for high availability
+- Authentication is enabled, requiring a password to access Redis
+- Persistence is enabled with 8Gi storage for both master and replicas
+- Exposed as a ClusterIP service within the cluster
+- Network policies are enabled to allow connections from all namespaces
+- Security contexts configured with appropriate user and group settings
+- Redis master endpoint is configured to work with Istio rate limiting: `redis-master.redis.svc.cluster.local:6379`
+
+**Dependencies**:  
+- Kubernetes cluster
+- Helm 3.x
+- When used with Istio rate limiting, requires Istio to be enabled
+
+**Usage**:  
+Redis serves two primary purposes:
+1. It is utilized by the Istio rate limiting service to store counters and enforce rate limits, integrating automatically with the rate limiting functionality.
+2. It can be used by application developers for various use cases like caching, session storage, pub/sub messaging, etc.
+
+To connect to Redis from an application:
+```
+REDIS_HOST=redis-master.redis.svc.cluster.local
+REDIS_PORT=6379
+```
+
+**Istio Rate Limiting Integration**:
+When both Redis and Istio are enabled, the system automatically deploys the following EnvoyFilter resources:
+- `rate-limit-service`: Configures the Redis endpoint for rate limiting
+- `filter-ratelimit`: Sets up the HTTP filter for rate limiting
+- `ratelimit-config`: Defines rate limiting actions based on request path
+
+**Notes**:  
+- Redis is disabled by default and must be enabled in the Pulumi config (`redis_enabled = true`)
+- For production use, consider increasing the number of replicas and using a secure password
+- The multi-tenant setup allows developers to utilize Redis across different namespaces
+- AOF persistence is enabled and RDB persistence is disabled for better durability 
