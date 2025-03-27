@@ -8,6 +8,7 @@ import (
 
 	"github.com/james/monorepo/pulumi_dev_local/pkg/resources"
 	"github.com/james/monorepo/pulumi_dev_local/pkg/utils"
+	// Add this import for generic Kubernetes resources
 )
 
 // DeployIstio deploys Istio service mesh components
@@ -65,8 +66,8 @@ func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider) error {
 			},
 			"defaultRevision": "default",
 		},
-		Wait:          false,
-		Timeout:       300,
+		Wait:          true,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: istioCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{ns}))
@@ -86,8 +87,8 @@ func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider) error {
 		Values: map[string]interface{}{
 			"cniBinDir": "/home/kubernetes/bin",
 		},
-		Wait:    false,
-		Timeout: 300,
+		Wait:    true,
+		Timeout: 600,
 	}, pulumi.DependsOn([]pulumi.Resource{istioBase}))
 
 	if err != nil {
@@ -261,30 +262,8 @@ echo "Cleanup and wait complete, ready to proceed with installation"
 		Version:         version,
 		CreateNamespace: false,
 		Values:          map[string]interface{}{},
-		// Values: map[string]interface{}{
-		// 	// Add global prefix to avoid resource naming conflicts
-		// 	"global": map[string]interface{}{
-		// 		"istioNamespace": namespace,
-		// 		"hub":            "docker.io/istio",
-		// 		"tag":            "1.23.3",
-		// 		// "resourcesPrefix": "new-",
-		// 	},
-		// 	// Add custom resource naming to avoid conflict with existing ClusterRoleBinding
-		// 	// "fullnameOverride": "istiod-new",
-		// 	// Use unique name for resources to avoid conflicts
-		// 	"pilot": map[string]interface{}{
-		// 		"rollingMaxSurge":       "100%",
-		// 		"rollingMaxUnavailable": "25%",
-		// 		"resources": map[string]interface{}{
-		// 			"requests": map[string]interface{}{
-		// 				"cpu":    "500m",
-		// 				"memory": "2048Mi",
-		// 			},
-		// 		},
-		// 	},
-		// },
-		Wait:    true,
-		Timeout: 300,
+		Wait:            true,
+		Timeout:         600,
 	}, pulumi.DependsOn([]pulumi.Resource{istioBase, istioCNI, cleanupPod}))
 
 	if err != nil {
@@ -300,12 +279,125 @@ echo "Cleanup and wait complete, ready to proceed with installation"
 		Version:         version,
 		CreateNamespace: false,
 		Values:          map[string]interface{}{},
-		Wait:            false,
-		Timeout:         300,
+		Wait:            true,
+		Timeout:         600,
 	}, pulumi.DependsOn([]pulumi.Resource{istioBase, istiod}))
 
 	if err != nil {
 		return err
+	}
+
+	// Deploy rate limiting EnvoyFilters if Redis is enabled
+	redisEnabled := conf.GetBool("redis_enabled", false)
+	if redisEnabled {
+		// Rate Limit Service EnvoyFilter
+		_, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+			Name: "istio-rate-limit-service",
+			YAML: `apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-service
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      context: GATEWAY
+    patch:
+      operation: ADD
+      value:
+        name: rate_limit_service
+        type: STRICT_DNS
+        connect_timeout: 10s
+        lb_policy: ROUND_ROBIN
+        http2_protocol_options: {}
+        load_assignment:
+          cluster_name: rate_limit_service
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: redis-master.redis.svc.cluster.local
+                    port_value: 6379`,
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		if err != nil {
+			return err
+		}
+
+		// Filter Rate Limit EnvoyFilter
+		_, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+			Name: "filter-ratelimit",
+			YAML: `apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.ratelimit
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+          domain: redis-rate-limit
+          failure_mode_deny: true
+          rate_limit_service:
+            grpc_service:
+              envoy_grpc:
+                cluster_name: rate_limit_service
+              timeout: 10s
+            transport_api_version: V3`,
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		if err != nil {
+			return err
+		}
+
+		// RateLimit Config EnvoyFilter
+		_, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+			Name: "ratelimit-config",
+			YAML: `apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ratelimit-config
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: VIRTUAL_HOST
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        vhost:
+          name: "*:80"
+    patch:
+      operation: MERGE
+      value:
+        rate_limits:
+        - actions:
+          - request_headers:
+              header_name: ":path"
+              descriptor_key: path`,
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Export output
