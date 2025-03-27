@@ -1,0 +1,52 @@
+---
+description: 
+globs: terraform_dev_local/,pulumi_dev_local/
+alwaysApply: false
+---
+ # Infrastructure as Code Component Implementation Guidelines
+
+## Overview
+
+This rule provides guidelines for implementing new infrastructure components using both Terraform and Pulumi in our monorepo.
+
+## Implementation Requirements
+
+When implementing a new infrastructure component:
+
+1. **Maintain Feature Parity**: All components must be implemented in both:
+   - Terraform (`terraform_dev_local/`)
+   - Pulumi (`pulumi_dev_local/`)
+
+2. **Follow Component Implementation Steps**:
+   - Initial planning (chart selection, namespace, config values)
+   - Add configuration options (variables.tf for Terraform, Pulumi.dev.yaml for Pulumi)
+   - Create Helm release resource (helm_release for Terraform, helm.NewRelease for Pulumi)
+   - Add values file (YAML for Terraform, inline or loaded YAML for Pulumi)
+   - Add component references in main files
+   - Add integration with other components if required
+   - Update documentation in COMPONENTS.md for both implementations
+
+3. **Implementation Patterns**:
+   - **Terraform**: Use terraform conditional resources with count based on "${var.component_enabled} ? 1 : 0" pattern
+   - **Pulumi**: Use Go configuration with early returns for disabled components
+   - Reference the complete implementation guide at `CONTRIBUTE_IAC_COMPONENTS.md`
+
+4. **Documentation Standards**:
+   - Update both `terraform_dev_local/COMPONENTS.md` and `pulumi_dev_local/COMPONENTS.md`
+   - Document Status, Version, Namespace, Overview, Implementation, Features, Dependencies, and Configuration Options
+   - Include documentation links
+
+5. **Best Practices**:
+   - Always pin chart versions for reproducibility
+   - Define appropriate resource requirements
+   - Use proper dependency management
+   - Follow error handling patterns for Pulumi code
+
+## Example Reference
+
+Refer to the Redis implementation as an example:
+- `terraform_dev_local/helm_redis.tf` for Terraform
+- `pulumi_dev_local/pkg/applications/redis.go` for Pulumi
+- Component integration example in Istio rate limiting
+
+For complete guidance, refer to `CONTRIBUTE_IAC_COMPONENTS.md` at the repository root.
