@@ -80,7 +80,7 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 			},
 		},
 		Wait:          true, // Set to true to wait for completion
-		Timeout:       300,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: otelCRDs,
 	}, pulumi.DependsOn(dependencyResources))
@@ -106,8 +106,8 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 				},
 			},
 		},
-		Wait:          false,
-		Timeout:       300,
+		Wait:          true,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: otelCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{otelOperator}))

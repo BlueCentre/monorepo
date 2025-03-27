@@ -1,0 +1,84 @@
+# Redis Helm Chart Values Reference
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Custom labels for all resources
+commonLabels:
+  app.kubernetes.io/part-of: platform-infrastructure
+  app.kubernetes.io/managed-by: pulumi
+
+# Authentication configuration
+auth:
+  enabled: true
+  sentinel: false
+  usePasswordFiles: false
+  # Password is set via the redis_password config value
+
+# Redis master configuration
+master:
+  persistence:
+    enabled: true
+    size: 8Gi
+    path: /data
+  service:
+    type: ClusterIP
+    ports:
+      redis: 6379
+    annotations:
+      app.kubernetes.io/purpose: multi-tenant
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+  podSecurityContext:
+    fsGroup: 1001
+  containerSecurityContext:
+    runAsUser: 1001
+
+# Redis replica configuration
+replica:
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 8Gi
+  service:
+    type: ClusterIP
+    ports:
+      redis: 6379
+    annotations:
+      app.kubernetes.io/purpose: multi-tenant
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+# Sentinel configuration if needed for high availability
+sentinel:
+  enabled: false
+  masterSet: mymaster
+
+# Metrics using the Prometheus exporter
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+
+networkPolicy:
+  enabled: true
+  allowExternal: true
+
+# Redis Configuration Values
+commonConfiguration: |
+  # Enable AOF persistence
+  appendonly yes
+  # Disable RDB persistence
+  save "" 

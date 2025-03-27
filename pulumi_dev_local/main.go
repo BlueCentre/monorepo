@@ -37,6 +37,7 @@ func main() {
 		argocdEnabled := conf.GetBool("argocd_enabled")
 		telepresenceEnabled := conf.GetBool("telepresence_enabled")
 		cnpgEnabled := conf.GetBool("cnpg_enabled")
+		redisEnabled := conf.GetBool("redis_enabled")
 
 		// Setup base components
 		var certManagerRelease pulumi.Resource
@@ -94,6 +95,13 @@ func main() {
 		// Service mesh setup
 		if istioEnabled {
 			if err := applications.DeployIstio(ctx, k8sProvider); err != nil {
+				return err
+			}
+		}
+
+		// Redis setup for both Istio rate limiting and application usage
+		if redisEnabled {
+			if _, err := applications.DeployRedis(ctx, k8sProvider); err != nil {
 				return err
 			}
 		}
