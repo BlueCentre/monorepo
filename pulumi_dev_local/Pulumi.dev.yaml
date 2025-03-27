@@ -8,6 +8,7 @@ config:
   dev-local-infrastructure:opentelemetry_enabled: "true"
   dev-local-infrastructure:datadog_enabled: "false"
   dev-local-infrastructure:istio_enabled: "true"
+  dev-local-infrastructure:redis_enabled: "true"
   dev-local-infrastructure:cnpg_enabled: "true"
   dev-local-infrastructure:argocd_enabled: "false"
   dev-local-infrastructure:telepresence_enabled: "false"
@@ -26,5 +27,4 @@ config:
   monitoring:namespace: monitoring
   database:namespace: database
   ingress:namespace: ingress-nginx
-  dev-local-infrastructure:redis_enabled: "true"
 encryptionsalt: v1:2q/j9oCTjH0=:v1:1kTegG+X9Ve/oI2C:/krGKWcHvieQjXhYbuEjybzZfh+sjQ==
