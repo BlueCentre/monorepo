@@ -50,35 +50,25 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 		RepositoryURL:   "https://open-telemetry.github.io/opentelemetry-helm-charts",
 		Version:         version,
 		CreateNamespace: false,
-		Values: map[string]interface{}{
-			"crds": map[string]interface{}{
-				"create": true,
-			},
-			"manager": map[string]interface{}{
-				"collectorImage": map[string]interface{}{
-					"repository": "otel/opentelemetry-collector-k8s",
-				},
-				"leaderElection": map[string]interface{}{
-					"enabled": true,
-				},
-			},
-			"admissionWebhooks": map[string]interface{}{
-				"create": true,
-				"certManager": map[string]interface{}{
-					"enabled":                true,
-					"issuerRef":              map[string]interface{}{}, // TODO: Update issuerRef to use selfsigned-issuer from cert-manager
-					"certificateAnnotations": map[string]interface{}{},
-					"issuerAnnotations":      map[string]interface{}{},
-					"duration":               "",
-					"renewBefore":            "",
-				},
-				"autoGenerateCert": map[string]interface{}{
-					"enabled":        true,
-					"recreate":       true,
-					"certPeriodDays": 365,
-				},
-			},
-		},
+		ValuesFile:      "opentelemetry-operator",
+		// Values: map[string]interface{}{
+		// 	"admissionWebhooks": map[string]interface{}{
+		// 		"create": true,
+		// 		"certManager": map[string]interface{}{
+		// 			"enabled":                true,
+		// 			"issuerRef":              map[string]interface{}{}, // TODO: Update issuerRef to use selfsigned-issuer from cert-manager
+		// 			"certificateAnnotations": map[string]interface{}{},
+		// 			"issuerAnnotations":      map[string]interface{}{},
+		// 			"duration":               "",
+		// 			"renewBefore":            "",
+		// 		},
+		// 		"autoGenerateCert": map[string]interface{}{
+		// 			"enabled":        true,
+		// 			"recreate":       true,
+		// 			"certPeriodDays": 365,
+		// 		},
+		// 	},
+		// },
 		Wait:          true, // Set to true to wait for completion
 		Timeout:       600,
 		CleanupCRDs:   false,
@@ -97,19 +87,11 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 		RepositoryURL:   "https://open-telemetry.github.io/opentelemetry-helm-charts",
 		Version:         version,
 		CreateNamespace: false,
-		Values: map[string]interface{}{
-			"mode":         "deployment",
-			"replicaCount": 1,
-			"presets": map[string]interface{}{
-				"clusterMetrics": map[string]interface{}{
-					"enabled": true,
-				},
-			},
-		},
-		Wait:          true,
-		Timeout:       600,
-		CleanupCRDs:   false,
-		CRDsToCleanup: otelCRDs,
+		ValuesFile:      "opentelemetry-collector",
+		Wait:            true,
+		Timeout:         600,
+		CleanupCRDs:     false,
+		CRDsToCleanup:   otelCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{otelOperator}))
 
 	// Export OpenTelemetry information

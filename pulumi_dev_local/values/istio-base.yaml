@@ -1,0 +1,42 @@
+# Istio Base Helm Values
+crds:
+  create: true
+
+base:
+  enableIstioConfigCRDs: true
+
+defaultRevision: default
+
+# Istiod Values
+# istiod:
+#   meshConfig:
+#     enableTracing: true
+#     accessLogFile: /dev/stdout
+#   pilot:
+#     resources:
+#       requests:
+#         cpu: 100m
+#         memory: 128Mi
+#   global:
+#     proxy:
+#       resources:
+#         requests:
+#           cpu: 10m
+#           memory: 64Mi
+
+# Gateway Values
+# gateway:
+#   service:
+#     type: ClusterIP  # Use ClusterIP for local development
+#   autoscaling:
+#     enabled: false
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 128Mi
+
+# Common settings
+# global:
+#   hub: docker.io/istio
+#   tag: 1.20.1
+#   istioNamespace: istio-system

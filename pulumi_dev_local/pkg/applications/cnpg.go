@@ -46,42 +46,8 @@ func DeployCloudNativePG(ctx *pulumi.Context, provider *kubernetes.Provider) (pu
 		RepositoryURL:   "https://cloudnative-pg.github.io/charts",
 		Version:         version,
 		CreateNamespace: false, // We created it already above
-		Values: map[string]interface{}{
-			"config": map[string]interface{}{
-				"clusterWide": true,
-			},
-			"webhook": map[string]interface{}{
-				"timeoutSeconds": 30,
-				"certManager": map[string]interface{}{
-					"enabled": true,
-				},
-			},
-			"securityContext": map[string]interface{}{
-				"runAsNonRoot": true,
-				"runAsUser":    65534,
-				"runAsGroup":   65534,
-			},
-			"podSecurityContext": map[string]interface{}{
-				"runAsNonRoot": true,
-				"runAsUser":    65534,
-				"fsGroup":      65534,
-			},
-			"metrics": map[string]interface{}{
-				"enabled": true,
-				"serviceMonitor": map[string]interface{}{
-					"enabled": false,
-				},
-			},
-			"resources": map[string]interface{}{
-				"requests": map[string]interface{}{
-					"cpu":    "100m",
-					"memory": "128Mi",
-				},
-				"limits": map[string]interface{}{
-					"cpu":    "200m",
-					"memory": "256Mi",
-				},
-			},
+		ValuesFile:      "cnpg",
+		Values:          map[string]interface{}{
 			// NOTE: For cluster chart
 			// "mode": "standalone",
 			// "cluster": map[string]interface{}{
@@ -92,7 +58,7 @@ func DeployCloudNativePG(ctx *pulumi.Context, provider *kubernetes.Provider) (pu
 			// },
 		},
 		Wait:          true,
-		Timeout:       300,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: CNPGCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{ns}))
