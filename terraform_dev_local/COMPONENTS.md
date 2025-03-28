@@ -220,6 +220,44 @@ When both Redis and Istio are enabled, the system automatically deploys the foll
 - The multi-tenant setup allows developers to utilize Redis across different namespaces
 - AOF persistence is enabled and RDB persistence is disabled for better durability
 
+## MongoDB
+
+**Status**: Production Ready  
+**Version**: 0.8.3 (Operator), 4.4.19 (MongoDB)  
+**Namespace**: mongodb
+
+MongoDB is a popular NoSQL database that stores data in flexible, JSON-like documents. It provides high availability, horizontal scaling, and geographic distribution.
+
+### Implementation
+
+MongoDB is implemented using the MongoDB Community Operator Helm chart from `https://mongodb.github.io/helm-charts`. The operator deploys and manages a MongoDB replica set in a dedicated `mongodb` namespace.
+
+### Features
+- Deployed in the `mongodb` namespace
+- The MongoDB Community Operator manages the MongoDB deployment
+- MongoDB version 4.4.19 is deployed in a replica set with 1 replica
+- Secure storage with persistent volumes (8Gi)
+- MongoDB password is stored in a Kubernetes secret
+- The MongoDB instance is available as a Service within the cluster
+- The connection string format for applications: `mongodb://root:password@mongodb-rs-0.mongodb-svc.mongodb.svc.cluster.local:27017/admin?replicaSet=mongodb-rs&ssl=false`
+
+### Dependencies
+- None
+
+### Configuration Options
+
+To enable MongoDB, set the `mongodb_enabled` variable to `true` in your terraform.tfvars file. You can customize the root password by setting the `mongodb_password` variable.
+
+```hcl
+# Enable MongoDB
+mongodb_enabled = true
+mongodb_password = "your-secure-password"
+```
+
+### References
+- [MongoDB Community Operator](https://github.com/mongodb/mongodb-kubernetes-operator)
+- [MongoDB Community Operator Helm Chart](https://github.com/mongodb/helm-charts/tree/main/charts/community-operator)
+
 ## Future Components
 
 The following components are planned for future implementation:

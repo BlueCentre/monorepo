@@ -36,9 +36,9 @@
 # https://console.cloud.google.com/kubernetes/secret/us-central1/lab-jn-dev-usc1-1/argocd/argocd-secret?project=prj-lab-james-nguyen&supportedpurview=project
 # https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
 resource "helm_release" "telepresence" {
-  count            = var.telepresence_enabled ? 1 : 0
-  name             = "traffic-manager"
-  chart            = "traffic-manager"
+  count = var.telepresence_enabled ? 1 : 0
+  name  = "traffic-manager"
+  chart = "traffic-manager"
   # version          = "7.3.11"
   # repository       = "https://argoproj.github.io/argo-helm"
   description      = "Terraform driven Helm release of Telepresence Helm chart"

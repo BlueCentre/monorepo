@@ -118,8 +118,8 @@ resource "helm_release" "datadog_agent" {
 
 # https://console.cloud.google.com/kubernetes/objectKind/external-secrets.io/clustersecretstores?apiVersion=v1beta1&project=prj-lab-james-nguyen&supportedpurview=project
 resource "kubectl_manifest" "patch_lab_external_secret_datadog" {
-  count      = (var.external_secrets_enabled && var.datadog_enabled) ? 1 : 0
-  yaml_body  = <<EOF
+  count     = (var.external_secrets_enabled && var.datadog_enabled) ? 1 : 0
+  yaml_body = <<EOF
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:

@@ -177,3 +177,16 @@ variable "redis_password" {
   default     = "redis-password"
   sensitive   = true
 }
+
+variable "mongodb_enabled" {
+  description = "Enable MongoDB for application usage"
+  type        = bool
+  default     = false
+}
+
+variable "mongodb_password" {
+  description = "Password for MongoDB authentication"
+  type        = string
+  default     = "mongodb-password"
+  sensitive   = true
+}

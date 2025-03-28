@@ -73,8 +73,8 @@ resource "helm_release" "argocd" {
       "${path.module}/helm_values/argocd_local.yaml.tpl",
       {
         # https://console.cloud.google.com/apis/credentials/oauthclient/681831149067-9qif0l6nn4etv66fv73dgndquinnasvk.apps.googleusercontent.com?project=prj-lab-james-nguyen&supportedpurview=project
-        domain           = "localhost",
-        hostname         = "localhost",
+        domain   = "localhost",
+        hostname = "localhost",
         # domain           = "argocd-dev.lab.flyr.io",
         # hostname         = "argocd-dev.lab.flyr.io",
         # iapClientID      = data.google_secret_manager_secret_version_access.argocd_iap_client_id[count.index].secret_data,

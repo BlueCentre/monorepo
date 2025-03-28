@@ -26,17 +26,23 @@ When implementing a new infrastructure component:
    - Add integration with other components if required
    - Update documentation in COMPONENTS.md for both implementations
 
-3. **Implementation Patterns**:
+3. **Use Consistent Helm Repository URLs**:
+   - Always use consistent repository URLs between Terraform and Pulumi implementations
+   - Prefer HTTPS format URLs over OCI format for maximum compatibility 
+   - Test repository URLs with both tools before completing implementation
+   - Reference the chart repository best practices guide at `.cursor/rules/iac-helm-chart-repository-best-practices.mdc`
+
+4. **Implementation Patterns**:
    - **Terraform**: Use terraform conditional resources with count based on "${var.component_enabled} ? 1 : 0" pattern
    - **Pulumi**: Use Go configuration with early returns for disabled components
    - Reference the complete implementation guide at `CONTRIBUTE_IAC_COMPONENTS.md`
 
-4. **Documentation Standards**:
+5. **Documentation Standards**:
    - Update both `terraform_dev_local/COMPONENTS.md` and `pulumi_dev_local/COMPONENTS.md`
    - Document Status, Version, Namespace, Overview, Implementation, Features, Dependencies, and Configuration Options
    - Include documentation links
 
-5. **Best Practices**:
+6. **Best Practices**:
    - Always pin chart versions for reproducibility
    - Define appropriate resource requirements
    - Use proper dependency management
