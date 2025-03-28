@@ -48,25 +48,13 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 		RepositoryURL:   "https://charts.jetstack.io",
 		Version:         version,
 		CreateNamespace: false,
+		ValuesFile:      "cert-manager",
 		Values: map[string]interface{}{
-			"crds": map[string]interface{}{
-				"enabled": true,
-				"keep":    true,
-			},
-			"global": map[string]interface{}{
-				"leaderElection": map[string]interface{}{
-					"namespace": namespace,
-				},
-			},
 			"startupapicheck": map[string]interface{}{
 				"enabled": false,
 			},
-			"webhook": map[string]interface{}{
-				"timeoutSeconds": 30, // Timeout value must be between 1 and 30 seconds
-			},
-			"podDisruptionBudget": map[string]interface{}{
-				"enabled":      true,
-				"minAvailable": 1,
+			"prometheus": map[string]interface{}{
+				"enabled": false,
 			},
 		},
 		Wait:          true, // Set to true to ensure it's fully deployed before OpenTelemetry
