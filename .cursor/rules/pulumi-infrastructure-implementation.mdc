@@ -1,10 +1,10 @@
 ---
-description: 
-globs: pulumi_dev_local/**
+description: Guidance for implementing Pulumi components
+globs: 
+  - pulumi_dev_local/**/*.go
 alwaysApply: false
 ---
-
-# Pulumi Infrastructure Implementation Best Practices
+# Pulumi Infrastructure Implementation
 
 ## Component Development Guidelines
 
@@ -20,19 +20,26 @@ When implementing new Pulumi components or modifying existing ones, follow these
    - Use `resources.CreateK8sNamespace()` instead of direct namespace creation
    - Use `resources.CreateK8sManifest()` for applying raw YAML manifests
 
-3. **Externalize configuration in YAML files**:
+3. **Use compatible Helm chart repositories**:
+   - Always use HTTPS URLs (e.g., `https://charts.bitnami.com/bitnami`) instead of OCI URLs
+   - Verify repository URLs work with Pulumi before implementation
+   - Check `.cursor/rules/iac-helm-chart-repository-best-practices.mdc` for specific repository URLs
+   - Test minimal chart deployments before adding complex configurations
+
+4. **Externalize configuration in YAML files**:
    - Store static Helm chart values in `values/{component-name}.yaml`
    - Only override dynamic values in code (passwords, credentials, etc.)
    - Use the `ValuesFile` parameter to automatically load values
 
-4. **Follow the standard component structure**:
+5. **Follow the standard component structure**:
    - Define a single exported function named `Deploy{ComponentName}`
    - Accept `ctx *pulumi.Context` and `provider *kubernetes.Provider` parameters
    - Return `(pulumi.Resource, error)` for consistent error handling
 
-5. **Implement proper cleanup for components**:
+6. **Implement proper cleanup for components**:
    - Use the resources package cleanup features for CRDs and webhooks
    - Set proper dependencies between resources using `pulumi.DependsOn`
+   - Follow the early return pattern to avoid null pointer errors
 
 ## Example Implementation Pattern
 

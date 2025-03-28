@@ -18,8 +18,8 @@ alwaysApply: true
 
 - To initialize and pull down terraform modules and providers: terraform init
 - To verify a terraform plan: terraform plan
-- To apply terraform deployment: terraform apply -y
-- To destroy terraform deployment: terrafor destroy -y
+- To apply terraform deployment: terraform apply -auto-approve
+- To destroy terraform deployment: terrafor destroy -auto-approve
 
 # Terraform Implementation Standards
 

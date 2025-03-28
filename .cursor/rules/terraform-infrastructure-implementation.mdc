@@ -1,6 +1,7 @@
 ---
-description: 
-globs: terraform_dev_local/**
+description: Guidance for implementing Terraform components
+globs: 
+  - terraform_dev_local/**/*.tf
 alwaysApply: false
 ---
 // Terraform Infrastructure Implementation
@@ -17,29 +18,35 @@ When implementing new Terraform components or modifying existing ones, follow th
    - Include descriptive comments with references to Helm chart documentation
    - Always include a conditional `count` based on an enable flag
 
-2. **Implement proper variable definitions**:
+2. **Use compatible Helm chart repositories**:
+   - Prefer HTTPS URLs (e.g., `https://charts.bitnami.com/bitnami`) for maximum compatibility with Pulumi
+   - Only use OCI URLs (`oci://registry-1.docker.io/bitnamicharts`) if verified to work with both tools
+   - Check `.cursor/rules/iac-helm-chart-repository-best-practices.mdc` for specific repository URLs
+   - Test repository access with a minimal chart deployment before adding complex configurations
+
+3. **Implement proper variable definitions**:
    - Define all component variables in `variables.tf`
    - Include appropriate descriptions, types, and default values
    - Use `sensitive = true` for secrets and credentials
    - Use standardized naming convention: `<component_name>_<property>`
 
-3. **Externalize Helm values in template files**:
+4. **Externalize Helm values in template files**:
    - Store Helm values in `helm_values/<component_name>_values.yaml.tpl`
    - Use the `templatefile()` function to inject variables
    - Only use inline `set {}` blocks for dynamic values or credentials
    - Include references to original Helm chart documentation
 
-4. **Follow standard resource structure**:
+5. **Follow standard resource structure**:
    - Enable/disable components using a boolean variable
    - Set appropriate timeouts and wait conditions
    - Use consistent indentation and formatting
    - Group related resources together in the same file
 
-5. **Use standard module organization**:
+6. **Use standard module organization**:
    - Name files according to purpose: `helm_<component_name>.tf`
    - Keep provider configuration in `providers.tf`
-   - Maintain all variables in `variables.tf`
-   - Define outputs in `outputs.tf`
+   - Define common variables in `variables.tf`
+   - Use outputs for sharing values between components
 
 ## Example Implementation Pattern
 

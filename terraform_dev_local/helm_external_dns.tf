@@ -2,11 +2,11 @@
 # https://bitnami.com/stack/external-dns/helm
 # https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
 resource "helm_release" "external_dns" {
-  count = var.external_dns_enabled ? 1 : 0
-  name  = "external-dns"
-  chart = "external-dns"
-  version          = "1.15.0"
-  repository       = "https://kubernetes-sigs.github.io/external-dns/"
+  count      = var.external_dns_enabled ? 1 : 0
+  name       = "external-dns"
+  chart      = "external-dns"
+  version    = "1.15.0"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
   # version          = "8.3.9"
   # repository       = "https://charts.bitnami.com/bitnami"
   description      = "Terraform driven Helm release of external-dns Helm chart"

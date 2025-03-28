@@ -219,10 +219,10 @@ resource "kubernetes_manifest" "rate_limit_service" {
           patch = {
             operation = "ADD"
             value = {
-              name            = "rate_limit_service"
-              type            = "STRICT_DNS"
-              connect_timeout = "10s"
-              lb_policy       = "ROUND_ROBIN"
+              name                   = "rate_limit_service"
+              type                   = "STRICT_DNS"
+              connect_timeout        = "10s"
+              lb_policy              = "ROUND_ROBIN"
               http2_protocol_options = {}
               load_assignment = {
                 cluster_name = "rate_limit_service"
@@ -233,7 +233,7 @@ resource "kubernetes_manifest" "rate_limit_service" {
                         endpoint = {
                           address = {
                             socket_address = {
-                              address   = "redis-master.redis.svc.cluster.local"
+                              address    = "redis-master.redis.svc.cluster.local"
                               port_value = 6379
                             }
                           }
@@ -329,7 +329,7 @@ resource "kubernetes_manifest" "ratelimit_config" {
     apiVersion = "networking.istio.io/v1alpha3"
     kind       = "EnvoyFilter"
     metadata = {
-      name      = "ratelimit-config" 
+      name      = "ratelimit-config"
       namespace = "istio-system"
     }
     spec = {
@@ -357,7 +357,7 @@ resource "kubernetes_manifest" "ratelimit_config" {
                   actions = [
                     {
                       request_headers = {
-                        header_name   = ":path"
+                        header_name    = ":path"
                         descriptor_key = "path"
                       }
                     }
