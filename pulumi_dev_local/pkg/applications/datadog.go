@@ -38,12 +38,9 @@ func DeployDatadog(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.R
 		RepositoryURL:   conf.GetString("datadog:repository_url", "https://helm.datadoghq.com"),
 		Version:         version,
 		CreateNamespace: false, // We created it already above
+		ValuesFile:      "datadog",
 		Values: map[string]interface{}{
-			"targetSystem": "linux",
 			"datadog": map[string]interface{}{
-				"apiKeyExistingSecret": "datadog",
-				"appKeyExistingSecret": "datadog",
-				"collectEvents":        false,
 				"tags": []string{
 					"tenant:monorepo",
 					"owner:ipv1337",
@@ -64,25 +61,9 @@ func DeployDatadog(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.R
 					"enabled": true,
 				},
 			},
-			"agents": map[string]interface{}{
-				"containers": map[string]interface{}{
-					"agent": map[string]interface{}{
-						"resources": map[string]interface{}{
-							"requests": map[string]interface{}{
-								"cpu":    "100m",
-								"memory": "256Mi",
-							},
-							"limits": map[string]interface{}{
-								"cpu":    "200m",
-								"memory": "512Mi",
-							},
-						},
-					},
-				},
-			},
 		},
 		Wait:        true,
-		Timeout:     300,
+		Timeout:     600,
 		CleanupCRDs: false,
 	}, pulumi.DependsOn([]pulumi.Resource{ns}))
 

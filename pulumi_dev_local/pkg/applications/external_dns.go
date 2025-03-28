@@ -50,17 +50,14 @@ func DeployExternalDNS(ctx *pulumi.Context, provider *kubernetes.Provider) error
 				},
 			},
 		},
-		// "domainFilters": []interface{}{
-		// 	"ipv1337.dev",
-		// },
-		"txtOwnerId":         "bluecentre-dev",
-		"policy":             "sync",
-		"interval":           "30m",
-		"triggerLoopOnEvent": true,
-		"annotationFilter":   "external-dns.alpha.kubernetes.io/sync-enabled in (true)",
+		"txtOwnerId": "bluecentre-dev",
+		"interval":   "30m",
 		"sources": []interface{}{
 			"istio-gateway",
 		},
+		// "domainFilters": []interface{}{
+		// 	"ipv1337.dev",
+		// },
 		// "cloudflare": map[string]interface{}{
 		// 	"proxied": true,
 		// },
@@ -132,9 +129,10 @@ spec:
 		RepositoryURL:   "https://kubernetes-sigs.github.io/external-dns",
 		Version:         version,
 		CreateNamespace: false,
+		ValuesFile:      "external-dns",
 		Values:          values,
 		Wait:            true,
-		Timeout:         300,
+		Timeout:         600,
 	}, pulumi.DependsOn(deps))
 
 	// Export external-dns information

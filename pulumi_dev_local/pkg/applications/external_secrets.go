@@ -59,21 +59,8 @@ func DeployExternalSecrets(ctx *pulumi.Context, provider *kubernetes.Provider) e
 		RepositoryURL:   "https://charts.external-secrets.io",
 		Version:         version,
 		CreateNamespace: false,
+		ValuesFile:      "external-secrets",
 		Values: map[string]interface{}{
-			"installCRDs":    true,
-			"leaderElection": true,
-			"serviceAccount": map[string]interface{}{
-				"create": true,
-			},
-			// "global": map[string]interface{}{
-			// 	"leaderElection": map[string]interface{}{
-			// 		"namespace": namespace,
-			// 	},
-			// },
-			// "podDisruptionBudget": map[string]interface{}{
-			// 	"enabled":      false,
-			// 	"minAvailable": 1,
-			// },
 			"webhook": map[string]interface{}{
 				"create": false,
 			},
@@ -81,8 +68,8 @@ func DeployExternalSecrets(ctx *pulumi.Context, provider *kubernetes.Provider) e
 				"create": false,
 			},
 		},
-		Wait:          false,
-		Timeout:       300,
+		Wait:          true,
+		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: ExternalSecretsCRDs,
 	}, pulumi.DependsOn([]pulumi.Resource{ns}))
