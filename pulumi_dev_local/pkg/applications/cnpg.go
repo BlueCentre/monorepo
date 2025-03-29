@@ -1,74 +1,135 @@
 package applications
 
 import (
+	"fmt"
+
 	"github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes"
+	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
+	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
 	"github.com/james/monorepo/pulumi_dev_local/pkg/resources"
 	"github.com/james/monorepo/pulumi_dev_local/pkg/utils"
 )
 
-// CNPGCRDs is a list of all CloudNativePG CRDs
-var CNPGCRDs = []string{
-	"backups.postgresql.cnpg.io",
-	"clusters.postgresql.cnpg.io",
-	"poolers.postgresql.cnpg.io",
-	"scheduledbackups.postgresql.cnpg.io",
-}
+// // CNPGCRDs is a list of all CloudNativePG CRDs - Kept for reference if needed later
+// var CNPGCRDs = []string{
+// \t"backups.postgresql.cnpg.io",
+// \t"clusters.postgresql.cnpg.io",
+// \t"poolers.postgresql.cnpg.io",
+// \t"scheduledbackups.postgresql.cnpg.io",
+// }
 
-// DeployCloudNativePG installs CloudNativePG operator
-func DeployCloudNativePG(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Resource, error) {
-	// Get configuration
+// DeployCloudNativePGOperator installs the CloudNativePG operator Helm chart.
+// It returns the Helm release resource and an error if any occurred.
+func DeployCloudNativePGOperator(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Resource, error) {
+	// Get configuration for the operator
 	conf := utils.NewConfig(ctx)
-	enabled := conf.GetBool("cnpg_enabled", true)
-	version := conf.GetString("cnpg_version", "0.23.2")
+	operatorVersion := conf.GetString("cnpg_operator_version", "0.23.2")
+	operatorNamespace := conf.GetString("cnpg_operator_namespace", "cnpg-system")
 
-	if !enabled {
-		ctx.Log.Info("CloudNativePG is disabled, skipping deployment", nil)
-		return nil, nil
-	}
-
-	// Create namespace
-	namespace := conf.GetString("cnpg:namespace", "cnpg-system")
-	ns, err := resources.CreateK8sNamespace(ctx, provider, resources.K8sNamespaceConfig{
-		Name: namespace,
+	// Deploy CloudNativePG Operator using the common function
+	operatorRelease, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+		Name:            "cnpg-operator",                           // Changed name to be specific
+		Namespace:       operatorNamespace,                         // Use operator specific namespace
+		ChartName:       "cloudnative-pg",                          // This is the correct chart for the operator
+		RepositoryURL:   "https://cloudnative-pg.github.io/charts", // Repository URL remains the same
+		Version:         operatorVersion,                           // Use operator specific version
+		CreateNamespace: true,                                      // Operator needs its namespace
+		ValuesFile:      "cnpg-operator",                           // Use the renamed values file
+		Wait:            true,                                      // Wait for the operator to be ready
+		Timeout:         600,                                       // Standard timeout
 	})
 
 	if err != nil {
+		ctx.Log.Error("Failed to deploy CloudNativePG Operator Helm chart.", &pulumi.LogArgs{Resource: nil})
 		return nil, err
 	}
 
-	// Deploy CloudNativePG using the common function
-	cnpg, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
-		Name:            "cnpg",
-		Namespace:       namespace,
-		ChartName:       "cloudnative-pg", // NOTICE: Could be cluster chart
-		RepositoryURL:   "https://cloudnative-pg.github.io/charts",
-		Version:         version,
-		CreateNamespace: false, // We created it already above
-		ValuesFile:      "cnpg",
-		Values:          map[string]interface{}{
-			// NOTE: For cluster chart
-			// "mode": "standalone",
-			// "cluster": map[string]interface{}{
-			// 	"instances": 1,
-			// },
-			// "backups": map[string]interface{}{
-			// 	"enabled": false,
-			// },
+	ctx.Log.Info("CloudNativePG Operator Helm chart deployed successfully.", nil)
+
+	// Export CloudNativePG Operator information
+	ctx.Export("cnpgOperatorNamespace", pulumi.String(operatorNamespace))
+
+	return operatorRelease, nil
+}
+
+// DeployCnpgCluster creates the initial application credentials secret and deploys the CNPG Cluster Helm chart.
+// It depends on the successful deployment of the CNPG operator.
+// Returns the Helm release resource and an error if any occurred.
+func DeployCnpgCluster(ctx *pulumi.Context, provider *kubernetes.Provider, operatorRelease pulumi.Resource) (pulumi.Resource, error) {
+	conf := utils.NewConfig(ctx)
+	// --- Configuration --- //
+	clusterNamespace := conf.GetString("cnpg_cluster_namespace", "cnpg-cluster")
+	clusterVersion := conf.GetString("cnpg_cluster_version", "0.2.1")
+	appDbName := conf.GetString("cnpg_app_db_name", "app")
+	appDbUser := conf.GetString("cnpg_app_db_user", "app_user")
+	appDbPasswordOutput := conf.RequireSecret(ctx, "cnpg_app_db_password")
+
+	// Ensure we have a dependency on the operator being ready
+	var dependsOnOperator pulumi.ResourceOption
+	if operatorRelease != nil {
+		dependsOnOperator = pulumi.DependsOn([]pulumi.Resource{operatorRelease})
+	} else {
+		// If operator deployment was skipped, we cannot proceed with cluster deployment.
+		ctx.Log.Error("Cannot deploy CNPG Cluster: Operator resource is nil (likely disabled or failed).", nil)
+		return nil, fmt.Errorf("CNPG operator deployment is required but was not successful")
+	}
+
+	// --- Secret Creation --- //
+	initialSecretName := "cnpg-initial-app-credentials"
+	appCredentialsSecret, err := kubernetescorev1.NewSecret(ctx, initialSecretName, &kubernetescorev1.SecretArgs{
+		Metadata: &metav1.ObjectMetaArgs{
+			Name:      pulumi.String(initialSecretName),
+			Namespace: pulumi.String(clusterNamespace), // Create secret in the cluster namespace
 		},
-		Wait:          true,
-		Timeout:       600,
-		CleanupCRDs:   false,
-		CRDsToCleanup: CNPGCRDs,
-	}, pulumi.DependsOn([]pulumi.Resource{ns}))
+		Type: pulumi.String("kubernetes.io/basic-auth"),
+		StringData: pulumi.StringMap{
+			"username": pulumi.String(appDbUser),
+			"password": appDbPasswordOutput, // Use the StringOutput directly
+		},
+	}, pulumi.Provider(provider), dependsOnOperator) // Depend on operator
+	if err != nil {
+		return nil, fmt.Errorf("failed to create CNPG initial app credentials secret: %w", err)
+	}
+
+	// --- Helm Chart Deployment --- //
+	// The cluster Helm chart requires the operator and the credentials secret to exist first.
+	clusterDependsOn := []pulumi.Resource{appCredentialsSecret, operatorRelease}
+
+	clusterRelease, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
+		Name:            "cnpg-cluster",                            // Specific name for the cluster release
+		Namespace:       clusterNamespace,                          // Deploy into the cluster namespace
+		ChartName:       "cluster",                                 // Use the 'cluster' chart from the CNPG repo
+		RepositoryURL:   "https://cloudnative-pg.github.io/charts", // Same repo URL as operator
+		Version:         clusterVersion,                            // Use cluster specific version
+		CreateNamespace: true,                                      // Ensure the cluster namespace exists
+		ValuesFile:      "cnpg-cluster",                            // Use the new values file
+		Values: map[string]interface{}{ // Dynamic values mirroring Terraform template
+			"cluster": map[string]interface{}{
+				"initdb": map[string]interface{}{
+					"database": appDbName,
+					"owner":    appDbUser, // Owner derived from secret
+					"secret": map[string]interface{}{
+						"name": initialSecretName, // Reference the created secret
+					},
+				},
+			},
+		},
+		Wait:    false, // Changed from true based on Terraform (wait = false)
+		Timeout: 600,   // Standard timeout
+	}, pulumi.DependsOn(clusterDependsOn))
 
 	if err != nil {
+		ctx.Log.Error(fmt.Sprintf("Failed to deploy CNPG Cluster Helm chart %s", "cnpg-cluster"), &pulumi.LogArgs{Resource: clusterRelease})
 		return nil, err
 	}
 
-	// Export CloudNativePG information
-	ctx.Export("cnpgNamespace", pulumi.String(namespace))
+	ctx.Log.Info(fmt.Sprintf("CNPG Cluster Helm chart %s deployed successfully", "cnpg-cluster"), nil)
 
-	return cnpg, nil
+	// Export Cluster Information
+	ctx.Export("cnpgClusterNamespace", pulumi.String(clusterNamespace))
+	ctx.Export("cnpgInitialAppSecretName", appCredentialsSecret.Metadata.Name())
+
+	return clusterRelease, nil
 }

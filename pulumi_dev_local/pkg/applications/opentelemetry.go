@@ -12,23 +12,10 @@ import (
 func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, certManagerRelease pulumi.Resource) error {
 	// Get configuration
 	conf := utils.NewConfig(ctx)
-	enabled := conf.GetBool("opentelemetry_enabled", false)
 	version := conf.GetString("opentelemetry_version", "0.79.0")
-
-	if !enabled {
-		ctx.Log.Info("OpenTelemetry is disabled, skipping deployment", nil)
-		return nil
-	}
 
 	// Create namespace
 	namespace := conf.GetString("opentelemetry:namespace", "opentelemetry")
-	ns, err := resources.CreateK8sNamespace(ctx, provider, resources.K8sNamespaceConfig{
-		Name: namespace,
-	})
-
-	if err != nil {
-		return err
-	}
 
 	// List of OpenTelemetry CRDs to clean up
 	otelCRDs := []string{
@@ -38,7 +25,8 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 
 	// Deploy OpenTelemetry Operator with CRD management
 	// Add certManagerRelease as a dependency to ensure cert-manager is installed first
-	dependencyResources := []pulumi.Resource{ns}
+	// dependencyResources := []pulumi.Resource{ns}
+	dependencyResources := []pulumi.Resource{}
 	if certManagerRelease != nil {
 		dependencyResources = append(dependencyResources, certManagerRelease)
 	}
@@ -49,30 +37,12 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 		ChartName:       "opentelemetry-operator",
 		RepositoryURL:   "https://open-telemetry.github.io/opentelemetry-helm-charts",
 		Version:         version,
-		CreateNamespace: false,
+		CreateNamespace: true,
 		ValuesFile:      "opentelemetry-operator",
-		// Values: map[string]interface{}{
-		// 	"admissionWebhooks": map[string]interface{}{
-		// 		"create": true,
-		// 		"certManager": map[string]interface{}{
-		// 			"enabled":                true,
-		// 			"issuerRef":              map[string]interface{}{}, // TODO: Update issuerRef to use selfsigned-issuer from cert-manager
-		// 			"certificateAnnotations": map[string]interface{}{},
-		// 			"issuerAnnotations":      map[string]interface{}{},
-		// 			"duration":               "",
-		// 			"renewBefore":            "",
-		// 		},
-		// 		"autoGenerateCert": map[string]interface{}{
-		// 			"enabled":        true,
-		// 			"recreate":       true,
-		// 			"certPeriodDays": 365,
-		// 		},
-		// 	},
-		// },
-		Wait:          true, // Set to true to wait for completion
-		Timeout:       600,
-		CleanupCRDs:   false,
-		CRDsToCleanup: otelCRDs,
+		Wait:            true, // Set to true to wait for completion
+		Timeout:         600,
+		CleanupCRDs:     false,
+		CRDsToCleanup:   otelCRDs,
 	}, pulumi.DependsOn(dependencyResources))
 
 	if err != nil {
@@ -88,7 +58,7 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 		Version:         version,
 		CreateNamespace: false,
 		ValuesFile:      "opentelemetry-collector",
-		Wait:            true,
+		Wait:            false,
 		Timeout:         600,
 		CleanupCRDs:     false,
 		CRDsToCleanup:   otelCRDs,

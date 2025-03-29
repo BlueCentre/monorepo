@@ -138,6 +138,14 @@ This project also includes a specialized `resources` package that provides high-
 
 The resources package serves as an abstraction layer between the raw Pulumi Kubernetes SDK and our application-specific code, promoting consistency and reducing duplication. For more details, see [Resources Package Documentation](./docs/resources_package.md).
 
+### Handling Complex Components
+
+For guidance on implementing components with advanced requirements (like multiple Helm charts, internal dependencies, conditional logic, or raw YAML manifests), please refer to the detailed guide:
+
+- [Contributing Complex IAC Components](../../docs/CONTRIBUTING_COMPLEX_IAC_COMPONENTS.md)
+
+This guide uses the Istio implementation as a case study and references the corresponding `.cursorrules` template for AI development assistance.
+
 ### Customizing Components
 
 To customize a component:
@@ -192,9 +200,12 @@ For example, to add a new component called "example-component":
 
 2. **Set a Passphrase for Configuration Encryption**:
 
+   Pulumi requires a passphrase to encrypt secrets. Set this securely, for example, using an environment variable:
    ```bash
    export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
    ```
+   For detailed guidance on managing passphrases, see:
+   - [Managing the Pulumi Passphrase](./docs/pulumi_passphrase_management.md)
 
 3. **Configure Components**:
 
@@ -222,6 +233,8 @@ For example, to add a new component called "example-component":
    ```bash
    pulumi up
    ```
+   *For running deployments non-interactively (e.g., in CI/CD), refer to the guide:* 
+   *- [Non-Interactive Pulumi Deployments](./docs/pulumi_non_interactive_deployments.md)*
 
 6. **Verify Installation**:
 
@@ -232,155 +245,17 @@ For example, to add a new component called "example-component":
 7. **Clean Up When Done**:
 
    ```bash
-   # Set teardown = true in Pulumi.dev.yaml
-   pulumi up
+   # Option 1: Use Pulumi teardown flag (if implemented)
+   # pulumi config set dev-local-infrastructure:teardown "true"
+   # pulumi up
    
-   # OR to completely destroy all resources
+   # Option 2: Destroy all resources managed by the stack
    pulumi destroy
    ```
 
-## Managing the Pulumi Passphrase
-
-Pulumi uses a passphrase to encrypt sensitive configuration values. Here's how to manage it:
-
-### Setting the Passphrase
-
-The passphrase can be set in several ways:
-
-1. **Environment Variable** (recommended for development):
-   ```bash
-   export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
-   ```
-
-2. **Passphrase File** (recommended for CI/CD):
-   ```bash
-   echo "your-secure-passphrase" > ~/.pulumi/passphrase.txt
-   export PULUMI_CONFIG_PASSPHRASE_FILE=~/.pulumi/passphrase.txt
-   ```
-
-### Changing the Passphrase
-
-To change the passphrase for an existing stack:
-
-1. **Export the current stack** with the old passphrase:
-   ```bash
-   # Set the old passphrase
-   export PULUMI_CONFIG_PASSPHRASE="old-passphrase"
-   
-   # Export the stack** with the new passphrase:
-   pulumi stack export --file stack.json
-   ```
-
-2. **Import the stack** with the new passphrase:
-   ```bash
-   # Set the new passphrase
-   export PULUMI_CONFIG_PASSPHRASE="new-passphrase"
-   
-   # Import the stack from the file
-   pulumi stack import --file stack.json
-   ```
-
-3. **Verify the stack** is working with the new passphrase:
-   ```bash
-   pulumi preview
-   ```
-
-4. **Clean up** by removing the temporary file:
-   ```bash
-   rm stack.json
-   ```
-
-### Best Practices for Passphrase Management
-
-1. **Use a Strong Passphrase**: Choose a secure, randomly generated passphrase.
-2. **Don't Commit the Passphrase**: Never store the passphrase in version control.
-3. **Use Different Passphrases** for different environments (dev, staging, production).
-4. **Rotate Passphrases** periodically for enhanced security.
-5. **Use a Password Manager** to store and manage passphrases securely.
-6. **Document the Procedure** for passphrase recovery within your team.
-
-### Troubleshooting Passphrase Issues
-
-If you encounter passphrase-related errors:
-
-- **"failed to decrypt"**: You're using the wrong passphrase. Make sure you're using the correct passphrase for the stack.
-- **"passphrase must be set"**: You haven't set the PULUMI_CONFIG_PASSPHRASE environment variable.
-- **Lost passphrase**: If you've lost the passphrase, you'll need to create a new stack and manually recreate your resources.
-
-## Non-Interactive Deployments
-
-When running Pulumi in CI/CD pipelines or other automated environments, you'll want to execute deployments without requiring interactive confirmation.
-
-### Why `pulumi up -y` May Not Work
-
-The standard `pulumi up -y` command may not work as expected with Pulumi YAML due to:
-
-1. YAML language runtime handling flags differently than programming language SDKs
-2. Passphrase and authentication challenges in non-interactive environments
-3. State file conflicts requiring user input
-
-### Non-Interactive Deployment Options
-
-#### Environment Variable Method
-
-```bash
-# Set environment variables for non-interactive use
-export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
-export PULUMI_SKIP_CONFIRMATIONS=true
-
-# Run normal command (no -y needed)
-pulumi up
-```
-
-#### Skip Preview Method
-
-```bash
-# Skip the preview and go straight to deployment
-export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
-pulumi up --skip-preview
-```
-
-#### Using Shell Pipe
-
-```bash
-# Pipe "yes" to automatically accept prompts
-export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase"
-yes | pulumi up
-```
-
-### Troubleshooting Non-Interactive Deployments
-
-If you're still having issues with non-interactive deployments:
-
-1. **Check for Pending Operations**:
-   ```bash
-   pulumi cancel
-   ```
-
-2. **Ensure Stack is Selected**:
-   ```bash
-   pulumi stack select dev
-   ```
-
-3. **Verify Permissions**:
-   Ensure the user running the command has the necessary permissions.
-
-4. **Debug with Verbose Logging**:
-   ```bash
-   pulumi up --verbose=3
-   ```
-
-5. **Check for State Lock**:
-   In rare cases, you may need to force unlock the state:
-   ```bash
-   pulumi cancel --force
-   ```
-
-For CI/CD pipelines, it's recommended to use a service account with appropriate permissions and a securely stored passphrase.
-
 ## Deployed Components Details
 
-For a comprehensive guide to all the components available and their configuration details, see the [COMPONENTS.md](./COMPONENTS.md) file.
+For a comprehensive guide to all the components available and their configuration details, see the [COMPONENTS.md](./docs/COMPONENTS.md) file.
 
 ### Cert Manager
 

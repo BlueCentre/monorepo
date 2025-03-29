@@ -19,7 +19,7 @@ func DeployRedis(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Res
 	return resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
 		Name:            "redis",
 		ChartName:       "redis",
-		Version:         cfg.GetString("redis_version", ""),
+		Version:         cfg.GetString("redis_version", "18.19.1"),
 		RepositoryURL:   "https://charts.bitnami.com/bitnami",
 		Namespace:       "redis",
 		CreateNamespace: true,
@@ -30,5 +30,7 @@ func DeployRedis(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Res
 				"password": redisPassword,
 			},
 		},
-	})
+		Wait:    true,
+		Timeout: 600,
+	}) // End of DeployRedis
 }

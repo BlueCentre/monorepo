@@ -62,3 +62,11 @@ func (c *PulumiConfig) GetInt(key string, defaultValue int) int {
 	}
 	return i
 }
+
+// RequireSecret gets a secret string value from configuration
+// It panics if the key is not found
+func (c *PulumiConfig) RequireSecret(ctx *pulumi.Context, key string) pulumi.StringOutput {
+	// Use RequireSecret to get the secret value. This will panic if not found.
+	// The underlying config.RequireSecret does not need the context.
+	return c.conf.RequireSecret(key).ToStringOutput()
+}

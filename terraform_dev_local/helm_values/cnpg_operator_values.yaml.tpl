@@ -7,7 +7,7 @@ config:
 
 # Webhook configuration
 webhook:
-  timeoutSeconds: 30
+  timeoutSeconds: 60
   certManager:
     enabled: true
 

@@ -130,6 +130,64 @@ Istio provides a complete service mesh solution:
 
 - **Documentation**: [Istio Documentation](https://istio.io/latest/docs/)
 
+### External Secrets
+
+**Status**: ✅ Active
+**Version**: 0.14.4
+**Namespace**: external-secrets
+
+External Secrets provides integration with external secret management systems:
+
+- **Features**:
+  - Synchronizes secrets from external APIs into Kubernetes
+  - Supports various external secret providers (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, etc.)
+  - Includes CRDs for ExternalSecret, SecretStore, and ClusterSecretStore
+  - **Local Development Pattern**: For managing credentials for locally deployed databases (like CNPG) accessed by applications, refer to the [Local Database Credentials Pattern](mdc:.cursor/rules/iac-local-database-credentials.mdc).
+
+- **Deployment Details**:
+  - Deployed via Helm chart from https://charts.external-secrets.io
+  - CRDs installed automatically
+  - Running in dedicated namespace: external-secrets
+
+- **Documentation**: [External Secrets Documentation](https://external-secrets.io/latest/)
+
+### CloudNative PG
+
+**Status**: ✅ Active
+**Version**: 0.23.2
+**Namespace**: cnpg-system
+
+MongoDB is a popular NoSQL database that stores data in flexible, JSON-like documents. It provides high availability, horizontal scaling, and geographic distribution.
+
+### Implementation
+
+MongoDB is implemented using the MongoDB Community Operator Helm chart from `https://mongodb.github.io/helm-charts`. The operator deploys and manages a MongoDB replica set in a dedicated `mongodb` namespace.
+
+### Features
+- Deployed in the `mongodb` namespace
+- The MongoDB Community Operator manages the MongoDB deployment
+- MongoDB version 4.4.19 is deployed in a replica set with 1 replica
+- Secure storage with persistent volumes (8Gi)
+- MongoDB password is stored in a Kubernetes secret
+- The MongoDB instance is available as a Service within the cluster
+- The connection string format for applications: `mongodb://root:password@mongodb-rs-0.mongodb-svc.mongodb.svc.cluster.local:27017/admin?replicaSet=mongodb-rs&ssl=false`
+
+### Dependencies
+- None
+
+### Configuration Options
+
+Enable or disable MongoDB via the Pulumi config:
+
+```bash
+pulumi config set dev-local-infrastructure:mongodb_enabled true
+pulumi config set dev-local-infrastructure:mongodb_password your-secure-password --secret
+```
+
+### References
+- [MongoDB Community Operator](https://github.com/mongodb/mongodb-kubernetes-operator)
+- [MongoDB Community Operator Helm Chart](https://github.com/mongodb/helm-charts/tree/main/charts/community-operator) 
+
 ## Configuration Harmonization
 
 The Helm values for all components in this Pulumi implementation have been synchronized with the Terraform implementation to ensure consistency. Key configuration aspects now aligned include:
@@ -182,11 +240,6 @@ Continuous delivery tool that follows the GitOps principles.
 
 **Status**: 🔄 Planned  
 Local development tool for connecting local services to remote Kubernetes clusters.
-
-### External Secrets
-
-**Status**: 🔄 Planned  
-Integration with external secret management systems like AWS Secrets Manager, HashiCorp Vault, etc.
 
 ### External DNS
 

@@ -18,7 +18,7 @@ resource "helm_release" "opentelemetry_operator" {
     templatefile(
       "${path.module}/helm_values/opentelemetry_operator_values.yaml.tpl",
       {
-        domain = "argocd-dev.lab.flyr.io",
+        # domain = "argocd-dev.lab.flyr.io",
       }
     )
   ]

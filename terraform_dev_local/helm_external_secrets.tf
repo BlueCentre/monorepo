@@ -56,7 +56,8 @@ resource "helm_release" "external_secrets" {
   ]
 }
 
-# Fake provider for local development
+
+# Fake provider for Cloudflare API Token in local development - RESTORED
 resource "kubectl_manifest" "patch_fake_cloudflare_external_secret" {
   count      = var.external_secrets_enabled ? 1 : 0
   yaml_body  = <<EOF
@@ -76,7 +77,7 @@ EOF
   depends_on = [helm_release.external_secrets]
 }
 
-# Fake provider for Datadog API key in local development
+# Fake provider for Datadog API key in local development - RESTORED
 resource "kubectl_manifest" "patch_fake_datadog_external_secret" {
   count      = var.external_secrets_enabled && var.datadog_enabled ? 1 : 0
   yaml_body  = <<EOF
@@ -97,6 +98,29 @@ spec:
         version: "v1"
       - key: "token"
         value: "${var.datadog_api_key}"
+        version: "v1"
+EOF
+  depends_on = [helm_release.external_secrets]
+}
+
+# Fake provider for CNPG DB Credentials in local development - NEW
+resource "kubectl_manifest" "fake_cnpg_secrets_store" {
+  count      = var.external_secrets_enabled && var.cnpg_enabled ? 1 : 0
+  yaml_body  = <<EOF
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: external-secret-cluster-fake-cnpg-secrets
+  namespace: external-secrets
+spec:
+  provider:
+    fake:
+      data:
+      - key: "username"
+        value: "${var.cnpg_app_db_user}"
+        version: "v1"
+      - key: "password"
+        value: "${var.cnpg_app_db_password}"
         version: "v1"
 EOF
   depends_on = [helm_release.external_secrets]

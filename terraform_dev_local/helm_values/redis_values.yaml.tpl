@@ -41,7 +41,7 @@ master:
 
 # Redis replica configuration
 replica:
-  replicaCount: 2
+  replicaCount: 1
   persistence:
     enabled: true
     size: 8Gi

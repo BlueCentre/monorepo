@@ -11,8 +11,9 @@ While developing new features, enhancements, updates, or refactoring always foll
 2. Run skaffold test
 3. Run skaffold run or skaffold dev as a developer
 4. Always execute skaffold verify and make sure our smoke tests all succeed
-5. Always update and maintain relevant documentation once these steps are completed
-6. Update Cursor Rules when you learn anything new that helps solve an issue
+5. If you are retesting or verifying again after changes, you have to first delete the application
+6. Always update and maintain relevant documentation once these steps are completed
+7. Update Cursor Rules when you learn anything new that helps solve an issue
 
 # Application Development Workflow & Command Reference
 
@@ -22,3 +23,4 @@ While developing new features, enhancements, updates, or refactoring always foll
 - To verify a deployment: skaffold verify -m <project-module> -p <module-profile>
 - To execute custom actions: skaffold exec <custom-action> -m <project-module> -p <module-profile>
 - For development mode: skaffold dev -m <project-module> -p <module-profile>
+- To redeploy and reverify: skaffold delete -m <project-module> -p <module-profile> && skaffold run -m <project-module> -p <module-profile>

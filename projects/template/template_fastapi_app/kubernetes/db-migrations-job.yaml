@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: db-migrations-job
+  namespace: template-fastapi-app
   labels:
     app: template-fastapi-app
     component: db-migrations
@@ -20,7 +21,7 @@ spec:
       initContainers:
       - name: wait-for-postgres
         image: postgres:15
-        command: ["sh", "-c", "until pg_isready -h postgres -p 5432; do echo waiting for postgres; sleep 2; done;"]
+        command: ["sh", "-c", "until pg_isready -h cnpg-cluster-rw.cnpg-cluster.svc.cluster.local -p 5432; do echo waiting for postgres; sleep 2; done;"]
       containers:
       - name: db-migrations
         image: template-fastapi-app
@@ -28,6 +29,8 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
+          set -eo pipefail
+
           # Set environment variables
           export PYTHONPATH=/app:/app/src
           
@@ -63,10 +66,12 @@ spec:
           
           # Execute the SQL file
           PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_SERVER -U $POSTGRES_USER -d $POSTGRES_DB -f /tmp/create_admin.sql
+          if [ $? -ne 0 ]; then echo "Failed to execute create_admin.sql"; exit 1; fi
           
           # Verify admin user was created
           echo "Verifying admin user creation..."
           PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_SERVER -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT id, email, is_superuser FROM \"user\" WHERE email = 'admin@example.com'"
+          if [ $? -ne 0 ]; then echo "Failed to verify admin user creation"; exit 1; fi
           
           echo "Database initialization completed."
         env:
@@ -75,15 +80,15 @@ spec:
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: template-fastapi-app-db-credentials
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: template-fastapi-app-db-credentials
               key: password
         - name: POSTGRES_SERVER
-          value: "postgres"
+          value: "cnpg-cluster-rw.cnpg-cluster.svc.cluster.local"
         - name: POSTGRES_DB
           value: "app"
         - name: SQLALCHEMY_DATABASE_URI
