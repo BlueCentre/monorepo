@@ -12,7 +12,6 @@ globs:
 alwaysApply: false
 ---
 # Pulumi Infrastructure Implementation
->>>>>>> feat/mongodb-dev-local
 
 ## Component Development Guidelines
 
@@ -27,6 +26,7 @@ When implementing new Pulumi components or modifying existing ones, follow these
    - Use `resources.DeployHelmChart()` instead of raw `helm.NewRelease()`
    - Use `resources.CreateK8sNamespace()` instead of direct namespace creation
    - Use `resources.CreateK8sManifest()` for applying raw YAML manifests
+     - **Note:** This is particularly useful for applying Custom Resource Definitions (CRDs) when direct use of `apiextensions.CustomResource` presents challenges (e.g., SDK version incompatibilities, complex spec structures). Construct the YAML dynamically if needed.
 
 3. **Use compatible Helm chart repositories**:
    - Always use HTTPS URLs (e.g., `https://charts.bitnami.com/bitnami`) instead of OCI URLs

@@ -142,6 +142,7 @@ External Secrets provides integration with external secret management systems:
   - Synchronizes secrets from external APIs into Kubernetes
   - Supports various external secret providers (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, etc.)
   - Includes CRDs for ExternalSecret, SecretStore, and ClusterSecretStore
+  - **Local Development Pattern**: For managing credentials for locally deployed databases (like CNPG) accessed by applications, refer to the [Local Database Credentials Pattern](mdc:.cursor/rules/iac-local-database-credentials.mdc).
 
 - **Deployment Details**:
   - Deployed via Helm chart from https://charts.external-secrets.io

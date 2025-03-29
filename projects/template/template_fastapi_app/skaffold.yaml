@@ -48,8 +48,13 @@ manifests:
   rawYaml:
     - kubernetes/bootstrap/rbac.yaml
     - kubernetes/namespace.yaml
-    - kubernetes/db-migrations-job.yaml # Include our migrations job
-    - kubernetes/*.yaml # Include all other Kubernetes resources
+    - kubernetes/external-secret-db.yaml
+    - kubernetes/configmap.yaml
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+    - kubernetes/secrets.yaml
+    - kubernetes/db-migrations-job.yaml
+    - kubernetes/ingress.yaml
 
 deploy:
   kubectl: {}

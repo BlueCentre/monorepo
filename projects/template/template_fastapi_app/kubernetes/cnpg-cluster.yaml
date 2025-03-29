@@ -1,0 +1,17 @@
+# Not currently used, but can be used to create a new cluster
+# apiVersion: postgresql.cnpg.io/v1
+# kind: Cluster
+# metadata:
+#   name: cnpg-cluster
+#   namespace: template-fastapi-app
+# spec:
+#   instances: 1
+#   storage:
+#     size: 1Gi
+#   bootstrap:
+#     initdb:
+#       database: app-db
+#       secret:
+#         name: cnpg-app-credentials
+#   monitoring:
+#     enablePodMonitor: false

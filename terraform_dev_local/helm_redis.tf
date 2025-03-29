@@ -28,36 +28,6 @@ resource "helm_release" "redis" {
   }
 
   set {
-    name  = "master.service.type"
-    value = "ClusterIP"
-  }
-
-  set {
-    name  = "master.persistence.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "master.persistence.size"
-    value = "8Gi"
-  }
-
-  set {
-    name  = "replica.replicaCount"
-    value = "2"
-  }
-
-  set {
-    name  = "networkPolicy.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "networkPolicy.allowExternal"
-    value = "true"
-  }
-
-  set {
     name  = "master.podSecurityContext.fsGroup"
     value = "1001"
   }
@@ -66,4 +36,4 @@ resource "helm_release" "redis" {
     name  = "master.containerSecurityContext.runAsUser"
     value = "1001"
   }
-} 
+}

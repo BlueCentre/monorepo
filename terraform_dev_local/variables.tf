@@ -1,3 +1,10 @@
+variable "kubernetes_context" {
+  description = "Set to kubernetes context"
+  type        = string
+  default     = "colima"
+}
+
+
 variable "project_id" {
   type    = string
   default = ""
@@ -108,12 +115,12 @@ variable "opentelemetry_enabled" {
   default = false
 }
 
-variable "datadog_enabled" {
+variable "opentelemetry_operator_enabled" {
   type    = bool
   default = false
 }
 
-variable "telepresence_enabled" {
+variable "datadog_enabled" {
   type    = bool
   default = false
 }
@@ -123,14 +130,98 @@ variable "istio_enabled" {
   default = false
 }
 
-variable "argocd_enabled" {
-  type    = bool
-  default = false
+variable "redis_enabled" {
+  description = "Enable Redis for Istio rate limiting"
+  type        = bool
+  default     = false
 }
 
 variable "cnpg_enabled" {
   type    = bool
   default = true
+}
+
+variable "mongodb_enabled" {
+  description = "Enable MongoDB for application usage"
+  type        = bool
+  default     = false
+}
+
+variable "argocd_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "telepresence_enabled" {
+  type    = bool
+  default = false
+}
+
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token"
+  type        = string
+  default     = "fake-cloudflare-api-token"
+}
+
+variable "datadog_api_key" {
+  description = "Datadog API key"
+  type        = string
+  default     = "fake-datadog-api-key"
+}
+
+# Added for fake secret store consistency
+variable "datadog_app_key" {
+  description = "Datadog APP key (used in fake store if datadog enabled)."
+  type        = string
+  default     = "fake-datadog-app-key" # Provide a default fake value
+  sensitive   = true
+}
+
+variable "redis_password" {
+  description = "Password for Redis authentication"
+  type        = string
+  default     = "fake-redis-password"
+  sensitive   = true
+}
+
+# Add CNPG Cluster specific variables
+variable "cnpg_cluster_name" {
+  description = "Name for the CloudNativePG cluster resource."
+  type        = string
+  default     = "cnpg-cluster"
+}
+
+variable "cnpg_cluster_namespace" {
+  description = "Namespace for the CloudNativePG cluster resource."
+  type        = string
+  default     = "cnpg-cluster"
+}
+
+variable "cnpg_app_db_name" {
+  description = "Name of the initial application database to create."
+  type        = string
+  default     = "app"
+}
+
+variable "cnpg_app_db_user" {
+  description = "Name of the initial application database owner."
+  type        = string
+  default     = "app_user"
+}
+
+variable "cnpg_app_db_password" {
+  description = "Password for the application database user."
+  type        = string
+  default     = "fake-app-db-password" # Default insecure password for local dev
+  sensitive   = true
+}
+
+variable "mongodb_password" {
+  description = "Password for MongoDB authentication"
+  type        = string
+  default     = "fake-mongodb-password"
+  sensitive   = true
 }
 
 
@@ -144,49 +235,4 @@ variable "teardown" {
   description = "Set to true to destroy all resources"
   type        = bool
   default     = false
-}
-
-
-variable "kubernetes_context" {
-  description = "Set to kubernetes context"
-  type        = string
-  default     = "colima"
-}
-
-variable "cloudflare_api_token" {
-  description = "Cloudflare API token"
-  type        = string
-  default     = "REPLACE_WITH_CLOUDFLARE_API_TOKEN"
-}
-
-variable "datadog_api_key" {
-  description = "Datadog API key"
-  type        = string
-  default     = "REPLACE_WITH_DATADOG_API_KEY"
-}
-
-variable "redis_enabled" {
-  description = "Enable Redis for Istio rate limiting"
-  type        = bool
-  default     = false
-}
-
-variable "redis_password" {
-  description = "Password for Redis authentication"
-  type        = string
-  default     = "redis-password"
-  sensitive   = true
-}
-
-variable "mongodb_enabled" {
-  description = "Enable MongoDB for application usage"
-  type        = bool
-  default     = false
-}
-
-variable "mongodb_password" {
-  description = "Password for MongoDB authentication"
-  type        = string
-  default     = "mongodb-password"
-  sensitive   = true
 }

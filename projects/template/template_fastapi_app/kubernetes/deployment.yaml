@@ -5,7 +5,7 @@ metadata:
   labels:
     app: template-fastapi-app
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: template-fastapi-app
@@ -24,16 +24,16 @@ spec:
         - containerPort: 8000
         env:
         - name: POSTGRES_SERVER
-          value: postgres
+          value: cnpg-cluster-rw.cnpg-cluster.svc.cluster.local
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: template-fastapi-app-db-credentials
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: template-fastapi-app-db-credentials
               key: password
         - name: POSTGRES_DB
           value: app

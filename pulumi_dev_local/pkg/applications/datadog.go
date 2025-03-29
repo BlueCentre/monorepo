@@ -12,23 +12,8 @@ import (
 func DeployDatadog(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Resource, error) {
 	// Get configuration
 	conf := utils.NewConfig(ctx)
-	enabled := conf.GetBool("datadog_enabled", false)
 	version := conf.GetString("datadog_version", "3.74.1")
-
-	if !enabled {
-		ctx.Log.Info("Datadog agent is disabled, skipping deployment", nil)
-		return nil, nil
-	}
-
-	// Create namespace
-	namespace := conf.GetString("datadog:namespace", "datadog")
-	ns, err := resources.CreateK8sNamespace(ctx, provider, resources.K8sNamespaceConfig{
-		Name: namespace,
-	})
-
-	if err != nil {
-		return nil, err
-	}
+	namespace := conf.GetString("datadog_namespace", "datadog")
 
 	// Deploy Datadog using the common function
 	datadog, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
@@ -65,7 +50,7 @@ func DeployDatadog(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.R
 		Wait:        true,
 		Timeout:     600,
 		CleanupCRDs: false,
-	}, pulumi.DependsOn([]pulumi.Resource{ns}))
+	})
 
 	if err != nil {
 		return nil, err

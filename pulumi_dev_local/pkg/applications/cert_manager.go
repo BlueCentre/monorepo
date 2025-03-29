@@ -22,23 +22,8 @@ var CertManagerCRDs = []string{
 func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Resource, error) {
 	// Get configuration
 	conf := utils.NewConfig(ctx)
-	enabled := conf.GetBool("cert_manager_enabled", true)
 	version := conf.GetString("cert_manager_version", "v1.17.0")
-
-	if !enabled {
-		ctx.Log.Info("Cert-manager is disabled, skipping deployment", nil)
-		return nil, nil
-	}
-
-	// Create namespace
-	namespace := conf.GetString("cert_manager:namespace", "cert-manager")
-	ns, err := resources.CreateK8sNamespace(ctx, provider, resources.K8sNamespaceConfig{
-		Name: namespace,
-	})
-
-	if err != nil {
-		return nil, err
-	}
+	namespace := conf.GetString("cert_manager_namespace", "cert-manager")
 
 	// Deploy cert-manager with CRD management - leveraging the common function
 	certManager, err := resources.DeployHelmChart(ctx, provider, resources.HelmChartConfig{
@@ -47,12 +32,12 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 		ChartName:       "cert-manager",
 		RepositoryURL:   "https://charts.jetstack.io",
 		Version:         version,
-		CreateNamespace: false,
+		CreateNamespace: true,
 		ValuesFile:      "cert-manager",
 		Values: map[string]interface{}{
-			"startupapicheck": map[string]interface{}{
-				"enabled": false,
-			},
+			// "startupapicheck": map[string]interface{}{
+			// 	"enabled": false,
+			// },
 			"prometheus": map[string]interface{}{
 				"enabled": false,
 			},
@@ -61,26 +46,38 @@ func DeployCertManager(ctx *pulumi.Context, provider *kubernetes.Provider) (pulu
 		Timeout:       600,
 		CleanupCRDs:   false,
 		CRDsToCleanup: CertManagerCRDs,
-	}, pulumi.DependsOn([]pulumi.Resource{ns}))
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a self-signed cluster issuer
-	// 	_, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
-	// 		Name: "cert-manager-self-signed-cluster-issuer",
-	// 		YAML: `apiVersion: cert-manager.io/v1
+	// Create a self-signed cluster issuer - Re-commented as it didn't solve the issue
+	// and differs from working Terraform setup.
+	// _, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
+	// 	Name: "cert-manager-selfsigned-cluster-issuer", // Resource name in Pulumi state
+	// 	YAML: `apiVersion: cert-manager.io/v1
 	// kind: ClusterIssuer
 	// metadata:
-	//   name: selfsigned-issuer
+	//   # Ensure this name matches the one used in OpenTelemetry's issuerRef
+	//   name: selfsigned-cluster-issuer
 	// spec:
 	//   selfSigned: {}`,
-	// 	}, pulumi.DependsOn([]pulumi.Resource{certManager}))
+	// }, pulumi.DependsOn([]pulumi.Resource{certManager})) // Depend on the Helm release being ready
+
+	// if err != nil {
+	// 	// Log the error but potentially continue, depending on desired behavior.
+	// 	// Returning the error might be safer.
+	// 	ctx.Log.Error("Failed to create self-signed ClusterIssuer", &pulumi.LogArgs{Resource: certManager})
+	// 	return nil, fmt.Errorf("failed to create self-signed ClusterIssuer: %w", err)
+	// }
+
+	// ctx.Log.Info("Self-signed ClusterIssuer created successfully.", nil)
 
 	// Export cert-manager information
 	ctx.Export("certManagerNamespace", pulumi.String(namespace))
-	// ctx.Export("selfSignedIssuer", pulumi.String("selfsigned-issuer"))
+	// ctx.Export("selfSignedClusterIssuerName", pulumi.String("selfsigned-cluster-issuer")) // Export the actual name
 
-	return certManager, err
+	// Return the Helm release resource and nil error if issuer creation is commented out
+	return certManager, nil
 }

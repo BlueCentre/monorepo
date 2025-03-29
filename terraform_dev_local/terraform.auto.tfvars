@@ -1,6 +1,7 @@
 kubernetes_context = "colima"
 region             = "us-central1"
 
+# Enable services
 cert_manager_enabled     = true
 external_secrets_enabled = true
 external_dns_enabled     = false
@@ -24,3 +25,6 @@ redis_password = "REPLACE_WITH_REDIS_PASSWORD" # For demo/testing only - use a s
 
 # MongoDB settings for application usage
 mongodb_password = "REPLACE_WITH_MONGODB_PASSWORD" # For demo/testing only - use a secure password in production
+
+# CNPG settings for application usage
+cnpg_app_db_password = "ChangeMe!"
