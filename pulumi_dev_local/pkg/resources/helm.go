@@ -29,6 +29,8 @@ type HelmChartConfig struct {
 	CleanupCRDs       bool     // Enables CRD cleanup for charts like cert-manager
 	CRDsToCleanup     []string // List of CRD patterns to clean up (e.g., "*.cert-manager.io")
 	WebhooksToCleanup []string // List of webhook names to clean up
+	// New field for replace functionality
+	Replace bool // Whether to replace the release if it already exists
 }
 
 // DeployHelmChart creates a Helm chart release with given configuration
@@ -155,6 +157,11 @@ func DeployHelmChart(ctx *pulumi.Context, provider *kubernetes.Provider, config 
 
 	if config.Timeout > 0 {
 		releaseArgs.Timeout = pulumi.Int(config.Timeout)
+	}
+
+	// Add replace flag if needed
+	if config.Replace {
+		releaseArgs.Replace = pulumi.Bool(config.Replace)
 	}
 
 	// Add provider to options

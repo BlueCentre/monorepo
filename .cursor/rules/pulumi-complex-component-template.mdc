@@ -1,12 +1,7 @@
 ---
-description: 
-globs: pulumi_dev_local/pkg/applications/*.go
-alwaysApply: false
----
- ---
 name: pulumi-complex-component-template.mdc
 description: Template and guidelines for complex Pulumi components involving multiple Helm charts, dependencies, conditional logic, and raw YAML manifests, based on the Istio example.
-globs:
+globs: 
   - pulumi_dev_local/pkg/applications/*.go
 alwaysApply: false
 ---
@@ -121,7 +116,8 @@ func Deploy{ComponentName}(ctx *pulumi.Context, provider *kubernetes.Provider) e
          return err
     }
 
-    // --- Conditional Raw YAML Manifests (Example based on Istio/Redis) ---\n    // Deploy additional resources (like CRs) only if a specific feature is enabled
+    // --- Conditional Raw YAML Manifests (Example based on Istio/Redis) ---
+    // Deploy additional resources (like CRs) only if a specific feature is enabled
     if dependentFeatureEnabled {
         ctx.Log.Info("{dependent_feature_flag} is enabled, deploying related manifests", nil)
 
@@ -160,7 +156,8 @@ namespace: ` + namespace + `
         }
     }
 
-    // --- Exports (Optional) ---\n    // Export outputs that might be useful for other components or for the user
+    // --- Exports (Optional) ---
+    // Export outputs that might be useful for other components or for the user
     ctx.Export("{ComponentName}Namespace", pulumi.String(namespace))
     // Example: Exporting a service endpoint if applicable
     // ctx.Export("{ComponentName}ServiceEndpoint", service.Status.LoadBalancer().Ingress().Index(pulumi.Int(0)).Ip())

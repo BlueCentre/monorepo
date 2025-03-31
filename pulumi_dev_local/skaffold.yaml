@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: pulumi
+  name: iac-pulumi
 
 build:
   artifacts:
@@ -34,5 +34,18 @@ manifests:
     - kubernetes/debug/debug-job.yaml
 
 deploy:
-  kubectl:
-  
+  kubectl: {}
+
+customActions:
+  - name: provision-local-dev-infrastructure
+    containers:
+      - name: pulumi-up
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "=== PROVISIONING LOCAL DEV INFRASTRUCTURE ==="
+
+            pulumi up --refresh --yes
+    # executionMode:
+    #   kubernetesCluster: {}

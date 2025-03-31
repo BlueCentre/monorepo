@@ -1,3 +1,17 @@
+# https://github.com/mongodb/helm-charts/tree/main/charts/community-operator-crds
+resource "helm_release" "mongodb_operator_crds" {
+  count            = var.mongodb_enabled ? 1 : 0
+  name             = "mongodb-operator-crds"
+  repository       = "https://mongodb.github.io/helm-charts"
+  chart            = "community-operator-crds"
+  version          = var.mongodb_operator_version # Use variable for version
+  description      = "Terraform driven Helm release of MongoDB Community Operator CRDs"
+  namespace        = var.mongodb_namespace # Use variable for namespace
+  create_namespace = true                  # Let Helm create the namespace
+  wait             = true
+  timeout          = 600
+}
+
 # https://github.com/mongodb/helm-charts/tree/main/charts/community-operator
 # https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md
 # https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/deploy-configure.md
@@ -6,23 +20,28 @@ resource "helm_release" "mongodb_operator" {
   name             = "mongodb-operator"
   repository       = "https://mongodb.github.io/helm-charts"
   chart            = "community-operator"
-  version          = "0.8.3"  # Using the stable version that works with our environment
+  version          = var.mongodb_operator_version # Use variable for version
   description      = "Terraform driven Helm release of MongoDB Community Operator"
-  namespace        = "mongodb"
-  create_namespace = true  # Let Helm create the namespace
+  namespace        = var.mongodb_namespace # Use variable for namespace
+  create_namespace = true                  # Let Helm create the namespace
   wait             = true
   timeout          = 600
 
-  set {
-    name  = "operator.watchNamespace"
-    value = "mongodb"
-  }
+  # Load values from the template file
+  values = [
+    templatefile("${path.module}/helm_values/mongodb_community_operator_values.yaml.tpl", {
+      # Pass variables needed by the template
+      community_operator_crds_enabled = false # Enable the Helm chart to create the MongoDB resource
+      create_resource                 = false # Create the MongoDB replicaset resource
+      mongodb_replicaset_name         = var.mongodb_replicaset_name
+      mongodb_replicaset_version      = var.mongodb_replicaset_version
+      mongodb_replicaset_members      = var.mongodb_replicaset_members
+    })
+  ]
 
-  # Don't create the MongoDB resource in the Helm chart - we'll create it separately
-  set {
-    name  = "createResource"
-    value = "false"
-  }
+  # Ensure the secret is created before Helm tries to use it.
+  # depends_on = [kubernetes_secret.mongodb_password[0]]
+  depends_on = [helm_release.mongodb_operator_crds]
 }
 
 # Create a Kubernetes secret for MongoDB password
@@ -30,64 +49,17 @@ resource "kubernetes_secret" "mongodb_password" {
   count = var.mongodb_enabled ? 1 : 0
   metadata {
     name      = "mongodb-password"
-    namespace = "mongodb"
+    namespace = helm_release.mongodb_operator[0].namespace # Use variable for namespace
   }
 
   data = {
     password = var.mongodb_password
   }
 
-  depends_on = [helm_release.mongodb_operator] # Ensure namespace exists before creating secret
+  # No explicit depends_on needed here as helm_release depends on it
 }
 
-# Create the MongoDB resource after the operator is installed
-resource "kubectl_manifest" "mongodb_community" {
-  count = var.mongodb_enabled ? 1 : 0
-  yaml_body = <<YAML
-apiVersion: mongodbcommunity.mongodb.com/v1
-kind: MongoDBCommunity
-metadata:
-  name: mongodb-rs
-  namespace: mongodb
-spec:
-  members: 1
-  type: ReplicaSet
-  version: "4.4.19"
-  featureCompatibilityVersion: "4.4"
-  security:
-    authentication:
-      modes: ["SCRAM"]
-  users:
-    - name: root
-      db: admin
-      passwordSecretRef:
-        name: mongodb-password
-      roles:
-        - name: readWriteAnyDatabase
-          db: admin
-      scramCredentialsSecretName: mongodb-scram
-  statefulSet:
-    spec:
-      serviceName: mongodb-svc
-      selector:
-        matchLabels:
-          app: mongodb-svc
-      template:
-        metadata:
-          labels:
-            app: mongodb-svc
-      volumeClaimTemplates:
-        - metadata:
-            name: data-volume
-          spec:
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 8Gi
-YAML
+# The kubectl_manifest.mongodb_community resource block has been removed.
+# Ensure any other resources that depended on it are updated if necessary.
 
-  depends_on = [
-    helm_release.mongodb_operator,
-    kubernetes_secret.mongodb_password
-  ]
-}
+# ... potentially other resources ...

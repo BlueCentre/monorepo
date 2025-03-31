@@ -31,6 +31,6 @@ func DeployRedis(ctx *pulumi.Context, provider *kubernetes.Provider) (pulumi.Res
 			},
 		},
 		Wait:    true,
-		Timeout: 600,
+		Timeout: 1200,
 	}) // End of DeployRedis
 }

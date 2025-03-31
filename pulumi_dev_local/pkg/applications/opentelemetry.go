@@ -58,7 +58,7 @@ func DeployOpenTelemetry(ctx *pulumi.Context, provider *kubernetes.Provider, cer
 		Version:         version,
 		CreateNamespace: false,
 		ValuesFile:      "opentelemetry-collector",
-		Wait:            false,
+		Wait:            true,
 		Timeout:         600,
 		CleanupCRDs:     false,
 		CRDsToCleanup:   otelCRDs,

@@ -25,7 +25,18 @@ cluster:
   # -- BootstrapInitDB is the configuration of the bootstrap process when initdb is used.
   # See: https://cloudnative-pg.io/documentation/current/bootstrap/
   # See: https://cloudnative-pg.io/documentation/current/cloudnative-pg.v1/#postgresql-cnpg-io-v1-bootstrapinitdb
-  # initdb settings will be provided dynamically in the Pulumi code
+  # initdb settings will be provided/overridden dynamically in the Pulumi code
+  initdb:
+    database: "${cnpg_app_db_name}"
+    owner: "${cnpg_app_db_user}" # Defaults to the database name
+    secret:
+      name: "${cnpg_secret_name}" # Name of the secret containing the initial credentials for the owner of the user database. If empty a new secret will be created from scratch
+    # options: []
+    # encoding: UTF8
+    # postInitSQL:
+    #   - CREATE EXTENSION IF NOT EXISTS vector;
+    # postInitApplicationSQL: []
+    # postInitTemplateSQL: []
 
 backups:
   enabled: false 

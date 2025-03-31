@@ -1,5 +1,8 @@
 # Configuration for the CloudNativePG operator
-# See https://github.com/cloudnative-pg/cloudnative-pg/blob/main/charts/cloudnative-pg/values.yaml for reference
+# See https://github.com/cloudnative-pg/charts/blob/main/charts/cloudnative-pg/values.yaml
+
+crds:
+  create: true
 
 # Set to false to install the operator in a specific namespace only
 config:
