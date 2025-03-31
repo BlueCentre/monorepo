@@ -113,6 +113,10 @@ When refactoring existing components to follow these guidelines:
 - **Configuration Separation**: Clear separation between code and configuration
 - **Simplified Testing**: Easier to test individual components
 
+## Troubleshooting
+
+- **Dependency Issues / Incorrect Order**: If resources seem to deploy in an unexpected order despite `DependsOn` or implicit dependencies (e.g., resource outputs used as inputs), the Pulumi state might be out of sync with the actual cluster state. Run `pulumi refresh -y` before `pulumi up` to reconcile the state. This often resolves issues where Pulumi doesn't wait for a dependency as expected.
+
 ## Documentation
 
 Always refer to these detailed documentation resources:

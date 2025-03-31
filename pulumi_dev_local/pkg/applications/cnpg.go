@@ -12,13 +12,18 @@ import (
 	"github.com/james/monorepo/pulumi_dev_local/pkg/utils"
 )
 
-// // CNPGCRDs is a list of all CloudNativePG CRDs - Kept for reference if needed later
-// var CNPGCRDs = []string{
-// \t"backups.postgresql.cnpg.io",
-// \t"clusters.postgresql.cnpg.io",
-// \t"poolers.postgresql.cnpg.io",
-// \t"scheduledbackups.postgresql.cnpg.io",
-// }
+// CNPGCRDs is a list of all CloudNativePG CRDs - Kept for reference if needed later
+var CNPGCRDs = []string{
+	"backups.postgresql.cnpg.io",
+	"clusterimagecatalog.postgresql.cnpg.io",
+	"cluster.postgresql.cnpg.io",
+	"database.postgresql.cnpg.io",
+	"imagecatalog.postgresql.cnpg.io",
+	"pooler.postgresql.cnpg.io",
+	"publication.postgresql.cnpg.io",
+	"scheduledbackup.postgresql.cnpg.io",
+	"subscription.postgresql.cnpg.io",
+}
 
 // DeployCloudNativePGOperator installs the CloudNativePG operator Helm chart.
 // It returns the Helm release resource and an error if any occurred.
@@ -38,7 +43,9 @@ func DeployCloudNativePGOperator(ctx *pulumi.Context, provider *kubernetes.Provi
 		CreateNamespace: true,                                      // Operator needs its namespace
 		ValuesFile:      "cnpg-operator",                           // Use the renamed values file
 		Wait:            true,                                      // Wait for the operator to be ready
-		Timeout:         600,                                       // Standard timeout
+		CleanupCRDs:     true,                                      // Cleanup the CRDs
+		CRDsToCleanup:   CNPGCRDs,
+		Timeout:         600, // Standard timeout
 	})
 
 	if err != nil {

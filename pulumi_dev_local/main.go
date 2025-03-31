@@ -16,9 +16,8 @@ func main() {
 		// Create PulumiConfig wrapper - this handles loading config
 		pulumiConf := utils.NewConfig(ctx) // Correct way to initialize
 
-		k8sContext := pulumiConf.GetString("kubernetes_context", "colima") // Use wrapper method
-
 		// Create a Kubernetes provider instance
+		k8sContext := pulumiConf.GetString("kubernetes_context", "colima") // Use wrapper method
 		k8sProvider, err := kubernetes.NewProvider(ctx, "k8s-provider", &kubernetes.ProviderArgs{
 			Context: pulumi.String(k8sContext),
 		})
@@ -83,9 +82,9 @@ func main() {
 				return err
 			}
 
-			if err := applications.DeployMonitoringStack(ctx, k8sProvider); err != nil {
-				return err
-			}
+			// if err := applications.DeployMonitoringStack(ctx, k8sProvider); err != nil {
+			// 	return err
+			// }
 		}
 
 		// Datadog setup

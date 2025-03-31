@@ -224,6 +224,36 @@ variable "mongodb_password" {
   sensitive   = true
 }
 
+variable "mongodb_namespace" {
+  description = "Namespace for MongoDB resources."
+  type        = string
+  default     = "mongodb"
+}
+
+variable "mongodb_operator_version" {
+  description = "Version of the MongoDB Community Operator Helm chart."
+  type        = string
+  default     = "0.12.0" # Updated version
+}
+
+variable "mongodb_replicaset_name" {
+  description = "Name for the MongoDBCommunity resource (replica set)."
+  type        = string
+  default     = "mongodb-rs"
+}
+
+variable "mongodb_replicaset_version" {
+  description = "Version of MongoDB to deploy in the replica set."
+  type        = string
+  default     = "4.4.19" # Consistent with previous manifest
+}
+
+variable "mongodb_replicaset_members" {
+  description = "Number of members in the MongoDB replica set."
+  type        = number
+  default     = 1
+}
+
 
 variable "workspace_bootstrapped" {
   description = "Value is true if the workspace has been bootstrapped"
