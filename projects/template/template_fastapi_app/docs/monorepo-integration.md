@@ -1,6 +1,6 @@
 # Monorepo Integration Guide
 
-This document explains how to properly integrate and run the FastAPI template application within the monorepo environment.
+This document explains how to properly integrate and run the FastAPI template application within the monorepo environment. For a comprehensive understanding of the application itself, please refer to the [Architecture Overview](architecture-overview.md) and [Design Documentation](design-documentation.md).
 
 ### Running the Application
 
@@ -14,6 +14,8 @@ This command will:
 1. Build all targets in the monorepo
 2. Run all tests (including the FastAPI app tests)
 3. Deploy the FastAPI application with Skaffold
+
+For detailed instructions on running and developing with the application, see the [Developer Quickstart](developer-quickstart.md).
 
 ### What Makes This Work
 
@@ -202,6 +204,8 @@ docker build -t template-fastapi-app:test -f projects/template/template_fastapi_
 docker run --rm template-fastapi-app:test bash -c "cd /app && python -m pytest tests/"
 ```
 
+For more details on application architecture and testing strategy, refer to the [Design Documentation](design-documentation.md).
+
 ### 3. Virtual Environment for Local Testing
 
 For local development, you can create a virtual environment:
@@ -287,4 +291,10 @@ With our Bazel configuration, you can now run the full build, test, and deploy s
 bazel build //... && bazel test //... && skaffold run -m template-fastapi-app -p dev
 ```
 
-The configuration properly handles Java version compatibility and test exclusions automatically, making the development experience seamless across the entire monorepo. 
+The configuration properly handles Java version compatibility and test exclusions automatically, making the development experience seamless across the entire monorepo.
+
+See the [Design Documentation](design-documentation.md) for more details on the application architecture.
+
+For more information on deployment options, please refer to the [Architecture Overview](architecture-overview.md).
+
+Refer to the [Developer Quickstart](developer-quickstart.md) for getting started with the application. 
