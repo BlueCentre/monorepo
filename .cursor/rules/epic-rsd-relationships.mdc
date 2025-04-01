@@ -1,0 +1,133 @@
+---
+description: Guidance when working with Jira and program management topics
+globs: "*.jira", "*.confluence"
+alwaysApply: false
+---
+# Epic and RSD Relationship Patterns
+
+## Purpose
+
+This rule documents common patterns and relationships between Epics and RSDs (Requirements Specification Documents) in the project, helping to understand how work is organized and tracked.
+
+## Common Relationship Patterns
+
+### 1. Observability and Monitoring
+- **Platform Infrastructure RSDs**:
+  - Core observability setup and infrastructure
+  - Service monitoring and alerting frameworks
+  - Synthetic monitoring capabilities
+  - Data feed monitoring and tracking
+
+- **Customer-Facing RSDs**:
+  - External observability and reporting
+  - Customer-facing documentation
+  - SLA measurement and reporting
+  - Access management and controls
+
+### 2. Production Readiness
+- **Infrastructure RSDs**:
+  - Platform scalability and reliability
+  - Service monitoring frameworks
+  - Data pipeline monitoring
+  - Performance measurement
+
+- **Process RSDs**:
+  - Testing frameworks and automation
+  - Operational improvements
+  - Documentation requirements
+  - Implementation standards
+
+### 3. RSD Connection Types
+1. **Direct Links**: Epic explicitly references RSD in description or comments
+2. **Thematic Links**: Epic implements part of a broader RSD initiative
+3. **Dependency Links**: Epic depends on work defined in other RSDs
+4. **Documentation Links**: Epic contributes to documentation requirements in RSDs
+
+## How to Identify Relationships
+
+1. Check Epic descriptions and comments for direct RSD references
+2. Look for thematic alignment between Epic goals and RSD requirements
+3. Review RSD comments for mentions of specific Epics
+4. Examine related work and dependencies in both Epic and RSD
+5. Consider customer-facing vs internal implementation requirements
+
+## Verification and Validation
+
+### Priority Order for Relationship Verification
+1. **Direct References** (Highest Priority)
+   - Explicit RSD numbers in Epic (e.g., "implements RSD-123")
+   - Epic numbers in RSD comments or description
+   - Links in Jira between Epic and RSD
+
+2. **Documentation Links** (Second Priority)
+   - Shared documentation references
+   - Common HLD/LLD documents
+   - Linked confluence pages
+
+3. **Dependency Links** (Third Priority)
+   - Explicit dependencies mentioned in either item
+   - Shared dependencies with other Epics/RSDs
+   - Technical dependencies in implementation
+
+4. **Thematic Links** (Lowest Priority)
+   - Only consider after exhausting above methods
+   - Must have strong alignment in goals/requirements
+   - Should be validated with team members if possible
+
+### Common Verification Mistakes to Avoid
+1. Don't assume relationships based solely on similar keywords
+2. Don't rely on historical patterns without verification
+3. Don't skip checking both Epic and RSD sides of relationship
+4. Don't assume transitive relationships (if A→B and B→C, don't assume A→C)
+
+## Benefits
+
+- Helps maintain traceability between requirements and implementation
+- Ensures comprehensive coverage of RSD requirements
+- Identifies potential dependencies or conflicts
+- Supports better sprint and release planning
+- Facilitates impact analysis of changes
+- Enables better resource allocation and prioritization
+
+## Common Epic Categories
+
+1. **Platform Features**: 
+   - Infrastructure components
+   - Monitoring systems
+   - Observability frameworks
+   - Core platform capabilities
+
+2. **Customer Delivery**: 
+   - External-facing features
+   - Integration endpoints
+   - Customer-specific implementations
+   - Service level agreements
+
+3. **Platform Support**: 
+   - Maintenance activities
+   - Enhancement work
+   - Technical debt resolution
+   - Performance improvements
+
+4. **Application Partner**: 
+   - Partner integrations
+   - Third-party connections
+   - API implementations
+   - Custom solutions
+
+## Best Practices
+
+1. Always check both Epic and RSD descriptions for relationships
+2. Consider both direct and indirect connections
+3. Look for customer-facing vs internal implementation distinctions
+4. Review comments and linked issues for additional context
+5. Consider dependencies and implementation order
+6. Check for documentation requirements in related RSDs
+7. Maintain clear traceability between implementation and requirements
+8. Document any assumptions or constraints affecting the relationship
+9. Regular review and update of relationships as work progresses
+10. Consider impact on other teams and components when establishing links
+11. Never assume relationships based solely on keyword matching
+12. Always verify relationships using the priority order defined above
+13. Document the basis for relationship identification in comments
+14. Flag uncertain relationships for team review

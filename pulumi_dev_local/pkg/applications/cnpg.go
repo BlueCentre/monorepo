@@ -43,7 +43,7 @@ func DeployCloudNativePGOperator(ctx *pulumi.Context, provider *kubernetes.Provi
 		CreateNamespace: true,                                      // Operator needs its namespace
 		ValuesFile:      "cnpg-operator",                           // Use the renamed values file
 		Wait:            true,                                      // Wait for the operator to be ready
-		CleanupCRDs:     true,                                      // Cleanup the CRDs
+		CleanupCRDs:     false,                                     // Cleanup the CRDs
 		CRDsToCleanup:   CNPGCRDs,
 		Timeout:         600, // Standard timeout
 	})
