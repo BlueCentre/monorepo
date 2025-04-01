@@ -11,10 +11,9 @@ config:
   dev-local-infrastructure:istio_enabled: "true"
   dev-local-infrastructure:redis_enabled: "true"
   dev-local-infrastructure:cnpg_enabled: "true"
-  dev-local-infrastructure:mongodb_enabled: "true"
+  dev-local-infrastructure:mongodb_enabled: "false"
   dev-local-infrastructure:argocd_enabled: "false"
   dev-local-infrastructure:telepresence_enabled: "false"
-  dev-local-infrastructure:teardown: "false"
 
   dev-local-infrastructure:cert_manager_version: "v1.17.0"
   dev-local-infrastructure:external_secrets_version: "0.14.4"

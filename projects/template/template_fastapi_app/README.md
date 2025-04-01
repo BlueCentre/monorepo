@@ -165,6 +165,9 @@ When running the application, access the interactive API documentation at:
 
 For more detailed information, see:
 
+- [Developer Quickstart](docs/developer-quickstart.md) - Quick setup guide
+- [Architecture Overview](docs/architecture-overview.md) - High-level architecture overview
+- [Design Documentation](docs/design-documentation.md) - Detailed architecture and design
 - [Monorepo Integration Guide](docs/monorepo-integration.md)
 - [Deployment Guide](docs/deployment.md)
 - [API Documentation](docs/api.md)

@@ -245,12 +245,8 @@ For example, to add a new component called "example-component":
 7. **Clean Up When Done**:
 
    ```bash
-   # Option 1: Use Pulumi teardown flag (if implemented)
-   # pulumi config set dev-local-infrastructure:teardown "true"
-   # pulumi up
-   
-   # Option 2: Destroy all resources managed by the stack
-   pulumi destroy
+   # Destroy all resources managed by the stack
+   pulumi destroy -y
    ```
 
 ## Deployed Components Details

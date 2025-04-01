@@ -58,7 +58,11 @@ monorepo/
 ├── libs/                       # Shared libraries and utilities
 ├── third_party/                # Third-party dependencies
 ├── tools/                      # Development and build tools
-├── docs/                       # Documentation files (including CONTRIBUTING_COMPLEX_IAC_COMPONENTS.md)
+├── docs/                       # Documentation files and guides
+│   ├── infrastructure-comparison.md  # Terraform vs Pulumi implementation analysis
+│   ├── quick-start-guide.md          # Quick start guide for new users
+│   ├── rate-limiting.md              # Documentation for Istio rate limiting
+│   └── contributing/                  # Contribution guidelines
 ├── terraform_dev_local/        # Terraform configurations for local development
 ├── pulumi_dev_local/           # Pulumi configurations for local development
 ├── terraform_lab_gcp/          # Terraform configurations for GCP
@@ -67,8 +71,6 @@ monorepo/
 ├── BUILD.bazel                 # Root BUILD file
 ├── MODULE.bazel                # Bazel module definition
 ├── WORKSPACE                   # Bazel workspace definition (legacy)
-├── quick-start-guide.md        # Quick start guide for new users
-├── README-rate-limiting.md     # Documentation for Istio rate limiting
 └── skaffold.yaml               # Root Skaffold configuration
 ```
 
@@ -136,7 +138,8 @@ Both implementations strive to maintain feature and version parity for these com
 
 For guidance on contributing new or complex infrastructure components applicable to both Terraform and Pulumi, please refer to:
 
-- **[Contributing Complex IAC Components](./docs/CONTRIBUTING_COMPLEX_IAC_COMPONENTS.md)**
+- **[Infrastructure Comparison: Terraform vs Pulumi](./docs/infrastructure-comparison.md)** - Comprehensive analysis of our implementations
+- **[Contributing Complex IAC Components](./docs/contributing/iac-components.md)** - Guidelines for adding new components
 
 ## Getting Started (Application Development)
 
@@ -154,13 +157,31 @@ To get started with developing applications within this monorepo:
     *   `skaffold verify`: Run smoke tests/verification checks.
     *   `skaffold delete`: Clean up deployed resources.
 
+For more detailed instructions, check out the **[Quick Start Guide](./docs/quick-start-guide.md)**.
+
 Refer to individual project READMEs and the `skaffold.yaml` files for specific profiles and modules (`-p <profile> -m <module>`).
+
+## Documentation
+
+For comprehensive documentation about this repository:
+
+- **[Infrastructure Comparison](./docs/infrastructure-comparison.md)** - Analysis of our Terraform and Pulumi implementations
+- **[Quick Start Guide](./docs/quick-start-guide.md)** - Getting started with this repository
+- **[Rate Limiting Guide](./docs/rate-limiting.md)** - Documentation for Istio rate limiting
+- **[Bazel Cheat Sheet](./docs/CHEATSHEET_BAZEL.md)** - Reference for common Bazel commands
+- **[Container Guidelines](./docs/CONTAINER_README.md)** - Guidelines for working with containers
+- **[Build Fixes](./docs/BUILD_FIXES.md)** - Solutions for common build issues
+
+See the **[Documentation Index](./docs/README.md)** for a complete listing of available documentation.
 
 ## Contributing
 
 Contributions are welcome! Please follow standard Git workflow (fork, branch, pull request). Ensure Bazel builds and tests pass. Update relevant documentation for any changes.
 
-For infrastructure contributions, please see the [Contributing Complex IAC Components](./docs/CONTRIBUTING_COMPLEX_IAC_COMPONENTS.md) guide.
+For contribution guidelines, please see:
+- **[Contributing to Infrastructure Components](./docs/contributing/iac-components.md)**
+- **[Contributing to Applications](./docs/contributing/application.md)**
+- **[Contributing to Platform](./docs/contributing/platform.md)**
 
 ## License
 

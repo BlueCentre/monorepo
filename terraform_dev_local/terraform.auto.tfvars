@@ -10,7 +10,7 @@ datadog_enabled          = false
 istio_enabled            = true
 redis_enabled            = true
 cnpg_enabled             = true
-mongodb_enabled          = true
+mongodb_enabled          = false
 argocd_enabled           = false
 telepresence_enabled     = false
 
