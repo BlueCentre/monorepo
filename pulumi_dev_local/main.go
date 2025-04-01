@@ -96,13 +96,26 @@ func main() {
 
 		// Service mesh setup
 		if istioEnabled {
-			if err := applications.DeployIstio(ctx, k8sProvider); err != nil {
+			// Get Redis configuration since Istio might need it for rate limiting
+			var redisResource pulumi.Resource
+
+			// If Redis is enabled, deploy it before Istio
+			if redisEnabled {
+				var err error
+				redisResource, err = applications.DeployRedis(ctx, k8sProvider)
+				if err != nil {
+					return err
+				}
+			}
+
+			// Deploy Istio with Redis resource (will be nil if Redis is disabled)
+			if err := applications.DeployIstio(ctx, k8sProvider, redisResource); err != nil {
 				return err
 			}
 		}
 
-		// Redis setup for both Istio rate limiting and application usage
-		if redisEnabled {
+		// Redis setup for application usage (if not already deployed for Istio)
+		if redisEnabled && !istioEnabled {
 			if _, err := applications.DeployRedis(ctx, k8sProvider); err != nil {
 				return err
 			}

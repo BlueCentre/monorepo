@@ -27,4 +27,4 @@ redis_password = "REPLACE_WITH_REDIS_PASSWORD" # For demo/testing only - use a s
 mongodb_password = "REPLACE_WITH_MONGODB_PASSWORD" # For demo/testing only - use a secure password in production
 
 # CNPG settings for application usage
-cnpg_app_db_password = "ChangeMe!"
+cnpg_app_db_password = "REPLACE_WITH_CNPG_APP_DB_PASSWORD"

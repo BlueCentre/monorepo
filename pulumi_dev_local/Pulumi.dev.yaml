@@ -34,8 +34,8 @@ config:
   dev-local-infrastructure:datadog_app_key: "REPLACE_WITH_DATADOG_APP_KEY"
   dev-local-infrastructure:redis_password: "REPLACE_WITH_REDIS_PASSWORD"
   dev-local-infrastructure:cnpg_app_db_name: app
-  dev-local-infrastructure:cnpg_app_db_password: "ChangeMe!"
   dev-local-infrastructure:cnpg_app_db_user: app_user
+  dev-local-infrastructure:cnpg_app_db_password: "REPLACE_WITH_CNPG_APP_DB_PASSWORD"
   dev-local-infrastructure:mongodb_password: "REPLACE_WITH_MONGODB_PASSWORD"
 
   monitoring:namespace: monitoring

@@ -1,6 +1,8 @@
 package applications
 
 import (
+	"fmt"
+
 	"github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
@@ -9,7 +11,9 @@ import (
 )
 
 // DeployIstio deploys Istio service mesh components
-func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider) error {
+// It accepts an optional redisResource which is required if redis_enabled is true in config,
+// to set up rate limiting EnvoyFilters.
+func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider, redisResource pulumi.Resource) error {
 	// Get configuration
 	conf := utils.NewConfig(ctx)
 	version := conf.GetString("istio_version", "1.23.3")
@@ -110,6 +114,11 @@ func DeployIstio(ctx *pulumi.Context, provider *kubernetes.Provider) error {
 	// Deploy rate limiting EnvoyFilters if Redis is enabled
 	redisEnabled := conf.GetBool("redis_enabled", false)
 	if redisEnabled {
+		// Check if the required Redis resource was actually passed
+		if redisResource == nil {
+			return fmt.Errorf("Istio rate limiting is enabled (redis_enabled=true) but no Redis resource was provided to DeployIstio")
+		}
+
 		// Rate Limit Service EnvoyFilter
 		_, err = resources.CreateK8sManifest(ctx, provider, resources.K8sManifestConfig{
 			Name: "istio-rate-limit-service",
@@ -143,7 +152,7 @@ spec:
                   socket_address:
                     address: redis-master.redis.svc.cluster.local
                     port_value: 6379`,
-		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway, redisResource}))
 		if err != nil {
 			return err
 		}
@@ -182,7 +191,7 @@ spec:
                 cluster_name: rate_limit_service
               timeout: 10s
             transport_api_version: V3`,
-		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway, redisResource}))
 		if err != nil {
 			return err
 		}
@@ -214,7 +223,7 @@ spec:
           - request_headers:
               header_name: ":path"
               descriptor_key: path`,
-		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway}))
+		}, pulumi.DependsOn([]pulumi.Resource{istioIngressGateway, redisResource}))
 		if err != nil {
 			return err
 		}
