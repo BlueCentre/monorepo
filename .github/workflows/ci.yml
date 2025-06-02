@@ -31,7 +31,7 @@ jobs:
     steps:
       # https://github.com/bazel-contrib/setup-bazel
       # Install & configure Bazel
-      - uses: bazel-contrib/setup-bazel@0.14.0
+      - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           # Avoid downloading Bazel every time.
           bazelisk-cache: true
