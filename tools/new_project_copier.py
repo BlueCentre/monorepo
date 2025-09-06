@@ -230,14 +230,24 @@ class CopierProjectGenerator:
 
 def main():
     """Main entry point."""
-    # Determine workspace root
-    script_dir = Path(__file__).parent
-    workspace_root = script_dir.parent
+    # Determine workspace root - use current working directory since bazel runs from workspace root
+    workspace_root = Path.cwd()
     
-    # Verify we're in a valid workspace
+    # If MODULE.bazel not found in cwd, try to find it by walking up the directory tree
     if not (workspace_root / "MODULE.bazel").exists():
-        print("❌ Error: Could not find MODULE.bazel. Are you in the workspace root?")
-        sys.exit(1)
+        current = workspace_root
+        found = False
+        # Walk up the directory tree looking for MODULE.bazel
+        for parent in [current] + list(current.parents):
+            if (parent / "MODULE.bazel").exists():
+                workspace_root = parent
+                found = True
+                break
+        
+        if not found:
+            print("❌ Error: Could not find MODULE.bazel. Are you in the workspace root?")
+            print(f"   Searched from: {Path.cwd()}")
+            sys.exit(1)
     
     # Check if Copier is available
     try:
