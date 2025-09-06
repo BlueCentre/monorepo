@@ -19,11 +19,11 @@ name: CI
 on:
   pull_request:
     branches:
-      - master
+      - main
       - release/*
   push:
     branches:
-      - master
+      - main
 jobs:
   build:
     # virtual environments: https://github.com/actions/virtual-environments
