@@ -1,0 +1,54 @@
+# {{ project_title }}
+
+{{ project_description }}
+
+## Features
+
+- **Gin Framework**: High-performance HTTP web framework for Go
+- **RESTful API**: Clean REST API structure
+- **Middleware Support**: Built-in and custom middleware
+- **JSON Handling**: Native JSON request/response handling
+- **Testing**: Comprehensive test suite
+- **Docker Ready**: Containerized for easy deployment
+
+## Usage
+
+```bash
+# Build the service
+bazel build //projects/go/{{ project_name }}/...
+
+# Run the service
+bazel run //projects/go/{{ project_name }}:main
+
+# Test the service
+curl http://localhost:8080/health
+```
+
+## Development
+
+```bash
+# Run tests
+bazel test //projects/go/{{ project_name }}/...
+
+# Run with hot reload (if configured)
+go run main.go
+```
+
+## API Endpoints
+
+- `GET /health` - Health check endpoint
+- `GET /api/v1/status` - Service status
+- Add your endpoints here...
+
+## Monorepo Integration
+
+This service is fully integrated with the monorepo build system using Bazel.
+
+## Author
+
+Created by {{ author_name }} <{{ author_email }}>
+
+## References
+
+- [Gin Framework Documentation](https://gin-gonic.com/)
+- [Copier Templating](https://github.com/copier-org/copier)

@@ -1,0 +1,50 @@
+# Copier template configuration for CLI applications using Typer
+_templates_suffix: .jinja
+_envops:
+  block_start_string: "{%"
+  block_end_string: "%}"
+  variable_start_string: "{{"
+  variable_end_string: "}}"
+
+# Questions for the user
+project_name:
+  type: str
+  help: Enter the project name (will be used for directories and modules)
+  placeholder: my_awesome_cli
+  validator: >-
+    {% if not (project_name | regex_search("^[a-zA-Z][a-zA-Z0-9_-]*$")) %}
+    Project name must start with a letter and contain only alphanumeric characters, hyphens, and underscores
+    {% endif %}
+
+project_title:
+  type: str
+  help: Enter the project title (human-readable name for README)
+  placeholder: "{{ project_name | replace('_', ' ') | title }}"
+  default: "{{ project_name | replace('_', ' ') | title }}"
+
+project_description:
+  type: str
+  help: Enter a brief description of your CLI project
+  placeholder: A command-line interface built with Typer
+  default: A command-line interface built with Typer
+
+author_name:
+  type: str
+  help: Enter the author name
+  placeholder: Your Name
+  default: Developer
+
+author_email:
+  type: str
+  help: Enter the author email
+  placeholder: your.email@example.com
+  default: developer@example.com
+  validator: >-
+    {% if author_email and not (author_email | regex_search("^[^@]+@[^@]+\.[^@]+$")) %}
+    Please enter a valid email address
+    {% endif %}
+
+# Internal variables (computed)
+_project_slug: "{{ project_name | lower | replace('-', '_') }}"
+_project_class: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
+_project_package: "{{ project_name | lower | replace('-', '_') }}"
