@@ -34,7 +34,7 @@ pytest
 httpx
 
 # tools
-copier
+copier==9.10.1
 pylint
 black
 pytest-pylint
