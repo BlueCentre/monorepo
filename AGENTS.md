@@ -60,3 +60,16 @@ Skaffold is configured for continuous development, automatically building and de
 *   **Polyglot Support:** The monorepo is designed to accommodate multiple programming languages, with specific rules and toolchains configured for Python (supporting multiple versions) and Java.
 *   **Containerization:** Projects are set up to be containerized, with `pkg_tar` rules used for creating application archives, indicating a path towards Docker image creation.
 *   **CI/CD Integration:** CircleCI pipelines are configured to automatically build and test changes using Bazel, integrating with BuildBuddy for remote execution and caching to speed up CI workflows.
+*   **Roadmap Management:** The project roadmap is managed and tracked using GitHub Projects.
+    *   **Tracking:** Individual roadmap items are represented as GitHub Issues within the `BlueCentre/monorepo` repository and linked to the "monorepo project".
+    *   **Labeling:** Issues are categorized using labels to provide clarity and facilitate filtering. Common labels include:
+        *   `enhancement`: For new features or improvements.
+        *   `bug`: For defects or errors.
+        *   `documentation`: For updates or creation of documentation.
+        *   `dependencies`: For tasks related to managing project dependencies.
+        *   `roadmap`: A general label applied to all issues that are part of the official roadmap.
+    *   **Tools:** The `gh` CLI (GitHub Command Line Interface) is the primary tool for interacting with the GitHub Project and issues.
+    *   **For AI Agents & Contributors:**
+        *   When proposing new roadmap items, please create a new issue in the `BlueCentre/monorepo` repository, provide a clear title and detailed description, and apply relevant labels.
+        *   Ensure that all roadmap-related issues are linked to the "monorepo project".
+        *   Adhere to the established labeling conventions to maintain consistency and improve discoverability.
