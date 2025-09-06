@@ -124,40 +124,18 @@ default_python_version = "3.11"
 python_register_multi_toolchains(
     name = "python",
     default_version = default_python_version,
-    python_versions = [
-        "3.11",
-        "3.10",
-        "3.9",
-        "3.8",
-    ],
+    python_versions = ["3.11"],  # simplified single-version toolchain (multi-version removed)
     register_coverage_tool = True,
 )
 
 load("@python//:pip.bzl", "multi_pip_parse")
 load("@python//3.11:defs.bzl", interpreter_3_11 = "interpreter")
-load("@python//3.10:defs.bzl", interpreter_3_10 = "interpreter")
-load("@python//3.9:defs.bzl", interpreter_3_9 = "interpreter")
-load("@python//3.8:defs.bzl", interpreter_3_8 = "interpreter")
 
 multi_pip_parse(
     name = "pip_deps",
     default_version = default_python_version,
-    python_interpreter_target = {
-        "3.11": interpreter_3_11,
-        "3.10": interpreter_3_10,
-        "3.9": interpreter_3_9,
-        "3.8": interpreter_3_8,
-    },
-    requirements_lock = {
-        "3.11": "//third_party/python:requirements_lock_3_11.txt",
-        "3.10": "//third_party/python:requirements_lock_3_10.txt",
-        "3.9": "//third_party/python:requirements_lock_3_9.txt",
-        "3.8": "//third_party/python:requirements_lock_3_8.txt",
-    },
-    # extra_pip_args = [
-    #     "--extra-index-url", "https://pip.corp.example.com/repo"
-    # ],
-    #download_only = True,
+    python_interpreter_target = {"3.11": interpreter_3_11},
+    requirements_lock = {"3.11": "//third_party/python:requirements_lock_3_11.txt"},
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")

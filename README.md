@@ -1,6 +1,7 @@
 # Monorepo Project
 
 [![CI](https://github.com/BlueCentre/monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/BlueCentre/monorepo/actions/workflows/ci.yml)
+[![Python Dependency Drift](https://github.com/BlueCentre/monorepo/actions/workflows/python-deps-drift.yml/badge.svg)](https://github.com/BlueCentre/monorepo/actions/workflows/python-deps-drift.yml)
 [![Documentation Status](https://img.shields.io/badge/docs-up--to--date-brightgreen)](https://github.com/BlueCentre/monorepo/wiki)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -23,13 +24,14 @@ A monorepo built with Bazel that supports multiple languages and frameworks. Use
 ## Repository Structure
 
 This monorepo contains multiple projects with different technologies:
+
 - All projects are located in the `projects/` directory
 - Infrastructure as Code (IaC) is supported through both:
   - Terraform (HCL) in `terraform_dev_local/`
   - Pulumi (Go) in `pulumi_dev_local/`
 - Each technology stack maintains feature parity to provide flexibility and options for infrastructure management to support local containerized application development
 
-```
+```text
 monorepo/
 ├── projects/                   # All projects organized by category
 │   ├── base/                   # Base project templates and utilities
@@ -143,33 +145,46 @@ For guidance on contributing new or complex infrastructure components applicable
 
 ## Getting Started (Application Development)
 
-To get started with developing applications within this monorepo:
+See the **[Quick Start Guide](./docs/quick-start-guide.md)** for end-to-end environment setup and workflow details. Below is a concise orientation:
 
-1.  **Prerequisites**: Ensure you have [Bazel](https://bazel.build/), [Skaffold](https://skaffold.dev/), [Docker](https://www.docker.com/), and optionally [Colima](https://github.com/abiosoft/colima) (for local Kubernetes) installed.
-2.  **Choose an Infrastructure Backend**: Set up either the [Terraform](./terraform_dev_local/README.md) or [Pulumi](./pulumi_dev_local/README.md) local development environment if your application requires Kubernetes infrastructure components (like databases, service mesh, etc.).
-3.  **Explore Projects**: Browse the [`projects/`](./projects) directory and the [Project Catalog](#project-catalog) table.
-4.  **Consult Project READMEs**: Each project directory (e.g., `projects/template/template_fastapi_app/`) contains a specific `README.md` with detailed build, test, and run instructions using Skaffold.
-5.  **General Workflow**: Most projects follow a Skaffold-based workflow:
-    *   `skaffold build`: Build container images.
-    *   `skaffold run`: Deploy to Kubernetes.
-    *   `skaffold dev`: Run in development mode with hot-reloading.
-    *   `skaffold test`: Run tests.
-    *   `skaffold verify`: Run smoke tests/verification checks.
-    *   `skaffold delete`: Clean up deployed resources.
+1. Install: Bazel, Skaffold, Docker (optionally Colima for local k8s)
+1. Provision infra (optional): choose either [Terraform local dev](./terraform_dev_local/README.md) or [Pulumi local dev](./pulumi_dev_local/README.md)
+1. Generate a project (service, CLI, etc.): see **[Project Generation](./docs/project-generation.md)**
+1. Manage dependencies & drift: see **[Dependency Management](./docs/dependency-management.md)**
+1. Develop & iterate: use Skaffold profiles (`skaffold dev -m <module> -p dev`)
+1. Validate: run Bazel builds/tests and any template-specific docs
 
-For more detailed instructions, check out the **[Quick Start Guide](./docs/quick-start-guide.md)**.
+Common Skaffold workflow:
 
-Refer to individual project READMEs and the `skaffold.yaml` files for specific profiles and modules (`-p <profile> -m <module>`).
+```bash
+skaffold build     # Build images
+skaffold run       # Deploy once
+skaffold dev -m template-fastapi-app -p dev  # Iterative dev
+skaffold test      # Run tests
+skaffold verify    # Smoke/verification
+skaffold delete    # Cleanup
+```
 
 ## Quick Project Creation
 
-Create new projects quickly using the interactive project generator:
+For full template matrix, flags, and examples see **[Project Generation](./docs/project-generation.md)**.
+
+Minimal examples:
 
 ```bash
+# Interactive
 bazel run //tools:new_project
+
+# FastAPI service
+bazel run //tools:new_project -- --language python --project-type fastapi --project-name my_service
+
+# List templates
+bazel run //tools:new_project -- --list-templates
 ```
 
-This command provides an interactive experience to create new projects from templates.
+### Dependency Management
+
+Python dependency model, lock export process, and drift enforcement are documented in **[Dependency Management](./docs/dependency-management.md)**. See that doc for update workflow, enforcement layers (pre-commit, Bazel test, CI), and Copier pin alignment.
 
 ### Supported Languages and Project Types
 
@@ -183,6 +198,7 @@ This command provides an interactive experience to create new projects from temp
 | **Java** | Spring Boot | 🚧 Placeholder | - | Web service using Spring Boot framework |
 
 **Legend:**
+
 - ✅ **Available**: Full template with complete project structure
 - 🚧 **Placeholder**: Creates basic project structure; template coming soon
 
@@ -199,6 +215,7 @@ bazel run //tools:new_project
 ```
 
 The generator will:
+
 1. Create a new project directory in `projects/{language}/{project_name}`
 2. Copy the appropriate template (if available) or create a placeholder project
 3. Customize the project with your chosen name and details
@@ -222,6 +239,7 @@ See the **[Documentation Index](./docs/README.md)** for a complete listing of av
 Contributions are welcome! Please follow standard Git workflow (fork, branch, pull request). Ensure Bazel builds and tests pass. Update relevant documentation for any changes.
 
 For contribution guidelines, please see:
+
 - **[Contributing to Infrastructure Components](./docs/contributing/iac-components.md)**
 - **[Contributing to Applications](./docs/contributing/application.md)**
 - **[Contributing to Platform](./docs/contributing/platform.md)**

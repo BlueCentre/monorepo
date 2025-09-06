@@ -1,0 +1,68 @@
+## Source of truth for Python dependencies (Pattern B / uv migration)
+## All dependencies (runtime + tooling) are declared together initially for simplicity.
+## Future improvement: split dev/test-only packages into [project.optional-dependencies].
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monorepo-python-deps"
+version = "0.1.0"
+description = "Consolidated dependency specification for Bazel consumed Python tooling/apps (managed by uv)."
+requires-python = ">=3.11,<3.12"
+authors = [ { name = "BlueCentre" } ]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+dependencies = [
+  # Core runtime / frameworks (minimal base for deployed services & libs)
+  "fastapi",
+  "flask",
+  "sqlalchemy",
+  "asyncpg",
+  "pydantic>=2.3.0",
+  "pydantic-settings>=2.0.3",
+  "uvicorn",
+  "websockets",
+  "python-jose",
+  "passlib",
+  "bcrypt",
+  "python-multipart",
+  "tenacity",
+  "google-cloud-pubsub",
+
+  # OpenTelemetry (runtime instrumentation shipped with services)
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+  "opentelemetry-exporter-otlp",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-instrumentation-sqlalchemy",
+  "opentelemetry-instrumentation-logging",
+  "opentelemetry-instrumentation-requests",
+  "opentelemetry-instrumentation-httpx",
+]
+
+[dependency-groups]
+# Developer tooling (format, lint, static analysis)
+tooling = [
+  "black",
+  "pylint",
+  "pytest-black",
+  "pytest-pylint",
+  "pytest-mypy",
+]
+
+# Testing libraries & clients
+test = [
+  "pytest",
+  "requests",
+  "httpx",
+]
+
+# Project scaffolding (template generation). Split so production images need not include Copier.
+scaffolding = [
+  "copier==9.10.1",
+]
+
+[tool.uv]
+managed = true

@@ -7,6 +7,8 @@ This directory contains documentation for the monorepo, including development gu
 - [Infrastructure Comparison: Terraform vs Pulumi](./infrastructure-comparison.md) - Comprehensive analysis of our Terraform and Pulumi implementations
 - [Quick Start Guide](./quick-start-guide.md) - Getting started with this repository
 - [Rate Limiting Guide](./rate-limiting.md) - How to use the Istio+Redis rate limiting capability
+- [Dependency Management](./dependency-management.md) - Python uv-based lock, export, and drift enforcement
+- [Project Generation](./project-generation.md) - Creating new projects via the Bazel Copier generator
 
 ## Contribution Guides
 
@@ -43,8 +45,8 @@ The [user_guides/](./user_guides/) directory contains step-by-step instructions 
 ## Notes
 
 - If you are just updating docs without touching any code, you may add any of the following to your [commit](https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs) message to bypass CI
-    - `[skip ci]`
-    - `[ci skip]`
-    - `[no ci]`
-    - `[skip actions]`
-    - `[actions skip]`
+  - `[skip ci]`
+  - `[ci skip]`
+  - `[no ci]`
+  - `[skip actions]`
+  - `[actions skip]`

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 import argparse
+import re
 
 try:
     from copier import run_copy
@@ -127,7 +128,15 @@ class CopierProjectGenerator:
         
         return language, project_type
 
-    def generate_with_copier(self, language: str, project_type: str, project_name: Optional[str] = None, defaults: bool = False) -> Optional[Path]:
+    def generate_with_copier(
+        self,
+        language: str,
+        project_type: str,
+        project_name: Optional[str] = None,
+        defaults: bool = False,
+        output_dir: Optional[str] = None,
+        dry_run: bool = False,
+    ) -> Optional[Path]:
         """Generate project using Copier template.
 
         Args:
@@ -156,14 +165,36 @@ class CopierProjectGenerator:
         print(f"\n🔨 Creating {language} {project_type} project using Copier...")
         print(f"📂 Template: {template_path}")
         
-        # Determine target directory
-        target_base = self.projects_dir / config["target_subdir"]
+        # Determine target directory base (language mapping) unless overridden
+        if output_dir:
+            # Allow absolute or relative path (relative to workspace_root)
+            out_path = Path(output_dir)
+            if not out_path.is_absolute():
+                out_path = self.workspace_root / out_path
+            target_base = out_path
+        else:
+            target_base = self.projects_dir / config["target_subdir"]
         try:
             target_base.mkdir(parents=True, exist_ok=True)
             print(f"📁 Target directory prepared: {target_base}")
         except OSError as e:
             print(f"❌ Failed to create target directory {target_base}: {e}")
             return None
+
+        # Determine final project path if project_name provided (copier will merge into base otherwise)
+        final_target = target_base
+        if project_name:
+            final_target = target_base / project_name
+            if final_target.exists() and not dry_run:
+                # Auto-increment suffix to avoid overwrite
+                base_name = project_name
+                counter = 1
+                while (target_base / f"{base_name}-{counter}").exists():
+                    counter += 1
+                new_name = f"{base_name}-{counter}"
+                print(f"⚠️  Target '{final_target}' exists. Using '{new_name}' instead.")
+                final_target = target_base / new_name
+                project_name = new_name
         
         try:
             # Prepare data dict for Copier. If project_name supplied, include it to reduce prompts.
@@ -186,12 +217,13 @@ class CopierProjectGenerator:
 
             result = run_copy(
                 src_path=str(template_path),
-                dst_path=str(target_base),
+                dst_path=str(final_target),
                 data=copier_data,
                 answers_file=None,
                 unsafe=True,
                 quiet=False,
                 defaults=defaults,
+                pretend=dry_run,
             )
             
             # Copier 8 may return a Worker object instead of direct Path.
@@ -204,8 +236,11 @@ class CopierProjectGenerator:
                 if isinstance(candidate, (str, Path)):
                     project_result_path = Path(candidate)
 
-            if project_result_path and project_result_path.exists():
-                print("\n🎉 Successfully created project!")
+            if project_result_path and (dry_run or project_result_path.exists()):
+                if dry_run:
+                    print("\n🧪 Dry run complete (no files written).")
+                else:
+                    print("\n🎉 Successfully created project!")
                 print(f"   📍 Location: {project_result_path}")
                 print(f"   🏷️  Template: {config['description']}")
                 return project_result_path
@@ -270,13 +305,21 @@ class CopierProjectGenerator:
                 language = args.language
                 project_type = args.project_type
                 print("🤖 Non-interactive mode: using provided flags --language and --project-type")
+                if args.project_name:
+                    original_name = args.project_name
+                    sanitized = sanitize_project_name(original_name)
+                    if sanitized != original_name:
+                        print(f"🧼 Sanitized project name: '{original_name}' -> '{sanitized}'")
+                    args.project_name = sanitized
                 project_path = self.generate_with_copier(
                     language,
                     project_type,
                     project_name=args.project_name,
                     defaults=args.defaults,
+                    output_dir=args.output_dir,
+                    dry_run=args.dry_run,
                 )
-                if project_path:
+                if project_path and not args.dry_run:
                     self.show_next_steps(project_path, language, project_type)
                 else:
                     print("\n🚧 No project was created (non-interactive mode).")
@@ -289,7 +332,7 @@ class CopierProjectGenerator:
 
             language, project_type = self.prompt_user_input()
             project_path = self.generate_with_copier(language, project_type)
-            if project_path:
+            if project_path and not getattr(args, 'dry_run', False):
                 self.show_next_steps(project_path, language, project_type)
             else:
                 print("\n🚧 No project was created.")
@@ -468,7 +511,37 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-name", dest="project_name", help="Explicit project name to pass to Copier")
     parser.add_argument("--defaults", action="store_true", help="Run Copier with defaults (non-interactive) where possible")
     parser.add_argument("--list-templates", action="store_true", help="List available templates and exit")
+    parser.add_argument("--output-dir", dest="output_dir", help="Override output directory (absolute or relative to workspace root). If omitted, derived from language mapping.")
+    parser.add_argument("--dry-run", dest="dry_run", action="store_true", help="Perform a dry run (no files written) using Copier's pretend mode")
     return parser
+
+
+def sanitize_project_name(name: str) -> str:
+    """Sanitize project name to allowed pattern.
+
+    Rules enforced:
+      - Must start with a letter (a-zA-Z)
+      - Subsequent chars: letters, numbers, hyphen, underscore
+      - Convert spaces to hyphens
+      - Lower-case result for consistency
+      - Collapse multiple separators
+    """
+    if not name:
+        return "project"
+    # Replace spaces with hyphen
+    name = name.strip().replace(" ", "-")
+    # Lowercase
+    name = name.lower()
+    # Remove invalid characters
+    name = re.sub(r"[^a-z0-9_-]+", "-", name)
+    # Ensure starts with letter; if not, prefix 'p'
+    if not re.match(r"^[a-zA-Z]", name):
+        name = f"p{name}"
+    # Collapse multiple separators
+    name = re.sub(r"[-_]{2,}", "-", name)
+    # Strip leading/trailing separators
+    name = name.strip("-_") or "project"
+    return name
 
 
 def main():
