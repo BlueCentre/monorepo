@@ -151,7 +151,12 @@ class CopierProjectGenerator:
         
         # Determine target directory
         target_base = self.projects_dir / config["target_subdir"]
-        target_base.mkdir(parents=True, exist_ok=True)
+        try:
+            target_base.mkdir(parents=True, exist_ok=True)
+            print(f"📁 Target directory prepared: {target_base}")
+        except OSError as e:
+            print(f"❌ Failed to create target directory {target_base}: {e}")
+            return None
         
         try:
             # Run Copier interactively
@@ -169,14 +174,15 @@ class CopierProjectGenerator:
                 defaults=False,  # Force prompting for all questions
             )
             
-            if result:
-                project_path = Path(result)
+            # Copier's run_copy returns a pathlib.Path object on success
+            if result and isinstance(result, Path):
                 print(f"\n🎉 Successfully created project!")
-                print(f"   📍 Location: {project_path}")
+                print(f"   📍 Location: {result}")
                 print(f"   🏷️  Template: {config['description']}")
-                return project_path
+                return result
             else:
                 print("❌ Project creation failed")
+                print(f"   Expected Path object, got: {type(result)} = {result}")
                 return None
                 
         except KeyboardInterrupt:
@@ -185,6 +191,8 @@ class CopierProjectGenerator:
         except Exception as e:
             print(f"\n❌ Error creating project with Copier: {e}")
             print(f"   Template: {template_path}")
+            print(f"   Target: {target_base}")
+            print(f"   Error type: {type(e).__name__}")
             return None
 
     def show_next_steps(self, project_path: Path, language: str, project_type: str):
@@ -194,15 +202,23 @@ class CopierProjectGenerator:
         print(f"   2. Review and customize the generated files")
         print(f"   3. Update dependencies as needed")
         
+        # Calculate relative path from workspace root for Bazel targets
+        try:
+            relative_path = project_path.relative_to(self.workspace_root)
+            bazel_target_prefix = f"//{relative_path}"
+        except ValueError:
+            # Fallback if project is not under workspace root
+            bazel_target_prefix = f"//projects/{language}/{project_path.name}"
+        
         if language == "python":
-            print(f"   4. Build: bazel build //projects/{language}/{project_path.name}/...")
-            print(f"   5. Test: bazel test //projects/{language}/{project_path.name}/...")
+            print(f"   4. Build: bazel build {bazel_target_prefix}/...")
+            print(f"   5. Test: bazel test {bazel_target_prefix}/...")
         elif language == "go":
-            print(f"   4. Build: bazel build //projects/{language}/{project_path.name}/...")
-            print(f"   5. Test: bazel test //projects/{language}/{project_path.name}/...")
+            print(f"   4. Build: bazel build {bazel_target_prefix}/...")
+            print(f"   5. Test: bazel test {bazel_target_prefix}/...")
         elif language == "java":
-            print(f"   4. Build: bazel build //projects/{language}/{project_path.name}/...")
-            print(f"   5. Test: bazel test //projects/{language}/{project_path.name}/...")
+            print(f"   4. Build: bazel build {bazel_target_prefix}/...")
+            print(f"   5. Test: bazel test {bazel_target_prefix}/...")
         
         if project_type in ["fastapi", "gin", "flask"]:
             print(f"   6. Deploy: skaffold run (if Kubernetes manifests are included)")
@@ -232,7 +248,7 @@ class CopierProjectGenerator:
 _WORKSPACE_ROOT = None
 
 
-def get_workspace_root() -> Path:
+def get_workspace_root() -> Optional[Path]:
     """Get the workspace root, determining it once and caching the result."""
     global _WORKSPACE_ROOT
     if _WORKSPACE_ROOT is None:
@@ -240,24 +256,32 @@ def get_workspace_root() -> Path:
     return _WORKSPACE_ROOT
 
 
-def find_workspace_root() -> Path:
+def find_workspace_root() -> Optional[Path]:
     """Find the workspace root directory containing MODULE.bazel using multiple strategies."""
     
     # Strategy 1: Use BUILD_WORKSPACE_DIRECTORY if available (most reliable for bazel run)
     # This is the standard way Bazel communicates the workspace root to scripts
     build_workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
     if build_workspace_dir:
-        workspace_path = Path(build_workspace_dir).resolve()
-        if (workspace_path / "MODULE.bazel").exists():
-            return workspace_path
-        # If MODULE.bazel doesn't exist at BUILD_WORKSPACE_DIRECTORY, something is wrong
-        # but let's continue with other strategies
+        try:
+            workspace_path = Path(build_workspace_dir).resolve()
+            if (workspace_path / "MODULE.bazel").exists():
+                return workspace_path
+            # If MODULE.bazel doesn't exist at BUILD_WORKSPACE_DIRECTORY, something is wrong
+            # but let's continue with other strategies
+        except (OSError, RuntimeError) as e:
+            # Path resolution might fail in some environments
+            pass
     
     # Strategy 2: Check current working directory and walk up
-    current = Path.cwd().resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / "MODULE.bazel").exists():
-            return parent
+    try:
+        current = Path.cwd().resolve()
+        for parent in [current] + list(current.parents):
+            if (parent / "MODULE.bazel").exists():
+                return parent
+    except (OSError, RuntimeError):
+        # Current directory might not be accessible or resolvable
+        pass
     
     # Strategy 3: Use script location and walk up (for when not sandboxed)
     try:
@@ -265,7 +289,7 @@ def find_workspace_root() -> Path:
         for parent in [script_path.parent] + list(script_path.parents):
             if (parent / "MODULE.bazel").exists():
                 return parent
-    except (NameError, OSError):
+    except (NameError, OSError, RuntimeError):
         # __file__ might not be available in some contexts, or path might not be resolvable
         pass
     
@@ -282,7 +306,7 @@ def find_workspace_root() -> Path:
             for parent in [runfiles_path] + list(runfiles_path.parents):
                 if (parent / "MODULE.bazel").exists():
                     return parent
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             # Runfiles directory might not be accessible
             pass
     
@@ -291,7 +315,7 @@ def find_workspace_root() -> Path:
         for parent in [Path.cwd().resolve()] + list(Path.cwd().resolve().parents):
             if (parent / ".git").exists() and (parent / "MODULE.bazel").exists():
                 return parent
-    except OSError:
+    except (OSError, RuntimeError):
         # Current directory might not be accessible
         pass
     
@@ -312,6 +336,11 @@ def main():
         print("   1. You're not running from the repository root")
         print("   2. The Bazel environment is not set up correctly")
         print("   3. There are network connectivity issues preventing Bazel from running")
+        print("   4. The script is running in a sandboxed environment with limited file access")
+        print("\n   Troubleshooting:")
+        print("   - Try running: bazel run //tools:new_project")
+        print("   - Ensure you're in the workspace root directory")
+        print("   - Check if MODULE.bazel exists in the expected location")
         sys.exit(1)
     
     print(f"🏠 Using workspace root: {workspace_root}")
@@ -325,6 +354,9 @@ def main():
         print("   This tool requires Copier for advanced templating.")
         print("   Please install it with: pip install copier")
         sys.exit(1)
+    except AttributeError:
+        # Some versions of Copier might not have __version__
+        print("✅ Using Copier (version not available)")
     
     generator = CopierProjectGenerator(workspace_root)
     generator.generate_project()
