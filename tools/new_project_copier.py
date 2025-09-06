@@ -228,26 +228,93 @@ class CopierProjectGenerator:
             sys.exit(1)
 
 
+# Global variable to cache workspace root once determined
+_WORKSPACE_ROOT = None
+
+
+def get_workspace_root() -> Path:
+    """Get the workspace root, determining it once and caching the result."""
+    global _WORKSPACE_ROOT
+    if _WORKSPACE_ROOT is None:
+        _WORKSPACE_ROOT = find_workspace_root()
+    return _WORKSPACE_ROOT
+
+
+def find_workspace_root() -> Path:
+    """Find the workspace root directory containing MODULE.bazel using multiple strategies."""
+    
+    # Strategy 1: Use BUILD_WORKSPACE_DIRECTORY if available (most reliable for bazel run)
+    # This is the standard way Bazel communicates the workspace root to scripts
+    build_workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+    if build_workspace_dir:
+        workspace_path = Path(build_workspace_dir).resolve()
+        if (workspace_path / "MODULE.bazel").exists():
+            return workspace_path
+        # If MODULE.bazel doesn't exist at BUILD_WORKSPACE_DIRECTORY, something is wrong
+        # but let's continue with other strategies
+    
+    # Strategy 2: Check current working directory and walk up
+    current = Path.cwd().resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / "MODULE.bazel").exists():
+            return parent
+    
+    # Strategy 3: Use script location and walk up (for when not sandboxed)
+    try:
+        script_path = Path(__file__).resolve()
+        for parent in [script_path.parent] + list(script_path.parents):
+            if (parent / "MODULE.bazel").exists():
+                return parent
+    except (NameError, OSError):
+        # __file__ might not be available in some contexts, or path might not be resolvable
+        pass
+    
+    # Strategy 4: Check common Bazel runfiles locations
+    runfiles_dir = os.environ.get("RUNFILES_DIR")
+    if runfiles_dir:
+        try:
+            runfiles_path = Path(runfiles_dir).resolve()
+            # Look for workspace name in runfiles structure
+            for child in runfiles_path.iterdir():
+                if child.is_dir() and (child / "MODULE.bazel").exists():
+                    return child
+            # Also try walking up from runfiles directory
+            for parent in [runfiles_path] + list(runfiles_path.parents):
+                if (parent / "MODULE.bazel").exists():
+                    return parent
+        except (OSError, PermissionError):
+            # Runfiles directory might not be accessible
+            pass
+    
+    # Strategy 5: Look for common Git workspace indicators  
+    try:
+        for parent in [Path.cwd().resolve()] + list(Path.cwd().resolve().parents):
+            if (parent / ".git").exists() and (parent / "MODULE.bazel").exists():
+                return parent
+    except OSError:
+        # Current directory might not be accessible
+        pass
+    
+    return None
+
+
 def main():
     """Main entry point."""
-    # Determine workspace root - use current working directory since bazel runs from workspace root
-    workspace_root = Path.cwd()
+    # Find workspace root using multiple strategies and cache it
+    workspace_root = get_workspace_root()
     
-    # If MODULE.bazel not found in cwd, try to find it by walking up the directory tree
-    if not (workspace_root / "MODULE.bazel").exists():
-        current = workspace_root
-        found = False
-        # Walk up the directory tree looking for MODULE.bazel
-        for parent in [current] + list(current.parents):
-            if (parent / "MODULE.bazel").exists():
-                workspace_root = parent
-                found = True
-                break
-        
-        if not found:
-            print("❌ Error: Could not find MODULE.bazel. Are you in the workspace root?")
-            print(f"   Searched from: {Path.cwd()}")
-            sys.exit(1)
+    if workspace_root is None:
+        print("❌ Error: Could not find MODULE.bazel. Are you in the workspace root?")
+        print(f"   Current directory: {Path.cwd()}")
+        print(f"   BUILD_WORKSPACE_DIRECTORY: {os.environ.get('BUILD_WORKSPACE_DIRECTORY', 'Not set')}")
+        print(f"   RUNFILES_DIR: {os.environ.get('RUNFILES_DIR', 'Not set')}")
+        print("\n   This error can occur if:")
+        print("   1. You're not running from the repository root")
+        print("   2. The Bazel environment is not set up correctly")
+        print("   3. There are network connectivity issues preventing Bazel from running")
+        sys.exit(1)
+    
+    print(f"🏠 Using workspace root: {workspace_root}")
     
     # Check if Copier is available
     try:
