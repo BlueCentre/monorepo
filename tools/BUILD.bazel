@@ -1,0 +1,12 @@
+# Tools for development and build automation
+
+load("@rules_python//python:defs.bzl", "py_binary")
+
+# New project generator
+py_binary(
+    name = "new_project",
+    srcs = ["new_project.py"],
+    visibility = ["//visibility:public"],
+    main = "new_project.py",
+    deps = [],
+)

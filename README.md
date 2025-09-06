@@ -161,6 +161,49 @@ For more detailed instructions, check out the **[Quick Start Guide](./docs/quick
 
 Refer to individual project READMEs and the `skaffold.yaml` files for specific profiles and modules (`-p <profile> -m <module>`).
 
+## Quick Project Creation
+
+Create new projects quickly using the interactive project generator:
+
+```bash
+bazel run //tools:new_project
+```
+
+This command provides an interactive experience to create new projects from templates.
+
+### Supported Languages and Project Types
+
+| Language | Project Type | Status | Template Source | Description |
+|----------|--------------|--------|-----------------|-------------|
+| **Python** | FastAPI | ✅ Available | `template_fastapi_app` | Production-ready FastAPI web service with PostgreSQL, JWT auth, and Kubernetes deployment |
+| **Python** | CLI | ✅ Available | `template_typer_app` | Command-line application using Typer framework |
+| **Python** | Flask | 🚧 Placeholder | - | Web application using Flask framework |
+| **Go** | Gin | ✅ Available | `template_gin_app` | Web service using Gin web framework |
+| **Go** | CLI | 🚧 Placeholder | - | Command-line application in Go |
+| **Java** | Spring Boot | 🚧 Placeholder | - | Web service using Spring Boot framework |
+
+**Legend:**
+- ✅ **Available**: Full template with complete project structure
+- 🚧 **Placeholder**: Creates basic project structure; template coming soon
+
+### Example Usage
+
+```bash
+# Interactive mode - prompts for all options
+bazel run //tools:new_project
+
+# Follow the prompts to select:
+# 1. Language (python, go, java)
+# 2. Project type (fastapi, cli, gin, springboot, etc.)
+# 3. Project name (e.g., my_awesome_api)
+```
+
+The generator will:
+1. Create a new project directory in `projects/{language}/{project_name}`
+2. Copy the appropriate template (if available) or create a placeholder project
+3. Customize the project with your chosen name and details
+4. Provide next steps for development
+
 ## Documentation
 
 For comprehensive documentation about this repository:
