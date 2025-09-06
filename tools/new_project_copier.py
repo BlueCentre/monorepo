@@ -319,6 +319,71 @@ def find_workspace_root() -> Optional[Path]:
         # Current directory might not be accessible
         pass
     
+    # Strategy 6: Try common paths when running in Bazel sandbox
+    # Bazel often creates a sandbox structure, try to find the original workspace
+    try:
+        # Check if we're in a Bazel sandbox (common patterns)
+        current_path = Path.cwd().resolve()
+        path_str = str(current_path)
+        
+        # If we're in execroot, try to find the original workspace
+        if "execroot" in path_str:
+            # Try to find the workspace by looking for common patterns
+            parts = current_path.parts
+            for i, part in enumerate(parts):
+                if part == "execroot" and i + 1 < len(parts):
+                    # The next part is usually the workspace name
+                    workspace_name = parts[i + 1]
+                    # Try some common locations
+                    potential_paths = [
+                        Path("/") / "home" / "runner" / "work" / workspace_name / workspace_name,
+                        Path("/") / "workspace",
+                        Path("/") / "tmp" / workspace_name,
+                        current_path.parents[2] if len(current_path.parents) > 2 else None,
+                    ]
+                    
+                    for potential_path in potential_paths:
+                        if potential_path and potential_path.exists():
+                            module_file = potential_path / "MODULE.bazel"
+                            if module_file.exists():
+                                return potential_path
+                    break
+        
+        # If current path contains the workspace name, try parent directories
+        # This handles cases where we're deep in the sandbox structure
+        if "monorepo" in path_str:
+            for parent in current_path.parents:
+                if parent.name == "monorepo" and (parent / "MODULE.bazel").exists():
+                    return parent
+                    
+    except (OSError, RuntimeError, IndexError):
+        # Path operations might fail in restricted environments
+        pass
+    
+    # Strategy 7: Fallback - try hardcoded paths for GitHub Actions/CI environments
+    try:
+        # Common GitHub Actions paths
+        github_workspace = os.environ.get("GITHUB_WORKSPACE")
+        if github_workspace:
+            workspace_path = Path(github_workspace)
+            if (workspace_path / "MODULE.bazel").exists():
+                return workspace_path
+        
+        # Try common CI/workspace paths
+        potential_workspace_paths = [
+            Path("/home/runner/work/monorepo/monorepo"),
+            Path("/workspace"),
+            Path("/github/workspace"),
+            Path.cwd() / ".." / "workspace" if Path.cwd().name != "workspace" else Path.cwd(),
+        ]
+        
+        for potential_path in potential_workspace_paths:
+            if potential_path.exists() and (potential_path / "MODULE.bazel").exists():
+                return potential_path.resolve()
+                
+    except (OSError, RuntimeError):
+        pass
+    
     return None
 
 
@@ -332,6 +397,27 @@ def main():
         print(f"   Current directory: {Path.cwd()}")
         print(f"   BUILD_WORKSPACE_DIRECTORY: {os.environ.get('BUILD_WORKSPACE_DIRECTORY', 'Not set')}")
         print(f"   RUNFILES_DIR: {os.environ.get('RUNFILES_DIR', 'Not set')}")
+        print(f"   GITHUB_WORKSPACE: {os.environ.get('GITHUB_WORKSPACE', 'Not set')}")
+        print(f"   PWD: {os.environ.get('PWD', 'Not set')}")
+        
+        # Show what we actually checked
+        print("\n   Checked locations:")
+        try:
+            current = Path.cwd().resolve()
+            for i, parent in enumerate([current] + list(current.parents)[:3]):
+                module_file = parent / "MODULE.bazel"
+                print(f"   {i+1}. {parent} -> MODULE.bazel exists: {module_file.exists()}")
+        except Exception as e:
+            print(f"   - Error checking current directory: {e}")
+            
+        try:
+            script_path = Path(__file__).resolve()
+            for i, parent in enumerate([script_path.parent] + list(script_path.parents)[:3]):
+                module_file = parent / "MODULE.bazel"
+                print(f"   {i+4}. {parent} -> MODULE.bazel exists: {module_file.exists()}")
+        except Exception as e:
+            print(f"   - Error checking script directory: {e}")
+        
         print("\n   This error can occur if:")
         print("   1. You're not running from the repository root")
         print("   2. The Bazel environment is not set up correctly")
