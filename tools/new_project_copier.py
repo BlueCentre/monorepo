@@ -10,7 +10,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-import subprocess
+import argparse
 
 try:
     from copier import run_copy
@@ -80,7 +80,7 @@ class CopierProjectGenerator:
         return sorted(choices)
 
     def prompt_user_input(self) -> tuple[str, str]:
-        """Prompt user for language and project type."""
+        """Prompt user for language and project type (interactive mode)."""
         print("🚀 Welcome to the MonoRepo Project Generator!")
         print("   Powered by Copier for advanced templating")
         print()
@@ -127,8 +127,15 @@ class CopierProjectGenerator:
         
         return language, project_type
 
-    def generate_with_copier(self, language: str, project_type: str) -> Optional[Path]:
-        """Generate project using Copier template."""
+    def generate_with_copier(self, language: str, project_type: str, project_name: Optional[str] = None, defaults: bool = False) -> Optional[Path]:
+        """Generate project using Copier template.
+
+        Args:
+            language: Chosen language key.
+            project_type: Chosen project type key.
+            project_name: Optional explicit project name to pass to Copier.
+            defaults: If True, run Copier with defaults (no prompting) when data is sufficient.
+        """
         template_key = (language, project_type)
         
         if template_key not in self.supported_templates:
@@ -159,49 +166,71 @@ class CopierProjectGenerator:
             return None
         
         try:
-            # Run Copier interactively
-            print(f"📋 Copier will now ask you questions to customize your project...\n")
-            
-            # Use Copier to generate the project
-            # Note: Copier will prompt for project_name and create the directory
+            # Prepare data dict for Copier. If project_name supplied, include it to reduce prompts.
+            copier_data: Dict[str, str] = {}
+            if project_name:
+                copier_data["project_name"] = project_name
+
+            if copier_data:
+                print(f"🧩 Pre-populating answers: {list(copier_data.keys())}")
+
+            if defaults and not copier_data:
+                # Warn that defaults without any provided data may still prompt.
+                print("⚠️  Running with --defaults but no pre-populated data; Copier may still prompt.")
+
+            interactive = not defaults
+            if interactive:
+                print("📋 Copier will now ask you questions to customize your project...\n")
+            else:
+                print("🤖 Running Copier in non-interactive (defaults) mode")
+
             result = run_copy(
                 src_path=str(template_path),
                 dst_path=str(target_base),
-                data={},  # Let Copier prompt for all data
+                data=copier_data,
                 answers_file=None,
-                unsafe=True,  # Allow templates to run arbitrary code (needed for our setup)
+                unsafe=True,
                 quiet=False,
-                defaults=False,  # Force prompting for all questions
+                defaults=defaults,
             )
             
-            # Copier's run_copy returns a pathlib.Path object on success
-            if result and isinstance(result, Path):
-                print(f"\n🎉 Successfully created project!")
-                print(f"   📍 Location: {result}")
-                print(f"   🏷️  Template: {config['description']}")
-                return result
+            # Copier 8 may return a Worker object instead of direct Path.
+            project_result_path: Optional[Path] = None
+            if isinstance(result, Path):
+                project_result_path = result
             else:
-                print("❌ Project creation failed")
-                print(f"   Expected Path object, got: {type(result)} = {result}")
-                return None
+                # Try to introspect common attributes on Worker
+                candidate = getattr(result, "dst_path", None)
+                if isinstance(candidate, (str, Path)):
+                    project_result_path = Path(candidate)
+
+            if project_result_path and project_result_path.exists():
+                print("\n🎉 Successfully created project!")
+                print(f"   📍 Location: {project_result_path}")
+                print(f"   🏷️  Template: {config['description']}")
+                return project_result_path
+
+            print("❌ Project creation failed")
+            print(f"   Unexpected return type from Copier: {type(result)} -> {result}")
+            return None
                 
         except KeyboardInterrupt:
             print("\n\n❌ Project generation cancelled by user")
             return None
-        except Exception as e:
-            print(f"\n❌ Error creating project with Copier: {e}")
-            print(f"   Template: {template_path}")
-            print(f"   Target: {target_base}")
-            print(f"   Error type: {type(e).__name__}")
+        except (OSError, RuntimeError, ValueError) as e:
+            print("\n❌ Error creating project with Copier:", e)
+            print("   Template:", template_path)
+            print("   Target:", target_base)
+            print("   Error type:", type(e).__name__)
             return None
 
     def show_next_steps(self, project_path: Path, language: str, project_type: str):
         """Show next steps after project creation."""
-        print(f"\n📖 Next steps:")
+        print("\n📖 Next steps:")
         print(f"   1. cd {project_path}")
-        print(f"   2. Review and customize the generated files")
-        print(f"   3. Update dependencies as needed")
-        
+        print("   2. Review and customize the generated files")
+        print("   3. Update dependencies as needed")
+
         # Calculate relative path from workspace root for Bazel targets
         try:
             relative_path = project_path.relative_to(self.workspace_root)
@@ -209,7 +238,7 @@ class CopierProjectGenerator:
         except ValueError:
             # Fallback if project is not under workspace root
             bazel_target_prefix = f"//projects/{language}/{project_path.name}"
-        
+
         if language == "python":
             print(f"   4. Build: bazel build {bazel_target_prefix}/...")
             print(f"   5. Test: bazel test {bazel_target_prefix}/...")
@@ -219,29 +248,71 @@ class CopierProjectGenerator:
         elif language == "java":
             print(f"   4. Build: bazel build {bazel_target_prefix}/...")
             print(f"   5. Test: bazel test {bazel_target_prefix}/...")
-        
-        if project_type in ["fastapi", "gin", "flask"]:
-            print(f"   6. Deploy: skaffold run (if Kubernetes manifests are included)")
 
-    def generate_project(self) -> None:
-        """Main method to generate a new project."""
+        if project_type in ["fastapi", "gin", "flask"]:
+            print("   6. Deploy: skaffold run (if Kubernetes manifests are included)")
+
+    def generate_project(self, args: argparse.Namespace) -> None:
+        """Main method to generate a new project.
+
+        Behavior:
+            - If --list-templates specified, list and exit.
+            - If --language/--project-type provided (and optionally --project-name), run non-interactively.
+            - Else fall back to interactive prompt.
+        """
         try:
+            if getattr(args, "list_templates", False):
+                self.print_templates()
+                return
+
+            if args.language and args.project_type:
+                # Non-interactive mode
+                language = args.language
+                project_type = args.project_type
+                print("🤖 Non-interactive mode: using provided flags --language and --project-type")
+                project_path = self.generate_with_copier(
+                    language,
+                    project_type,
+                    project_name=args.project_name,
+                    defaults=args.defaults,
+                )
+                if project_path:
+                    self.show_next_steps(project_path, language, project_type)
+                else:
+                    print("\n🚧 No project was created (non-interactive mode).")
+                return
+
+            # Interactive mode
+            if not sys.stdin.isatty():
+                print("❌ No TTY available and required interactive inputs missing. Provide --language and --project-type (and optionally --project-name).")
+                sys.exit(2)
+
             language, project_type = self.prompt_user_input()
-            
             project_path = self.generate_with_copier(language, project_type)
-            
             if project_path:
                 self.show_next_steps(project_path, language, project_type)
             else:
                 print("\n🚧 No project was created.")
                 print("   Consider contributing a template for this combination!")
-                
         except KeyboardInterrupt:
             print("\n\n❌ Project generation cancelled by user")
             sys.exit(1)
-        except Exception as e:
-            print(f"\n❌ Error generating project: {e}")
+        except EOFError:
+            print("\n❌ Input stream closed (EOF). Provide flags for non-interactive use: --language --project-type --project-name.")
+            sys.exit(2)
+        except (OSError, RuntimeError, ValueError) as e:
+            print("\n❌ Error generating project:", e)
             sys.exit(1)
+
+    def print_templates(self) -> None:
+        """Print available templates (supported + placeholders)."""
+        print("📚 Available templates:")
+        print("  Supported:")
+        for (lang, proj_type), cfg in sorted(self.supported_templates.items()):
+            print(f"    - {lang}:{proj_type} -> {cfg['description']}")
+        print("  Planned (placeholders):")
+        for (lang, proj_type), desc in sorted(self.placeholder_templates.items()):
+            print(f"    - {lang}:{proj_type} (planned) -> {desc}")
 
 
 # Global variable to cache workspace root once determined
@@ -269,7 +340,7 @@ def find_workspace_root() -> Optional[Path]:
                 return workspace_path
             # If MODULE.bazel doesn't exist at BUILD_WORKSPACE_DIRECTORY, something is wrong
             # but let's continue with other strategies
-        except (OSError, RuntimeError) as e:
+        except (OSError, RuntimeError):
             # Path resolution might fail in some environments
             pass
     
@@ -387,8 +458,25 @@ def find_workspace_root() -> Optional[Path]:
     return None
 
 
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate new monorepo projects using Copier templates",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--language", help="Language key (e.g. python, go, java)")
+    parser.add_argument("--project-type", dest="project_type", help="Project type key (e.g. fastapi, cli, gin)")
+    parser.add_argument("--project-name", dest="project_name", help="Explicit project name to pass to Copier")
+    parser.add_argument("--defaults", action="store_true", help="Run Copier with defaults (non-interactive) where possible")
+    parser.add_argument("--list-templates", action="store_true", help="List available templates and exit")
+    return parser
+
+
 def main():
     """Main entry point."""
+    arg_parser = build_arg_parser()
+    # Bazel passes an extra "--" separator before script args; argparse handles it automatically.
+    args = arg_parser.parse_args()
+
     # Find workspace root using multiple strategies and cache it
     workspace_root = get_workspace_root()
     
@@ -407,7 +495,7 @@ def main():
             for i, parent in enumerate([current] + list(current.parents)[:3]):
                 module_file = parent / "MODULE.bazel"
                 print(f"   {i+1}. {parent} -> MODULE.bazel exists: {module_file.exists()}")
-        except Exception as e:
+        except (OSError, RuntimeError) as e:
             print(f"   - Error checking current directory: {e}")
             
         try:
@@ -415,7 +503,7 @@ def main():
             for i, parent in enumerate([script_path.parent] + list(script_path.parents)[:3]):
                 module_file = parent / "MODULE.bazel"
                 print(f"   {i+4}. {parent} -> MODULE.bazel exists: {module_file.exists()}")
-        except Exception as e:
+        except (OSError, RuntimeError) as e:
             print(f"   - Error checking script directory: {e}")
         
         print("\n   This error can occur if:")
@@ -445,7 +533,7 @@ def main():
         print("✅ Using Copier (version not available)")
     
     generator = CopierProjectGenerator(workspace_root)
-    generator.generate_project()
+    generator.generate_project(args)
 
 
 if __name__ == "__main__":
