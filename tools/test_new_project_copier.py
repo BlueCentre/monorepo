@@ -38,7 +38,6 @@ def test_generate_with_conflicting_dir(tmp_path):
     (workspace / "projects" / "template" / "template_typer_app" / "copier.yml").write_text("project_name: {type: str}")
     gen_cls = mod.CopierProjectGenerator
     gen = gen_cls(workspace)
-
     # Monkeypatch run_copy to simulate copier behavior
     def fake_run_copy(**kwargs):
         dst = Path(kwargs["dst_path"])
@@ -48,7 +47,8 @@ def test_generate_with_conflicting_dir(tmp_path):
 
     mod.run_copy = fake_run_copy  # type: ignore
     # Pre-create directory to force conflict
-    base = workspace / "projects" / "python"
+    # The generator maps Python projects under 'projects/py', not 'projects/python'
+    base = workspace / "projects" / "py"
     (base / "sample").mkdir(parents=True, exist_ok=True)
     result = gen.generate_with_copier("python", "cli", project_name="sample")
     assert result is not None
@@ -73,7 +73,7 @@ def test_generate_creates_named_subdirectory(tmp_path):
     project = gen.generate_with_copier("python", "cli", project_name="alpha_service")
     assert project is not None
     assert project.name == "alpha_service"
-    assert project.parent.name == "python"
+    assert project.parent.name == "py"
 
 
 def test_non_interactive_default_name(tmp_path):
@@ -101,9 +101,9 @@ def test_non_interactive_default_name(tmp_path):
     # Monkeypatch show_next_steps to avoid printing relative path logic depending on real workspace
     gen.show_next_steps = lambda *a, **k: None  # type: ignore
     gen.generate_project(args)  # type: ignore
-    # Expect exactly one created path under projects/python
+    # Expect exactly one created path under projects/py
     assert created_paths, "No project directory created"
     derived = created_paths[0]
-    assert derived.parent.name == "python"
+    assert derived.parent.name == "py"
     # Default derived name format: '<project-type>-app'
     assert derived.name.startswith("cli-app") or derived.name.startswith("cli-app")

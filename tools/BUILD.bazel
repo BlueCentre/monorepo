@@ -1,6 +1,7 @@
 # Tools for development and build automation
 
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@pip//:requirements.bzl", "requirement")
 
 # New project generator using Copier for advanced templating
 py_binary(
@@ -9,7 +10,7 @@ py_binary(
     main = "new_project_copier.py",
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//copier",
+        requirement("copier"),
     ],
 )
 
@@ -31,7 +32,7 @@ py_test(
     size = "small",
     tags = ["lint", "observability"],
     deps = [
-        "@pip//ruff",
+        requirement("ruff"),
     ],
 )
 
@@ -43,4 +44,16 @@ py_test(
     size = "small",
     tags = ["drift", "observability"],
     deps = [],
+)
+
+# Tests for new project generator (Copier-based)
+py_test(
+    name = "new_project_copier_test",
+    srcs = ["test_new_project_copier.py", "new_project_copier.py"],
+    main = "test_new_project_copier.py",
+    size = "small",
+    tags = ["scaffolding", "generator"],
+    deps = [
+        requirement("copier"),
+    ],
 )

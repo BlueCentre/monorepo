@@ -2,7 +2,7 @@ package(default_visibility = ["//visibility:public"])
 
 java_library(
     name = "hello_lib",
-    srcs = glob(["src/main/java/com/example/HelloWorld.java"]),
+    srcs = ["src/main/java/com/example/HelloWorld.java"],
 )
 
 java_binary(
@@ -13,7 +13,7 @@ java_binary(
 
 java_library(
     name = "webserver_lib",
-    srcs = glob(["src/main/java/com/example/WebServer.java"]),
+    srcs = ["src/main/java/com/example/WebServer.java"],
 )
 
 java_binary(
@@ -25,6 +25,7 @@ java_binary(
 java_library(
     name = "hello_test_lib",
     srcs = ["src/test/java/com/example/HelloWorldTest.java"],
+    deps = [":hello_lib"],
 )
 
 java_binary(
@@ -39,6 +40,7 @@ java_binary(
 java_library(
     name = "webserver_test_lib",
     srcs = ["src/test/java/com/example/WebServerTest.java"],
+    deps = [":webserver_lib"],
 )
 
 java_binary(
