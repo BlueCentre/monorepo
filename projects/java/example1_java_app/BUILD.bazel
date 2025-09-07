@@ -2,9 +2,10 @@
 
 package(default_visibility = ["//visibility:public"])
 
+# Original version with external dependencies (commented out until Maven deps are configured)
 java_library(
     name = "java-maven-lib",
-    srcs = glob(["src/main/java/com/example/myproject/*.java"]),
+    srcs = glob(["src/main/java/com/example/myproject/App.java"]),
     # deps = ["@maven_pojo//:com_google_guava_guava"],
 )
 
@@ -16,7 +17,7 @@ java_binary(
 
 java_test(
     name = "tests",
-    srcs = glob(["src/test/java/com/example/myproject/*.java"]),
+    srcs = glob(["src/test/java/com/example/myproject/TestApp.java"]),
     test_class = "com.example.myproject.TestApp",
     deps = [
         ":java-maven-lib",
@@ -24,4 +25,27 @@ java_test(
         # "@maven_pojo//:junit_junit",
     ],
     timeout = "short",
+)
+
+# Simplified version without external dependencies (working)
+java_library(
+    name = "java-simple-lib",
+    srcs = ["src/main/java/com/example/myproject/AppSimple.java"],
+)
+
+java_binary(
+    name = "java-simple",
+    main_class = "com.example.myproject.AppSimple",
+    runtime_deps = [":java-simple-lib"],
+)
+
+java_library(
+    name = "simple-test-lib",
+    srcs = ["src/test/java/com/example/myproject/TestAppSimple.java"],
+)
+
+java_binary(
+    name = "simple-tests",
+    main_class = "com.example.myproject.TestAppSimple",
+    runtime_deps = [":simple-test-lib", ":java-simple-lib"],
 )
