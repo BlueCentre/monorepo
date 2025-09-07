@@ -5,13 +5,14 @@ This directory contains tools for development and build automation.
 ## Available Tools
 
 ### new_project
-Interactive and non-interactive project generator that creates new projects from templates using **Copier** for advanced templating.
+Interactive and non-interactive project generator that creates new projects from templates using **Copier** for advanced templating. Projects are always created inside a dedicated subdirectory: `projects/<language>/<project_name>/` (or under a custom `--output-dir`).
 
 ```bash
 # Interactive (prompts)
 bazel run //tools:new_project
 
-# Non-interactive (fully automated)
+# Non-interactive (fully automated). The --project-name flag is strongly recommended; if omitted a default like
+# '<project-type>-app' is derived to avoid writing directly into the language root.
 bazel run //tools:new_project -- \
   --language python \
   --project-type cli \
@@ -38,7 +39,7 @@ bazel run //tools:new_project -- --list-templates
 - **Jinja2 Templating**: Full Jinja2 support in templates for dynamic content generation
 - **Template Versioning**: Support for template updates and migrations (future)
 - **Extensible**: Easy to add new templates and customize existing ones
-- **Non-interactive Mode**: Script-friendly via `--language`, `--project-type`, `--project-name`
+- **Non-interactive Mode**: Script-friendly via `--language`, `--project-type`, `--project-name` (a safe default name will be derived if omitted)
 - **Dry Run Support**: Use `--dry-run` to run Copier in pretend mode (no files written)
 - **Custom Output Directory**: Override default language-based path with `--output-dir`
 - **Template Discovery**: Use `--list-templates` to view available & planned templates
@@ -62,7 +63,8 @@ When `--language` and `--project-type` are supplied, prompts are skipped. Option
 | `--output-dir` | Override target directory (absolute or relative) |
 | `--list-templates` | List templates and exit |
 
-**Project Name Sanitization Rules:**
+**Project Directory & Name Rules:**
+* A project-specific subdirectory is always created (never writes directly into `projects/<language>`)
 * Lowercased
 * Spaces replaced with `-`
 * Invalid characters removed (only `[a-z0-9_-]` kept)
@@ -104,6 +106,15 @@ git commit -m "chore(python): update deps"
 ```
 
 See `third_party/python/COPIER_UPDATE.md` for Copier-specific upgrade details (authoritative doc after uv migration).
+
+For an ad-hoc local virtual environment (e.g. editor integration) run:
+
+```bash
+./scripts/setup_uv_env.sh --groups tooling,test,scaffolding
+source .uv-venv/bin/activate
+```
+
+This mirrors (group-inclusive) dependencies used by Bazel without needing `pip install` steps inside individual project folders.
 
 ### new_project_legacy
 

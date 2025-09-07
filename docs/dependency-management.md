@@ -85,7 +85,19 @@ A: Bazel actions that run tests or formatters need deterministic wheels. Includi
 A: The current strategy optimizes for a single enforced interpreter. Multi-version support would require either matrix exports or per-version lock layering; not implemented to reduce complexity.
 
 **Q: Do I run `uv pip install` locally?**  
-A: Typically you rely on Bazel-managed environments or `uv venv && uv pip install -r requirements_lock_3_11.txt` if an ad-hoc virtualenv is needed.
+A: Prefer `uv sync` with a managed virtualenv. Use the helper script:
+
+```bash
+./scripts/setup_uv_env.sh --groups tooling,test,scaffolding
+source .uv-venv/bin/activate
+```
+
+To reproduce the exact Bazel hashed environment (rarely needed):
+
+```bash
+uv venv .venv && . .venv/bin/activate
+uv pip install -r third_party/python/requirements_lock_3_11.txt --no-deps
+```
 
 ## Related Files
 

@@ -186,6 +186,37 @@ bazel run //tools:new_project -- --list-templates
 
 Python dependency model, lock export process, and drift enforcement are documented in **[Dependency Management](./docs/dependency-management.md)**. See that doc for update workflow, enforcement layers (pre-commit, Bazel test, CI), and Copier pin alignment.
 
+#### Python (uv-first workflow)
+
+This repo standardizes on [uv](https://github.com/astral-sh/uv) for Python dependency resolution & locking:
+
+| Artifact | Purpose |
+|----------|---------|
+| `third_party/python/pyproject.toml` | Declarative spec (runtime + groups) |
+| `third_party/python/uv.lock` | uv resolver lock (do not edit) |
+| `third_party/python/requirements_lock_3_11.txt` | Hashed export consumed by Bazel rules_python |
+| `//third_party/python:requirements_3_11.update` | Bazel target to regenerate lock + export |
+| `//third_party/python:requirements_drift_test` | Fails if exported requirements drift from spec |
+
+Common tasks:
+
+```bash
+# Add or bump a dependency
+$EDITOR third_party/python/pyproject.toml
+
+# Regenerate lock + export
+bazel run //third_party/python:requirements_3_11.update
+
+# Verify no drift
+bazel test //third_party/python:requirements_drift_test
+
+# (Optional) Local venv for iterative dev (installs uv if missing)
+./scripts/setup_uv_env.sh --groups tooling,test,scaffolding
+source .uv-venv/bin/activate
+```
+
+See `third_party/python/README.md` for full details.
+
 ### Supported Languages and Project Types
 
 | Language | Project Type | Status | Template Source | Description |

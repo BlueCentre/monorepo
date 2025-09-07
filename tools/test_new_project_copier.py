@@ -52,3 +52,54 @@ def test_generate_with_conflicting_dir(tmp_path):
     assert result is not None
     assert result.name.startswith('sample-')
 
+
+def test_generate_creates_named_subdirectory(tmp_path):
+    workspace = tmp_path / 'workspace'
+    tpl = workspace / 'projects' / 'template' / 'template_typer_app'
+    tpl.mkdir(parents=True)
+    (tpl / 'copier.yml').write_text('project_name: {type: str}')
+    gen_cls = getattr(mod, 'CopierProjectGenerator')
+    gen = gen_cls(workspace)
+
+    def fake_run_copy(**kwargs):  # type: ignore
+        dst = Path(kwargs['dst_path'])
+        dst.mkdir(parents=True, exist_ok=True)
+        (dst / 'README.md').write_text('# Test')
+        return dst
+    mod.run_copy = fake_run_copy  # type: ignore
+    project = gen.generate_with_copier('python', 'cli', project_name='alpha_service')
+    assert project is not None
+    assert project.name == 'alpha_service'
+    assert project.parent.name == 'python'
+
+
+def test_non_interactive_default_name(tmp_path):
+    # Simulate calling generate_project with language/project-type but no name -> should derive default
+    workspace = tmp_path / 'workspace'
+    tpl = workspace / 'projects' / 'template' / 'template_typer_app'
+    tpl.mkdir(parents=True)
+    (tpl / 'copier.yml').write_text('project_name: {type: str}')
+    gen_cls = getattr(mod, 'CopierProjectGenerator')
+    gen = gen_cls(workspace)
+
+    created_paths = []
+    def fake_run_copy(**kwargs):  # type: ignore
+        dst = Path(kwargs['dst_path'])
+        created_paths.append(dst)
+        dst.mkdir(parents=True, exist_ok=True)
+        return dst
+    mod.run_copy = fake_run_copy  # type: ignore
+
+    parser = getattr(mod, 'build_arg_parser')()
+    args = parser.parse_args(['--language', 'python', '--project-type', 'cli', '--defaults'])
+
+    # Monkeypatch show_next_steps to avoid printing relative path logic depending on real workspace
+    gen.show_next_steps = lambda *a, **k: None  # type: ignore
+    gen.generate_project(args)  # type: ignore
+    # Expect exactly one created path under projects/python
+    assert created_paths, 'No project directory created'
+    derived = created_paths[0]
+    assert derived.parent.name == 'python'
+    # Default derived name format: '<project-type>-app'
+    assert derived.name.startswith('cli-app') or derived.name.startswith('cli-app')
+

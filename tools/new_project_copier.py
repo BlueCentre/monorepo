@@ -13,12 +13,13 @@ from typing import Dict, List, Optional
 import argparse
 import re
 
+COPIER_AVAILABLE = True
 try:
-    from copier import run_copy
-except ImportError:
-    print("❌ Error: Copier is not available. Please ensure it's installed.")
-    print("   Run: pip install copier")
-    sys.exit(1)
+    from copier import run_copy  # type: ignore
+except ImportError:  # pragma: no cover - environment dependent
+    COPIER_AVAILABLE = False
+    def run_copy(*args, **kwargs):  # type: ignore
+        raise RuntimeError("Copier not installed. Install with: pip install copier")
 
 
 class CopierProjectGenerator:
@@ -80,8 +81,17 @@ class CopierProjectGenerator:
                 
         return sorted(choices)
 
-    def prompt_user_input(self) -> tuple[str, str]:
-        """Prompt user for language and project type (interactive mode)."""
+    def prompt_user_input(self) -> tuple[str, str, str]:
+        """Prompt user for language, project type, and project name (interactive mode).
+
+        Previously only language and project type were collected and the Copier
+        template was executed with the language-level directory as the
+        destination. That caused generated files to be written directly into
+        e.g. `projects/python/` instead of `projects/python/<project_name>/`.
+        We now explicitly prompt for a project name so we can create a
+        dedicated subdirectory and pass the name to Copier, ensuring clean
+        workspace structure.
+        """
         print("🚀 Welcome to the MonoRepo Project Generator!")
         print("   Powered by Copier for advanced templating")
         print()
@@ -126,7 +136,30 @@ class CopierProjectGenerator:
         
         print(f"✅ Selected project type: {project_type}")
         
-        return language, project_type
+        # Project name prompt (with basic validation/sanitization preview)
+        while True:
+            raw_name = input("\nEnter project name (e.g., my_service_api): ").strip()
+            if not raw_name:
+                print("❌ Project name cannot be empty")
+                continue
+            sanitized = sanitize_project_name(raw_name)
+            if sanitized != raw_name:
+                print(f"🧼 Sanitized project name: '{raw_name}' -> '{sanitized}'")
+            # Compute intended path
+            target_dir = self.projects_dir / self.supported_templates.get((language, project_type), {}).get("target_subdir", language)
+            # Fallback: if template not in supported (placeholder) use language key directly
+            if (language, project_type) in self.supported_templates:
+                target_dir = self.projects_dir / self.supported_templates[(language, project_type)]["target_subdir"] / sanitized
+            else:
+                # Placeholder templates: place under language subdir
+                target_dir = self.projects_dir / language / sanitized
+            if target_dir.exists():
+                print(f"❌ Directory already exists: {target_dir}. Choose another name.")
+                continue
+            project_name = sanitized
+            break
+
+        return language, project_type, project_name
 
     def generate_with_copier(
         self,
@@ -311,6 +344,12 @@ class CopierProjectGenerator:
                     if sanitized != original_name:
                         print(f"🧼 Sanitized project name: '{original_name}' -> '{sanitized}'")
                     args.project_name = sanitized
+                else:
+                    # Derive a reasonable default to avoid polluting the language directory root.
+                    derived = f"{project_type}-app"
+                    sanitized = sanitize_project_name(derived)
+                    print(f"⚠️  --project-name not provided; using derived default '{sanitized}'. Pass --project-name to override.")
+                    args.project_name = sanitized
                 project_path = self.generate_with_copier(
                     language,
                     project_type,
@@ -330,8 +369,8 @@ class CopierProjectGenerator:
                 print("❌ No TTY available and required interactive inputs missing. Provide --language and --project-type (and optionally --project-name).")
                 sys.exit(2)
 
-            language, project_type = self.prompt_user_input()
-            project_path = self.generate_with_copier(language, project_type)
+            language, project_type, project_name = self.prompt_user_input()
+            project_path = self.generate_with_copier(language, project_type, project_name=project_name)
             if project_path and not getattr(args, 'dry_run', False):
                 self.show_next_steps(project_path, language, project_type)
             else:
@@ -593,17 +632,15 @@ def main():
     print(f"🏠 Using workspace root: {workspace_root}")
     
     # Check if Copier is available
-    try:
-        import copier
-        print(f"✅ Using Copier {copier.__version__}")
-    except ImportError:
-        print("❌ Error: Copier is not installed.")
-        print("   This tool requires Copier for advanced templating.")
-        print("   Please install it with: pip install copier")
-        sys.exit(1)
-    except AttributeError:
-        # Some versions of Copier might not have __version__
-        print("✅ Using Copier (version not available)")
+    if COPIER_AVAILABLE:
+        try:  # pragma: no cover - best effort version fetch
+            import copier  # type: ignore
+            ver = getattr(copier, '__version__', 'unknown')
+        except ImportError:
+            ver = 'unknown'
+        print(f"✅ Using Copier {ver}")
+    else:
+        print("⚠️  Copier not installed - you can still run tests that monkeypatch run_copy, but actual project generation will fail.")
     
     generator = CopierProjectGenerator(workspace_root)
     generator.generate_project(args)
