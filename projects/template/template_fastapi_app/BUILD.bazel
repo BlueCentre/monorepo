@@ -26,11 +26,25 @@ py_library(
     deps = [
         requirement("fastapi"),
         requirement("pydantic"),
-        # Exclude pydantic-settings as it's not available in the monorepo
-        # requirement("pydantic-settings"),
+    requirement("pydantic-settings"),
         requirement("sqlalchemy"),
         # requirement("starlette"),  # Included via fastapi
         requirement("uvicorn"),
+    requirement("email-validator"),
+    requirement("slowapi"),
+    requirement("python-jose"),
+    requirement("passlib"),
+    requirement("bcrypt"),
+    requirement("google-cloud-pubsub"),
+        requirement("python-multipart"),
+        requirement("opentelemetry-api"),
+        requirement("opentelemetry-sdk"),
+        requirement("opentelemetry-exporter-otlp"),
+        requirement("opentelemetry-instrumentation-fastapi"),
+        requirement("opentelemetry-instrumentation-sqlalchemy"),
+        requirement("opentelemetry-instrumentation-logging"),
+        requirement("opentelemetry-instrumentation-requests"),
+        requirement("opentelemetry-instrumentation-httpx"),
         # requirement("psycopg2-binary"),  # Not available in the monorepo
     ],
 )
@@ -201,10 +215,11 @@ genrule(
         "requirements.txt",
         "sample_seed_data.json",
         "alembic.ini",
+        # Explicit single file (avoid listing inside glob for clarity/lint)
+        "migrations/README",
     ] + glob(["app/**/*.py"]) + glob([
         "migrations/**/*.py",
         "migrations/**/*.mako",
-        "migrations/README",
     ]),
     outs = ["app.tar"],
     cmd = """

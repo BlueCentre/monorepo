@@ -48,21 +48,21 @@ class NoteInDBBase(NoteBase):
     id: int
     user_id: int | None = None
 
-    class Config:
-        orm_mode = True
+    # Pydantic v2 style: enable attribute access from ORM objects.
+    # Replaces legacy `Config.orm_mode = True` (v1 pattern).
+    # Plain dict keeps backward compatibility minimal.
+    model_config = {"from_attributes": True}
 
 
 class Note(NoteInDBBase):
     """
     Note schema.
     """
-
-    pass
+    # Intentionally empty – inherits all fields.
 
 
 class NoteInDB(NoteInDBBase):
     """
     Note in DB schema.
     """
-
-    pass
+    # Intentionally empty – inherits all fields.

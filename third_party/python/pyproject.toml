@@ -22,6 +22,8 @@ dependencies = [
   "asyncpg",
   "pydantic>=2.3.0",
   "pydantic-settings>=2.0.3",
+  "email-validator>=2.0.0",
+  "slowapi",
   "uvicorn",
   "websockets",
   "python-jose",
