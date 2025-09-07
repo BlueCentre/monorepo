@@ -1,4 +1,5 @@
 # load("@pip_deps//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 # load("@pip_deps//:requirements.bzl", "requirement")
 # load("@io_bazel_rules_docker//python3:image.bzl", py_image = "py3_image")
@@ -26,9 +27,10 @@ py_binary(
 
 py_test(
     name = "app_test",
-    srcs = glob([
-        "tests/*.py",
-    ]),
+    srcs = [
+        "tests/test_calculator.py",
+    ],
+    main = "tests/test_calculator.py",
     deps = [
         ":app_lib",
         "//libs/py/calculator:calculator_lib",

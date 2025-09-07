@@ -1,3 +1,4 @@
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
 py_library(
@@ -25,7 +26,11 @@ py_test(
         "tests/__init__.py",
         "tests/test_cli.py",
     ],
-    deps = [":hello_world_lib"],
+    main = "tests/test_cli.py",
+    deps = [
+        ":hello_world_lib",
+        requirement("pytest"),
+    ],
 )
 
 # py_image_layer(
