@@ -2,7 +2,7 @@
 Dependencies for FastAPI dependency injection.
 """
 
-from typing import Generator, Optional
+from collections.abc import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -11,7 +11,6 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
-from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 
@@ -23,7 +22,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
 def get_db() -> Generator:
     """
     Get a database session.
-    
+
     Yields:
         Database session.
     """
@@ -39,14 +38,14 @@ def get_current_user(
 ) -> models.User:
     """
     Get the current user from the token.
-    
+
     Args:
         db: Database session.
         token: JWT token.
-        
+
     Returns:
         Current user.
-        
+
     Raises:
         HTTPException: If the token is invalid or the user doesn't exist.
     """
@@ -71,13 +70,13 @@ def get_current_active_user(
 ) -> models.User:
     """
     Get the current active user.
-    
+
     Args:
         current_user: Current user.
-        
+
     Returns:
         Current active user.
-        
+
     Raises:
         HTTPException: If the user is inactive.
     """
@@ -91,13 +90,13 @@ def get_current_active_superuser(
 ) -> models.User:
     """
     Get the current active superuser.
-    
+
     Args:
         current_user: Current user.
-        
+
     Returns:
         Current active superuser.
-        
+
     Raises:
         HTTPException: If the user is not a superuser.
     """
@@ -105,4 +104,4 @@ def get_current_active_superuser(
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
-    return current_user 
+    return current_user

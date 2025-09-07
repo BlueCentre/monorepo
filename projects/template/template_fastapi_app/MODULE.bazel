@@ -5,6 +5,7 @@ module(
 
 # Import rules_python for Python rules
 bazel_dep(name = "rules_python", version = "0.31.0")
+
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     name = "python3_11",
@@ -16,4 +17,4 @@ use_repo(python, "python3_11_toolchain")
 bazel_dep(name = "rules_pkg", version = "0.9.1")
 
 # Import pip for Python dependencies - use monorepo's pip instead of local pip_deps
-# No need for local_path_override as we use the monorepo's pip directly 
+# No need for local_path_override as we use the monorepo's pip directly

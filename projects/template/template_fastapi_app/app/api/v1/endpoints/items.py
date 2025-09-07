@@ -2,7 +2,7 @@
 Items endpoints for item management.
 """
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from app.pubsub.publisher import pubsub_publisher
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Item])
+@router.get("/", response_model=list[schemas.Item])
 def read_items(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -23,13 +23,13 @@ def read_items(
 ) -> Any:
     """
     Retrieve items.
-    
+
     Args:
         db: Database session.
         skip: Number of items to skip.
         limit: Maximum number of items to return.
         current_user: Current user.
-        
+
     Returns:
         List of items.
     """
@@ -51,17 +51,17 @@ def create_item(
 ) -> Any:
     """
     Create new item.
-    
+
     Args:
         db: Database session.
         item_in: Item data.
         current_user: Current user.
-        
+
     Returns:
         Created item.
     """
     item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=current_user.id)
-    
+
     # Publish message to PubSub
     try:
         pubsub_publisher.publish_message(
@@ -71,12 +71,12 @@ def create_item(
                 "item_id": item.id,
                 "owner_id": current_user.id,
             },
-            {"user_id": str(current_user.id)}
+            {"user_id": str(current_user.id)},
         )
     except Exception as e:
         # Log error but don't fail the request
         print(f"Error publishing message: {e}")
-    
+
     return item
 
 
@@ -90,13 +90,13 @@ def update_item(
 ) -> Any:
     """
     Update an item.
-    
+
     Args:
         db: Database session.
         id: Item ID.
         item_in: Item data.
         current_user: Current user.
-        
+
     Returns:
         Updated item.
     """
@@ -118,12 +118,12 @@ def read_item(
 ) -> Any:
     """
     Get item by ID.
-    
+
     Args:
         db: Database session.
         id: Item ID.
         current_user: Current user.
-        
+
     Returns:
         Item.
     """
@@ -144,12 +144,12 @@ def delete_item(
 ) -> Any:
     """
     Delete an item.
-    
+
     Args:
         db: Database session.
         id: Item ID.
         current_user: Current user.
-        
+
     Returns:
         Deleted item.
     """
@@ -159,4 +159,4 @@ def delete_item(
     if not crud.user.is_superuser(current_user) and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     item = crud.item.remove(db=db, id=id)
-    return item 
+    return item

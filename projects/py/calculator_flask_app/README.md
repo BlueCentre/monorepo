@@ -1,75 +1,82 @@
-# Calculator App
+# Calculator Flask App
 
-A lightweight HTTP server that provides a simple calculator web interface using only Python's standard library.
+A minimal web calculator service built with only Python's standard library HTTP server (no Flask runtime yet—name retained for future migration). It reuses the shared `Calculator` model from `libs/py/calculator`.
 
 ## Overview
 
-This project demonstrates how to create a simple HTTP server that provides a calculator interface without relying on external dependencies like Flask. It's designed to be minimal, easy to understand, and compatible with the Bazel build system.
+Demonstrates wiring shared library logic into a trivial HTML interface. Kept intentionally simple to serve as a scaffold for later enhancement (e.g., migrating to real Flask + JSON endpoints).
 
 ## Features
 
-- Pure Python implementation using only standard library modules
-- Simple web interface for addition operations
-- Bazel build system integration
-- Integration with a separate calculator library
+- Pure standard-library HTTP server
+- Randomized landing page teaser (`/`)
+- Query-based addition: `/calculate?num1=1&num2=2`
+- Reuses shared arithmetic logic (`Calculator.add`)
+- Ready for future conversion to Flask app
 
 ## Project Structure
 
-```
+```text
 calculator_flask_app/
-├── app/
-│   └── app.py           # HTTP server implementation
-├── .cursorrules         # Guidelines for AI assistance
-├── BUILD.bazel          # Bazel build configuration
-└── README.md            # This file
-```
+├── app/app.py                # HTTP server implementation
+├── BUILD.bazel               # (future) Bazel target location
+├── README.md
+└── tests/ (added in this PR)
 
-The calculator functionality is provided by:
-
-```
 libs/py/calculator/
-├── models/
-│   └── calculator.py    # Calculator class implementation
-└── BUILD.bazel          # Bazel build configuration
+└── models/calculator.py      # Shared Calculator class
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.6+
-- Bazel build system
+- Python 3.11 (repository baseline)
+- Bazel (for future build target; direct run works now)
 
-### Running the App
+### Run
 
-Using Bazel:
-
-```bash
-bazel run //projects/py/calculator_flask_app:app_bin
-```
-
-Directly with Python:
+Direct (current supported mode):
 
 ```bash
-python3 projects/py/calculator_flask_app/app/app.py
+python projects/py/calculator_flask_app/app/app.py
 ```
 
 The server will start on port 8080 by default.
 
 ### Using the Calculator
 
-1. Open your browser and navigate to http://localhost:8080/
-2. You'll see a random calculation example
-3. Use the form to enter two numbers and click "Add"
-4. The result will be displayed on the page
+1. Navigate to <http://localhost:8080/>
+1. Landing page shows random addition example
+1. Submit two numbers via form → result rendered inline
+
+## Tests
+
+Smoke tests (added) cover:
+
+- Calculator model addition correctness
+- Basic HTTP handler output (status code + fragment check)
+
+Run (after creating virtualenv or using repo tooling):
+
+```bash
+pytest -q projects/py/calculator_flask_app/tests
+```
 
 ## Development Guidelines
 
-1. Use only Python standard library modules
-2. Maintain backward compatibility with existing endpoints
-3. Follow PEP 8 style guidelines
-4. Keep the code simple and well-documented
+- Keep server minimal until Flask migration is implemented
+- Prefer reusing shared libs over duplicating logic
+- Avoid adding heavy deps directly—update central `pyproject.toml` instead
+
+## Future Enhancements
+
+- Replace custom handler with real Flask `Flask` app
+- Add JSON API endpoints
+- Introduce subtraction / multiplication / division routes
+- Provide Bazel `py_binary` + `py_test` targets
+- Containerize + Skaffold profile
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+Apache 2.0 (inherits repository license)

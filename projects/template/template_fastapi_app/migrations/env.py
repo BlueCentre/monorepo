@@ -19,6 +19,7 @@ fileConfig(config.config_file_name)
 # add your model's MetaData object here
 # for 'autogenerate' support
 from app.db.base import Base  # noqa
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -26,13 +27,14 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_url():
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgres")
     server = os.getenv("POSTGRES_SERVER", "localhost")
     port = os.getenv("POSTGRES_PORT", "5432")
     db = os.getenv("POSTGRES_DB", "app")
-    
+
     # Apply the values to the sqlalchemy.url setting in the alembic.ini file
     return f"postgresql://{user}:{password}@{server}:{port}/{db}"
 
@@ -75,4 +77,4 @@ def run_migrations_online():
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()

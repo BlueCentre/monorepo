@@ -12,5 +12,6 @@ class TestPlatformOrganization(unittest.TestCase):
             devops.speak()
             self.assertEqual(mock_InfrastructureEngineer_speak.call_count, 1)
 
-if __name__ == '__main__':
-  unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()

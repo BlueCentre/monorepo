@@ -1,3 +1,3 @@
 """
 API endpoints initialization.
-""" 
+"""

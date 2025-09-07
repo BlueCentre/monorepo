@@ -6,20 +6,17 @@ that might not be covered by conventional tests.
 """
 
 import pytest
-from hypothesis import given, strategies as st, settings
 from fastapi.testclient import TestClient
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from sqlalchemy.orm import Session
 
-from app.models.user import User
-from app.models.item import Item
-from app.models.note import Note
-from app.schemas.user import UserCreate
+from app.crud.crud_item import item as crud_item
+from app.crud.crud_user import user as crud_user
+from app.crud.note import note as crud_note
 from app.schemas.item import ItemCreate
 from app.schemas.note import NoteCreate
-from app.crud.crud_user import user as crud_user
-from app.crud.crud_item import item as crud_item
-from app.crud.note import note as crud_note
-
+from app.schemas.user import UserCreate
 
 # Configure hypothesis to limit test case generation for CI environments
 settings.register_profile("ci", max_examples=10, deadline=None)
@@ -40,16 +37,16 @@ class TestUserProperties:
         # Skip test if email contains characters that might cause DB issues
         if "'" in email or '"' in email or "\\" in email:
             pytest.skip("Skipping problematic email: " + email)
-            
+
         user_in = UserCreate(
             email=email,
             password=password,
             full_name=full_name,
         )
-        
+
         try:
             user = crud_user.create(db, obj_in=user_in)
-            
+
             assert user.email == email
             assert user.full_name == full_name
             assert user.hashed_password
@@ -67,25 +64,30 @@ class TestItemProperties:
         description=st.text(min_size=0, max_size=200),  # Reduced size for faster tests
         is_active=st.booleans(),
     )
-    def test_item_create_with_owner(self, db: Session, title: str, description: str, is_active: bool):
+    def test_item_create_with_owner(
+        self, db: Session, title: str, description: str, is_active: bool
+    ):
         """Test that any valid item data creates an item correctly."""
         # Skip test if title/description contains characters that might cause DB issues
         if "'" in title or '"' in title or "\\" in title:
             pytest.skip("Skipping problematic title: " + title)
         if "'" in description or '"' in description or "\\" in description:
             pytest.skip("Skipping problematic description: " + description)
-            
+
         try:
             # Create a user first with a unique email
             import uuid
+
             user_email = f"test-{uuid.uuid4()}@example.com"
             user_in = UserCreate(email=user_email, password="password123")
             user = crud_user.create(db, obj_in=user_in)
-            
+
             # Create item with the user as owner
-            item_in = ItemCreate(title=title, description=description, is_active=is_active)
+            item_in = ItemCreate(
+                title=title, description=description, is_active=is_active
+            )
             item = crud_item.create_with_owner(db, obj_in=item_in, owner_id=user.id)
-            
+
             assert item.title == title
             assert item.description == description
             assert item.is_active == is_active
@@ -109,18 +111,19 @@ class TestNoteProperties:
             pytest.skip("Skipping problematic title: " + title)
         if "'" in content or '"' in content or "\\" in content:
             pytest.skip("Skipping problematic content: " + content)
-            
+
         try:
             # Create a user first with a unique email
             import uuid
+
             user_email = f"notetest-{uuid.uuid4()}@example.com"
             user_in = UserCreate(email=user_email, password="password123")
             user = crud_user.create(db, obj_in=user_in)
-            
+
             # Create note with the user as owner
             note_in = NoteCreate(title=title, content=content)
             note = crud_note.create_with_owner(db, obj_in=note_in, owner_id=user.id)
-            
+
             assert note.title == title
             assert note.content == content
             assert note.user_id == user.id
@@ -140,10 +143,10 @@ class TestAPIProperties:
         """Test that pagination parameters work correctly."""
         try:
             response = client.get(f"/api/v1/items/?skip={skip}&limit={limit}")
-            
+
             assert response.status_code == 200
             data = response.json()
             assert isinstance(data, list)
             assert len(data) <= limit
         except Exception as e:
-            pytest.skip(f"API error: {str(e)}") 
+            pytest.skip(f"API error: {str(e)}")

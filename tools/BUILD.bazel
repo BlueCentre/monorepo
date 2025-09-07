@@ -1,13 +1,13 @@
 # Tools for development and build automation
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # New project generator using Copier for advanced templating
 py_binary(
     name = "new_project",
     srcs = ["new_project_copier.py"],
-    visibility = ["//visibility:public"],
     main = "new_project_copier.py",
+    visibility = ["//visibility:public"],
     deps = [
         "@pip//copier",
     ],
@@ -17,7 +17,30 @@ py_binary(
 py_binary(
     name = "new_project_legacy",
     srcs = ["new_project.py"],
-    visibility = ["//visibility:public"],
     main = "new_project.py",
+    visibility = ["//visibility:public"],
+    deps = [],
+)
+
+# Annotation smoke test: collects statistics on missing/partial annotations.
+# This is intentionally non-failing (exit-zero) to provide observability only.
+py_test(
+    name = "annotation_smoke_test",
+    srcs = ["annotation_smoke_test.py"],
+    main = "annotation_smoke_test.py",
+    size = "small",
+    tags = ["lint", "observability"],
+    deps = [
+        "@pip//ruff",
+    ],
+)
+
+# Version drift offline analysis (pyproject + uv.lock introspection)
+py_test(
+    name = "version_drift_test",
+    srcs = ["version_drift_test.py", "version_drift.py"],
+    main = "version_drift_test.py",
+    size = "small",
+    tags = ["drift", "observability"],
     deps = [],
 )

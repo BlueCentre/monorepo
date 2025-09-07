@@ -2,7 +2,7 @@
 User model.
 """
 
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -11,7 +11,7 @@ from app.db.session import Base
 class User(Base):
     """
     User model.
-    
+
     Attributes:
         email: Email address of the user.
         hashed_password: Hashed password of the user.
@@ -21,11 +21,11 @@ class User(Base):
         items: Items owned by the user.
         notes: Notes owned by the user.
     """
-    
+
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     items = relationship("Item", back_populates="owner")
-    notes = relationship("Note", back_populates="user") 
+    notes = relationship("Note", back_populates="user")

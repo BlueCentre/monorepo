@@ -1,8 +1,9 @@
 # See https://bazel.build/concepts/build-files
 
 load("@pip//:requirements.bzl", "requirement")
+
 # load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary", "py_test")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 # load("//tools/pytest:defs.bzl", "pytest_test")
 
 py_library(
@@ -22,26 +23,26 @@ py_library(
 py_binary(
     name = "run_bin",
     srcs = ["bin/run_bin.py"],
-    main = "bin/run_bin.py",
     imports = ["."],  # Allow importing from the current directory
+    # Legacy approach for imports
+    legacy_create_init = True,  # Create __init__.py files in directories
+    main = "bin/run_bin.py",
     visibility = ["//visibility:public"],
     deps = [
         requirement("uvicorn"),
         ":web_lib",
     ],
-    # Legacy approach for imports
-    legacy_create_init = True,  # Create __init__.py files in directories
 )
 
 py_test(
     name = "test",
-    srcs = glob(["tests/*.py"]),
     timeout = "short",
+    srcs = glob(["tests/*.py"]),
     deps = [
         requirement("requests"),
         requirement("httpx"),
         requirement("fastapi"),
-        ":web_lib",
         ":run_bin",
+        ":web_lib",
     ],
 )

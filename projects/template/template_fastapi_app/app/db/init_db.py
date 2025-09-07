@@ -3,6 +3,7 @@ Database initialization script.
 """
 
 import logging
+
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 def init_db(db: Session) -> None:
     """
     Initialize the database with a superuser.
-    
+
     Args:
         db: Database session.
     """
@@ -33,7 +34,7 @@ def init_db(db: Session) -> None:
         logger.info(f"Superuser created: {user.email}")
     else:
         logger.info(f"Superuser already exists: {user.email}")
-    
+
     # Create sample items if they don't exist
     item = crud.item.get_by_title(db, title="Sample Item")
     if not item:
@@ -45,4 +46,4 @@ def init_db(db: Session) -> None:
         item = crud.item.create_with_owner(db, obj_in=item_in, owner_id=user.id)
         logger.info(f"Sample item created: {item.title}")
     else:
-        logger.info(f"Sample item already exists: {item.title}") 
+        logger.info(f"Sample item already exists: {item.title}")

@@ -23,11 +23,11 @@ def login_access_token(
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests.
-    
+
     Args:
         db: Database session.
         form_data: OAuth2 password request form.
-        
+
     Returns:
         Access token.
     """
@@ -51,11 +51,11 @@ def login_access_token(
 def test_token(current_user: models.User = Depends(deps.get_current_user)) -> Any:
     """
     Test access token.
-    
+
     Args:
         current_user: Current user.
-        
+
     Returns:
         Current user.
     """
-    return current_user 
+    return current_user

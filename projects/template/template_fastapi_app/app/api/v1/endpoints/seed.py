@@ -3,45 +3,49 @@ API endpoints for seeding the database with test data.
 """
 
 import json
-from typing import Any, Dict, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models
 from app.api import deps
 from app.utils.seed_data import create_seed_data, process_seed_file
 
 router = APIRouter()
 
 
-@router.post("/", response_model=Dict[str, Any], status_code=201)
+@router.post("/", response_model=dict[str, Any], status_code=201)
 def seed_database(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
-    num_items: int = Query(10, ge=1, le=100, description="Number of random items to create"),
-    num_notes: int = Query(10, ge=1, le=100, description="Number of random notes to create")
-) -> Dict[str, Any]:
+    num_items: int = Query(
+        10, ge=1, le=100, description="Number of random items to create"
+    ),
+    num_notes: int = Query(
+        10, ge=1, le=100, description="Number of random notes to create"
+    ),
+) -> dict[str, Any]:
     """
     Seed the database with random test data.
-    
+
     This endpoint generates random items and notes with realistic data.
     All created data will be owned by the authenticated user.
-    
+
     ## Permissions
     * Requires superuser privileges
-    
+
     ## Parameters
     * **num_items**: Number of random items to create (default: 10, max: 100)
     * **num_notes**: Number of random notes to create (default: 10, max: 100)
-    
+
     ## Returns
     * **items_created**: Total number of items created
     * **notes_created**: Total number of notes created
     * **items**: List of created items with their IDs and titles
     * **notes**: List of created notes with their IDs and titles
-    
+
     ## Example Response
     ```json
     {
@@ -59,34 +63,31 @@ def seed_database(
     ```
     """
     result = create_seed_data(
-        db=db,
-        user_id=current_user.id,
-        num_items=num_items,
-        num_notes=num_notes
+        db=db, user_id=current_user.id, num_items=num_items, num_notes=num_notes
     )
-    
+
     return result
 
 
-@router.post("/upload", response_model=Dict[str, Any], status_code=201)
+@router.post("/upload", response_model=dict[str, Any], status_code=201)
 async def seed_from_file(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_superuser),
     file: UploadFile = File(...),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Seed the database with data from an uploaded JSON file.
-    
+
     This endpoint allows you to upload a JSON file containing predefined items and notes.
     All created data will be owned by the authenticated user.
-    
+
     ## Permissions
     * Requires superuser privileges
-    
+
     ## Request Body
     * **file**: A JSON file containing items and notes to create
-    
+
     ## File Format
     The uploaded JSON file should have the following structure:
     ```json
@@ -106,13 +107,13 @@ async def seed_from_file(
       ]
     }
     ```
-    
+
     ## Returns
     * **items_created**: Total number of items created
     * **notes_created**: Total number of notes created
     * **items**: List of created items with their IDs and titles
     * **notes**: List of created notes with their IDs and titles
-    
+
     ## Example Response
     ```json
     {
@@ -130,37 +131,33 @@ async def seed_from_file(
     ```
     """
     # Validate file extension
-    if not file.filename.endswith('.json'):
+    if not file.filename.endswith(".json"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only JSON files are supported"
+            detail="Only JSON files are supported",
         )
-    
+
     try:
         # Read and parse the file
         contents = await file.read()
         seed_data = json.loads(contents)
-        
+
         # Process the seed data
-        result = process_seed_file(
-            db=db,
-            user_id=current_user.id,
-            seed_data=seed_data
-        )
-        
+        result = process_seed_file(db=db, user_id=current_user.id, seed_data=seed_data)
+
         return result
     except json.JSONDecodeError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON format in the uploaded file"
+            detail="Invalid JSON format in the uploaded file",
         )
     except KeyError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing required key in seed data: {str(e)}"
+            detail=f"Missing required key in seed data: {str(e)}",
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing seed data: {str(e)}"
-        ) 
+            detail=f"Error processing seed data: {str(e)}",
+        )

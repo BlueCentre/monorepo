@@ -49,9 +49,9 @@ sh_test(
     name = "requirements_drift_test",
     srcs = ["drift_check.sh"],  # Executed directly; kept to minimize target name change
     data = [
-        ":requirements_drift",
         "pyproject.toml",
         "requirements_lock_3_11.txt",
         "uv.lock",
+        ":requirements_drift",
     ],
 )

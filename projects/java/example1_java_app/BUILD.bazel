@@ -17,6 +17,7 @@ java_binary(
 
 java_test(
     name = "tests",
+    timeout = "short",
     srcs = glob(["src/test/java/com/example/myproject/TestApp.java"]),
     test_class = "com.example.myproject.TestApp",
     deps = [
@@ -24,7 +25,6 @@ java_test(
         # "@maven_pojo//:com_google_guava_guava",
         # "@maven_pojo//:junit_junit",
     ],
-    timeout = "short",
 )
 
 # Simplified version without external dependencies (working)
@@ -47,5 +47,8 @@ java_library(
 java_binary(
     name = "simple-tests",
     main_class = "com.example.myproject.TestAppSimple",
-    runtime_deps = [":simple-test-lib", ":java-simple-lib"],
+    runtime_deps = [
+        ":java-simple-lib",
+        ":simple-test-lib",
+    ],
 )

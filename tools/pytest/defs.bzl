@@ -1,7 +1,7 @@
 """Wrap pytest"""
 
-load("@rules_python//python:defs.bzl", "py_test")
 load("@pip_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
 
 def pytest_test(name, srcs, deps = [], args = [], data = [], **kwargs):
     """

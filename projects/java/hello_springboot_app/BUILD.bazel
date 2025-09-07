@@ -2,7 +2,7 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 # load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
 # load("@container_structure_test//:defs.bzl", "container_structure_test")
 
-# See: 
+# See:
 # - https://github.com/bazelbuild/rules_pkg
 # - https://bazelbuild.github.io/rules_pkg/0.9.1/reference.html#pkg_tar
 # pkg_tar(
@@ -59,7 +59,7 @@ pkg_tar(
 
 # See:
 # - https://bazel.build/reference/be/common-definitions#common-attributes-tests
-# - 
+# -
 # container_structure_test(
 #     name = "container_test",
 #     configs = ["oci/container_test.yaml"],

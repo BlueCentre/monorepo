@@ -30,7 +30,10 @@ java_library(
 java_binary(
     name = "hello_test",
     main_class = "com.example.HelloWorldTest",
-    runtime_deps = [":hello_test_lib", ":hello_lib"],
+    runtime_deps = [
+        ":hello_lib",
+        ":hello_test_lib",
+    ],
 )
 
 java_library(
@@ -41,5 +44,8 @@ java_library(
 java_binary(
     name = "webserver_test",
     main_class = "com.example.WebServerTest",
-    runtime_deps = [":webserver_test_lib", ":webserver_lib"],
-) 
+    runtime_deps = [
+        ":webserver_lib",
+        ":webserver_test_lib",
+    ],
+)
