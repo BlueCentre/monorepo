@@ -136,6 +136,10 @@ multi_pip_parse(
     default_version = default_python_version,
     python_interpreter_target = {"3.11": interpreter_3_11},
     requirements_lock = {"3.11": "//third_party/python:requirements_lock_3_11.txt"},
+    # extra_pip_args = [
+    #     "--extra-index-url", "https://pip.corp.example.com/repo"
+    # ],
+    #download_only = True,
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")
