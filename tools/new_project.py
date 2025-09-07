@@ -253,7 +253,10 @@ This is a placeholder project for a {language} {project_type} application.
             if template_key in self.supported_templates:
                 print("   2. Review and customize the generated files")
                 print("   3. Update dependencies as needed")
-                print("   4. Build and test: bazel test //...")
+                # Provide explicit build, run, test guidance (run step newly added)
+                print("   4. Build: bazel build //...")
+                print("   5. Run (app binary): bazel run //...:run_bin  # Or specific path, e.g. bazel run //projects/py/<name>:run_bin")
+                print("   6. Test: bazel test //...")
             else:
                 print(f"   2. Implement your {project_type} application")
                 print("   3. Add proper BUILD.bazel rules")

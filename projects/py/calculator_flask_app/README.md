@@ -80,3 +80,23 @@ pytest -q projects/py/calculator_flask_app/tests
 ## License
 
 Apache 2.0 (inherits repository license)
+
+## Monorepo Integration
+
+This application is part of the monorepo build system and demonstrates shared library usage:
+
+```bash
+# Build everything in the monorepo
+bazel build //...
+
+# Test everything in the monorepo
+bazel test //...
+
+# Run this specific application (when Bazel target is added)
+# Future: bazel run //projects/py/calculator_flask_app:app
+```
+
+This application showcases:
+- Integration with shared calculator library from `//libs/py/calculator`
+- Standard HTTP server implementation ready for Flask migration
+- Consistent project structure across the monorepo

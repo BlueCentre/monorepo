@@ -106,6 +106,21 @@ API documentation is automatically generated and available at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
+## Monorepo Integration
+
+This application is fully integrated with the monorepo build system using Bazel. You can run:
+
+```bash
+# Build everything in the monorepo
+bazel build //...
+
+# Test everything in the monorepo
+bazel test //...
+
+# Build and run this specific application
+bazel run //projects/py/echo_fastapi_app:run_bin
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

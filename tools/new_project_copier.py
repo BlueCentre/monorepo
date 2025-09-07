@@ -316,9 +316,12 @@ class CopierProjectGenerator:
         if language == "python" or language == "go" or language == "java":
             print(f"   4. Build: bazel build {bazel_target_prefix}/...")
             print(f"   5. Test: bazel test {bazel_target_prefix}/...")
+            # Add explicit run step after tests so devs can quickly try application
+            # We assume a standard 'run_bin' py_binary / equivalent exists in templates.
+            print(f"   6. Run: bazel run {bazel_target_prefix}:run_bin  # Adjust binary name if different")
 
         if project_type in ["fastapi", "gin", "flask"]:
-            print("   6. Deploy: skaffold run (if Kubernetes manifests are included)")
+            print("   7. Deploy: skaffold run (if Kubernetes manifests are included)")
 
     def generate_project(self, args: argparse.Namespace) -> None:
         """Main method to generate a new project.

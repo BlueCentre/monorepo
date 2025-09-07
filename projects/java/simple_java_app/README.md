@@ -63,4 +63,22 @@ This project demonstrates:
 
 ## Monorepo Integration
 
-This project is fully integrated with the monorepo build system using Bazel and demonstrates how to build simple Java applications with minimal dependencies.
+This project is fully integrated with the monorepo build system using Bazel:
+
+```bash
+# Build everything in the monorepo
+bazel build //...
+
+# Test everything in the monorepo
+bazel test //...
+
+# Build and run specific applications
+bazel run //projects/java/simple_java_app:hello
+bazel run //projects/java/simple_java_app:webserver
+```
+
+This project demonstrates:
+- Simple Java applications with minimal dependencies
+- Consistent build patterns across the monorepo
+- Standard project structure for Java applications
+- Integration with the monorepo testing framework
