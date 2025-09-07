@@ -2,39 +2,52 @@ package(default_visibility = ["//visibility:public"])
 
 java_library(
     name = "hello_lib",
-
-    srcs = glob(["src/main/java/com/example/HelloWorld.java"]),
+    srcs = ["src/main/java/com/example/HelloWorld.java"],
 )
 
 java_binary(
     name = "hello",
-
     main_class = "com.example.HelloWorld",
     runtime_deps = [":hello_lib"],
 )
 
 java_library(
     name = "webserver_lib",
-
-    srcs = glob(["src/main/java/com/example/WebServer.java"]),
+    srcs = ["src/main/java/com/example/WebServer.java"],
 )
 
 java_binary(
     name = "webserver",
-
     main_class = "com.example.WebServer",
     runtime_deps = [":webserver_lib"],
 )
 
 java_library(
     name = "hello_test_lib",
-
     srcs = ["src/test/java/com/example/HelloWorldTest.java"],
+    deps = [":hello_lib"],
 )
 
 java_binary(
     name = "hello_test",
-
     main_class = "com.example.HelloWorldTest",
-    runtime_deps = [":hello_test_lib", ":hello_lib"],
-) 
+    runtime_deps = [
+        ":hello_lib",
+        ":hello_test_lib",
+    ],
+)
+
+java_library(
+    name = "webserver_test_lib",
+    srcs = ["src/test/java/com/example/WebServerTest.java"],
+    deps = [":webserver_lib"],
+)
+
+java_binary(
+    name = "webserver_test",
+    main_class = "com.example.WebServerTest",
+    runtime_deps = [
+        ":webserver_lib",
+        ":webserver_test_lib",
+    ],
+)

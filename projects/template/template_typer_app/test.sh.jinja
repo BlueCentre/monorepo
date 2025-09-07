@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Test script for {{ project_name }}
+
+set -e
+
+echo "Running tests for {{ project_title }}..."
+
+# Install dependencies if needed (for development)
+echo "Installing development dependencies..."
+python -m pip install -e .[dev] --quiet
+
+# Run linting
+echo "Running code formatting checks..."
+black --check src/ tests/ || (echo "Code formatting issues found. Run 'black src/ tests/' to fix." && exit 1)
+
+echo "Running import sorting checks..."
+isort --check-only src/ tests/ || (echo "Import sorting issues found. Run 'isort src/ tests/' to fix." && exit 1)
+
+echo "Running type checking..."
+mypy src/ || (echo "Type checking failed." && exit 1)
+
+echo "Running ruff linting..."
+ruff check src/ tests/ || (echo "Linting issues found. Run 'ruff --fix src/ tests/' to fix." && exit 1)
+
+# Run tests with coverage
+echo "Running unit tests with coverage..."
+python -m pytest tests/ --cov=src --cov-report=term-missing --cov-report=html
+
+echo "All tests passed successfully!"
+echo "Coverage report generated at htmlcov/index.html"
+
+# Run CLI smoke tests
+echo "Running CLI smoke tests..."
+python -m src.cli info
+python -m src.cli hello "Test User"
+python -m src.cli list-items "item1" "item2" "item3"
+
+echo "{{ project_title }} - All checks completed successfully!"

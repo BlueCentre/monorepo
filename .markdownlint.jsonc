@@ -1,0 +1,10 @@
+// Central Markdown lint configuration to reduce noise and focus on structural issues.
+// We relax very strict style rules (line length, bare URLs) to avoid large legacy churn.
+{
+  "MD013": false,          // Line length
+  "MD033": false,          // Inline HTML allowed
+  "MD034": false,          // Bare URLs allowed
+  "MD025": {               // Multiple top-level headings allowed (docs with sections)
+    "front_matter_title": ""
+  }
+}

@@ -2,7 +2,7 @@
 Users endpoints for user management.
 """
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -11,12 +11,11 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.core.config import settings
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=list[schemas.User])
 def read_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -25,13 +24,13 @@ def read_users(
 ) -> Any:
     """
     Retrieve users.
-    
+
     Args:
         db: Database session.
         skip: Number of users to skip.
         limit: Maximum number of users to return.
         current_user: Current user.
-        
+
     Returns:
         List of users.
     """
@@ -48,12 +47,12 @@ def create_user(
 ) -> Any:
     """
     Create new user.
-    
+
     Args:
         db: Database session.
         user_in: User data.
         current_user: Current user.
-        
+
     Returns:
         Created user.
     """
@@ -78,14 +77,14 @@ def update_user_me(
 ) -> Any:
     """
     Update own user.
-    
+
     Args:
         db: Database session.
         password: Password.
         full_name: Full name.
         email: Email.
         current_user: Current user.
-        
+
     Returns:
         Updated user.
     """
@@ -107,34 +106,32 @@ def read_user_me(
 ) -> Any:
     """
     Get current user.
-    
+
     Args:
         current_user: Current user.
-        
+
     Returns:
         Current user.
     """
     return current_user
 
 
-@router.get("/me/items", response_model=List[schemas.Item])
+@router.get("/me/items", response_model=list[schemas.Item])
 def read_user_items(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get items owned by current user.
-    
+
     Args:
         db: Database session.
         current_user: Current user.
-        
+
     Returns:
         List of items.
     """
-    items = crud.item.get_multi_by_owner(
-        db=db, owner_id=current_user.id
-    )
+    items = crud.item.get_multi_by_owner(db=db, owner_id=current_user.id)
     return items
 
 
@@ -146,12 +143,12 @@ def read_user_by_id(
 ) -> Any:
     """
     Get a specific user by id.
-    
+
     Args:
         user_id: User ID.
         current_user: Current user.
         db: Database session.
-        
+
     Returns:
         User.
     """
@@ -175,13 +172,13 @@ def update_user(
 ) -> Any:
     """
     Update a user.
-    
+
     Args:
         db: Database session.
         user_id: User ID.
         user_in: User data.
         current_user: Current user.
-        
+
     Returns:
         Updated user.
     """
@@ -192,4 +189,4 @@ def update_user(
             detail="The user with this id does not exist in the system",
         )
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
-    return user 
+    return user

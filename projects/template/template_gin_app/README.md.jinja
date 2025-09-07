@@ -14,21 +14,24 @@
 ## Usage
 
 ```bash
-# Build the service
-bazel build //projects/go/{{ project_name }}/...
+# Build the service (library + binary)
+bazel build //projects/go/{{ project_name }}:main
 
 # Run the service
 bazel run //projects/go/{{ project_name }}:main
 
-# Test the service
-curl http://localhost:8080/health
+# Run all tests (library + handlers)
+bazel test //projects/go/{{ project_name }}:lib_test
+
+# Quick health check after starting (in another shell)
+curl -f http://localhost:8080/health
 ```
 
 ## Development
 
 ```bash
-# Run tests
-bazel test //projects/go/{{ project_name }}/...
+# Run all tests
+bazel test //projects/go/{{ project_name }}:lib_test
 
 # Run with hot reload (if configured)
 go run main.go
@@ -43,6 +46,29 @@ go run main.go
 ## Monorepo Integration
 
 This service is fully integrated with the monorepo build system using Bazel.
+
+### Optional Container Image
+
+Container targets are omitted by default because `rules_oci` is currently commented out in `MODULE.bazel`.
+To enable container image builds:
+
+1. Uncomment the `rules_oci` bazel_dep in `MODULE.bazel`.
+2. Add the load statement to the top of this project's `BUILD.bazel`:
+   `load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")`
+3. Add (or restore) targets:
+   ```python
+   oci_image(
+	   name = "image",
+	   base = "@distroless_base",
+	   entrypoint = ["/main"],
+	   tars = [":layer"],
+   )
+   oci_tarball(
+	   name = "tarball",
+	   image = ":image",
+	   repo_tags = ["{{ project_name }}:latest"],
+   )
+   ```
 
 ## Author
 

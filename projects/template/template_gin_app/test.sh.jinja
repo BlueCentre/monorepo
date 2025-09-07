@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Test script for {{ project_name }}
+
+set -e
+
+echo "Running tests for {{ project_title }}..."
+
+# Run unit tests with coverage
+go test -v -race -coverprofile=coverage.out ./...
+
+# Generate coverage report
+go tool cover -html=coverage.out -o coverage.html
+
+echo "Test coverage report generated at coverage.html"
+
+# Run linting if golangci-lint is available
+if command -v golangci-lint &> /dev/null; then
+    echo "Running golangci-lint..."
+    golangci-lint run
+else
+    echo "golangci-lint not found, skipping linting"
+    echo "Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
+fi
+
+echo "All tests completed successfully!"

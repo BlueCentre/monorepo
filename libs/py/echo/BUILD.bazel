@@ -12,10 +12,10 @@ py_library(
 
 py_test(
     name = "echo_test",
+    timeout = "short",
     srcs = [
         "tests/echo_test.py",
     ],
-    timeout = "short",
     deps = [
         "//libs/py/echo:echo_lib",
     ],

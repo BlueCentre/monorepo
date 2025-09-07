@@ -1,0 +1,62 @@
+"""
+Test suite for the main application logic
+"""
+
+import os
+import sys
+
+# Ensure project root (containing src/) is on sys.path so `import src.*` works under Bazel
+_TEST_DIR = os.path.dirname(__file__)
+_PROJECT_ROOT = os.path.abspath(os.path.join(_TEST_DIR, ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+import pytest
+{# Derive class name similarly to cli and main #}
+{% set project_class = project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') %}
+from src.main import {{ project_class }}App
+from src.config import AppConfig
+
+class Test{{ project_class }}App:
+    """Test cases for {{ project_class }}App"""
+    
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.config = AppConfig()
+        self.app = {{ project_class }}App(self.config)
+    
+    def test_greet_default(self):
+        """Test greeting with default name"""
+        result = self.app.greet()
+        assert result == "Hello, World! Welcome to {{ project_title }}."
+    
+    def test_greet_custom_name(self):
+        """Test greeting with custom name"""
+        result = self.app.greet("Alice")
+        assert result == "Hello, Alice! Welcome to {{ project_title }}."
+    
+    def test_process_data_basic(self):
+        """Test basic data processing"""
+        result = self.app.process_data("  hello world  ")
+        assert result == "hello world"
+    
+    def test_process_data_uppercase(self):
+        """Test data processing with uppercase option"""
+        result = self.app.process_data("hello world", uppercase=True)
+        assert result == "HELLO WORLD"
+    
+    def test_list_items_empty(self, capsys):
+        """Test listing empty items"""
+        self.app.list_items([])
+        captured = capsys.readouterr()
+        assert "No items to display" in captured.out
+    
+    def test_list_items_with_data(self, capsys):
+        """Test listing items with data"""
+        items = ["apple", "banana", "cherry"]
+        self.app.list_items(items)
+        captured = capsys.readouterr()
+        # Should contain table output
+        assert "apple" in captured.out
+        assert "banana" in captured.out
+        assert "cherry" in captured.out

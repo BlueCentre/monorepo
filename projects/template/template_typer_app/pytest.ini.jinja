@@ -1,0 +1,31 @@
+[pytest]
+testpaths = tests
+python_files = test_*.py  
+python_functions = test_*
+
+# Test verbosity
+verbosity = 2
+
+# Coverage configuration
+addopts = 
+    --cov=src
+    --cov-report=term-missing
+    --cov-report=xml:coverage.xml
+    --cov-report=html:coverage_html
+    --no-cov-on-fail
+    -v
+
+# Ignore certain directories for coverage
+omit = 
+    */tests/*
+    */__pycache__/*
+
+# Environment variables for testing
+env =
+    {{ project_name | upper }}_DEBUG=false
+    {{ project_name | upper }}_OUTPUT_FORMAT=text
+
+# Test markers
+markers =
+    slow: marks tests as slow (deselect with '-m "not slow"')
+    integration: marks tests as integration tests

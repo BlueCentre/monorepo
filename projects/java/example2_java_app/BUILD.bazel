@@ -1,6 +1,4 @@
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-# load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
-load("@container_structure_test//:defs.bzl", "container_structure_test")
 
 pkg_tar(
     name = "app_tar",

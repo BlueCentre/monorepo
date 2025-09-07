@@ -2,8 +2,6 @@
 User schemas.
 """
 
-from typing import Optional, List
-
 from pydantic import BaseModel, EmailStr
 
 from app.schemas.item import Item
@@ -13,30 +11,30 @@ from app.schemas.item import Item
 class UserBase(BaseModel):
     """
     Base schema for User.
-    
+
     Attributes:
         email: Email address of the user.
         is_active: Whether the user is active.
         is_superuser: Whether the user is a superuser.
         full_name: Full name of the user.
     """
-    
-    email: Optional[EmailStr] = None
-    is_active: Optional[bool] = True
+
+    email: EmailStr | None = None
+    is_active: bool | None = True
     is_superuser: bool = False
-    full_name: Optional[str] = None
+    full_name: str | None = None
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     """
     Schema for creating a User.
-    
+
     Attributes:
         email: Email address of the user.
         password: Password of the user.
     """
-    
+
     email: EmailStr
     password: str
 
@@ -45,34 +43,35 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     """
     Schema for updating a User.
-    
+
     Attributes:
         password: Password of the user.
     """
-    
-    password: Optional[str] = None
+
+    password: str | None = None
 
 
 # Properties shared by models stored in DB
 class UserInDBBase(UserBase):
     """
     Base schema for User in DB.
-    
+
     Attributes:
         id: ID of the user.
     """
-    
-    id: Optional[int] = None
+
+    id: int | None = None
 
     class Config:
         """Pydantic configuration."""
-        
+
         from_attributes = True
 
 
 # Properties to return to client
 class User(UserInDBBase):
     """Schema for returning a User to the client."""
+
     pass
 
 
@@ -80,11 +79,11 @@ class User(UserInDBBase):
 class UserInDB(UserInDBBase):
     """
     Schema for User stored in DB.
-    
+
     Attributes:
         hashed_password: Hashed password of the user.
     """
-    
+
     hashed_password: str
 
 
@@ -92,9 +91,9 @@ class UserInDB(UserInDBBase):
 class UserWithItems(User):
     """
     Schema for returning a User with their items.
-    
+
     Attributes:
         items: Items owned by the user.
     """
-    
-    items: List[Item] = [] 
+
+    items: list[Item] = []

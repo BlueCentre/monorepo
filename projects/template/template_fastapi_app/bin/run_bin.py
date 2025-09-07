@@ -3,13 +3,14 @@ Script to run the FastAPI application.
 """
 
 import logging
-import sys
+
 import uvicorn
 
 from app.core.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def main():
     """Run the FastAPI application."""
@@ -21,6 +22,7 @@ def main():
         reload=settings.RELOAD,
         log_level="info",
     )
+
 
 if __name__ == "__main__":
     main()

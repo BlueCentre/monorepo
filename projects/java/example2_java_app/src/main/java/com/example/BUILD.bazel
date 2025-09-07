@@ -1,5 +1,3 @@
-load("@rules_jvm_external//:defs.bzl", "artifact")
-
 java_library(
     name = "logger_java_grpc",
     srcs = ["LoggerGrpc.java"],
@@ -35,8 +33,8 @@ java_library(
 
 java_binary(
     name = "JavaLoggingClient",
-    main_class = "com.example.JavaLoggingClient",
     srcs = ["JavaLoggingClient.java"],
+    main_class = "com.example.JavaLoggingClient",
     visibility = ["//visibility:public"],
     deps = [":JavaLoggingClientLibrary"],
 )

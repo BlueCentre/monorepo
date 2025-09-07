@@ -17,15 +17,18 @@ test_deps = [
 java_library(
     name = "lib2",
     srcs = glob(["src/main/java/**/*.java"]),
-    resources = glob(["src/main/resources/**"], allow_empty = True),
+    resources = glob(
+        ["src/main/resources/**"],
+        allow_empty = True,
+    ),
     visibility = ["//visibility:public"],
     deps = deps,
 )
 
 java_test(
-   name = "IntentionalDupedClassTest",
-   srcs = ["src/test/java/com/bazel/demo/IntentionalDupedClassTest.java"],
-   test_class = "com.bazel.demo.IntentionalDupedClassTest",
-   deps = [ ":lib2" ] + test_deps,
-   timeout = "short",
+    name = "IntentionalDupedClassTest",
+    timeout = "short",
+    srcs = ["src/test/java/com/bazel/demo/IntentionalDupedClassTest.java"],
+    test_class = "com.bazel.demo.IntentionalDupedClassTest",
+    deps = [":lib2"] + test_deps,
 )

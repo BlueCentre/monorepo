@@ -8,10 +8,10 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
@@ -25,15 +25,15 @@ logger = logging.getLogger(__name__)
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging requests."""
-    
+
     async def dispatch(self, request: Request, call_next: Any) -> Any:
         """
         Log request information.
-        
+
         Args:
             request: Request object.
             call_next: Next middleware.
-            
+
         Returns:
             Response from the next middleware.
         """
@@ -86,7 +86,7 @@ if settings.ENABLE_TELEMETRY:
 def root() -> Any:
     """
     Root endpoint.
-    
+
     Returns:
         Welcome message.
     """
@@ -97,7 +97,7 @@ def root() -> Any:
 def health() -> Any:
     """
     Health check endpoint.
-    
+
     Returns:
         Health status.
     """
@@ -112,11 +112,11 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Global exception handler.
-    
+
     Args:
         request: Request object.
         exc: Exception.
-        
+
     Returns:
         JSON response with error details.
     """
@@ -124,4 +124,4 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},
-    ) 
+    )

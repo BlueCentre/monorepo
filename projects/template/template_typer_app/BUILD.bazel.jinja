@@ -1,0 +1,70 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("@pip//:requirements.bzl", "requirement")
+
+# Derive package-safe name once (mirrors _project_package logic)
+{% set pkg = project_name | lower | replace('-', '_') %}
+
+py_library(
+    name = "{{ pkg }}_lib",
+    srcs = [
+        "src/__init__.py",
+        "src/main.py",
+        "src/cli.py",
+        "src/config.py",
+    ],
+    # Expose 'src' as an import root so tests can `import src.main`
+    imports = ["src"],
+    visibility = ["//visibility:private"],
+    deps = [
+        requirement("typer"),
+        requirement("rich"),
+    ],
+)
+
+py_binary(
+    name = "{{ pkg }}",
+    srcs = ["src/__main__.py"],
+    main = "src/__main__.py",
+    visibility = ["//visibility:public"],
+    deps = [":{{ pkg }}_lib"],
+)
+
+py_test(
+    name = "{{ pkg }}_tests",
+    srcs = [
+        "tests/test_main.py",
+        "tests/test_cli.py",
+        "tests/test_config.py",
+    ],
+    # Explicit main prevents rules_python from inferring a default main module name
+    # that doesn't exist (e.g., {{ pkg }}_tests.py) and failing analysis.
+    main = "tests/test_main.py",
+    deps = [
+        ":{{ pkg }}_lib",
+        requirement("pytest"),
+        requirement("typer"),
+    ],
+)
+
+# Optional: Container image
+# load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+# load("//bazel/fixes:py_image_layer.bzl", "py_image_layer")
+
+# py_image_layer(
+#     name = "{{ pkg }}_layer",
+#     binary = ":{{ pkg }}",
+#     root = "/opt",
+# )
+
+# oci_image(
+#     name = "{{ pkg }}_image",
+#     base = "@distroless_python",
+#     entrypoint = ["/opt/{{ pkg }}"],
+#     tars = [":{{ pkg }}_layer"],
+# )
+
+# oci_tarball(
+#     name = "{{ pkg }}_tarball",
+#     image = ":{{ pkg }}_image",
+#     repo_tags = ["{{ pkg }}:latest"],
+# )

@@ -1,0 +1,15 @@
+package main // handlers kept in main package for simplicity
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func healthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "healthy",
+		"service": "{{ project_name }}",
+		"version": "1.0.0",
+	})
+}

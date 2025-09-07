@@ -14,17 +14,17 @@
 
 ```bash
 # Build the CLI
-bazel build //projects/python/{{ project_name }}/...
+bazel build //projects/py/{{ project_name }}/...
 
 # Run the CLI  
-bazel run //projects/python/{{ project_name }}:main -- --help
+bazel run //projects/py/{{ project_name }}:{{ _project_package }} -- --help
 ```
 
 ## Development
 
 ```bash
 # Run tests
-bazel test //projects/python/{{ project_name }}/...
+bazel test //projects/py/{{ project_name }}/...
 
 # Install in development mode
 pip install -e .

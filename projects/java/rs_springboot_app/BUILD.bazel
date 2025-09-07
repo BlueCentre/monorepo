@@ -29,7 +29,7 @@ java_library(
     name = "demoapp_lib",
     srcs = glob(["src/main/java/**/*.java"]),
     resources = glob(["src/main/resources/**"]),
-    deps = lib_deps, # + ["@maven_pojo//:javax_annotation_javax_annotation_api"],
+    deps = lib_deps,  # + ["@maven_pojo//:javax_annotation_javax_annotation_api"],
 )
 
 test_deps = [
@@ -38,11 +38,11 @@ test_deps = [
 ]
 
 java_test(
-   name = "SampleRestUnitTest",
-   srcs = ["src/test/java/com/sample/SampleRestUnitTest.java"],
-   test_class = "com.sample.SampleRestUnitTest",
-   deps = [ ":demoapp_lib" ] + test_deps,
-   timeout = "short",
+    name = "SampleRestUnitTest",
+    timeout = "short",
+    srcs = ["src/test/java/com/sample/SampleRestUnitTest.java"],
+    test_class = "com.sample.SampleRestUnitTest",
+    deps = [":demoapp_lib"] + test_deps,
 )
 
 springboottest_deps = [
@@ -53,11 +53,11 @@ springboottest_deps = [
 
 java_test(
     name = "SampleRestFuncTest",
-    srcs = ["src/test/java/com/sample/SampleRestFuncTest.java"],
-    test_class = "com.sample.SampleRestFuncTest",
-    resources = glob(["src/test/resources/**"]),
-    deps = [ ":demoapp_lib" ] + test_deps + springboottest_deps,
     timeout = "short",
+    srcs = ["src/test/java/com/sample/SampleRestFuncTest.java"],
+    resources = glob(["src/test/resources/**"]),
+    test_class = "com.sample.SampleRestFuncTest",
+    deps = [":demoapp_lib"] + test_deps + springboottest_deps,
 )
 
 # Build the app as a Spring Boot executable jar

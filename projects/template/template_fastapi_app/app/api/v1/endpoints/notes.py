@@ -2,7 +2,7 @@
 Notes API endpoints.
 """
 
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -13,7 +13,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Note])
+@router.get("/", response_model=list[schemas.Note])
 def read_notes(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -100,4 +100,4 @@ def delete_note(
     if not crud.user.is_superuser(current_user) and (note.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     note = crud.note.remove(db=db, id=id)
-    return note 
+    return note

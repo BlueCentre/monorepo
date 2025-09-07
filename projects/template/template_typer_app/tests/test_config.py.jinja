@@ -1,0 +1,76 @@
+"""
+Test suite for configuration management
+"""
+
+import os
+import sys
+
+_TEST_DIR = os.path.dirname(__file__)
+_PROJECT_ROOT = os.path.abspath(os.path.join(_TEST_DIR, ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+import os
+import pytest
+from src.config import AppConfig
+
+class TestAppConfig:
+    """Test cases for AppConfig"""
+    
+    def test_default_config(self):
+        """Test default configuration values"""
+        config = AppConfig()
+        assert config.version == "0.1.0"
+        assert config.debug is False
+        assert config.output_format == "text"
+        assert config.max_items == 100
+    
+    def test_debug_enabled_check(self):
+        """Test debug mode checking"""
+        config = AppConfig(debug=True)
+        assert config.is_debug_enabled() is True
+        
+        config = AppConfig(debug=False)
+        assert config.is_debug_enabled() is False
+    
+    def test_get_output_format(self):
+        """Test output format getter"""
+        config = AppConfig(output_format="json")
+        assert config.get_output_format() == "json"
+    
+    def test_env_override_debug(self, monkeypatch):
+        """Test environment variable override for debug"""
+        monkeypatch.setenv("{{ project_name | upper }}_DEBUG", "true")
+        config = AppConfig()
+        assert config.debug is True
+        
+        monkeypatch.setenv("{{ project_name | upper }}_DEBUG", "false")
+        config = AppConfig()
+        assert config.debug is False
+    
+    def test_env_override_output_format(self, monkeypatch):
+        """Test environment variable override for output format"""
+        monkeypatch.setenv("{{ project_name | upper }}_OUTPUT_FORMAT", "json")
+        config = AppConfig()
+        assert config.output_format == "json"
+    
+    def test_env_override_max_items(self, monkeypatch):
+        """Test environment variable override for max items"""
+        monkeypatch.setenv("{{ project_name | upper }}_MAX_ITEMS", "50")
+        config = AppConfig()
+        assert config.max_items == 50
+    
+    def test_env_override_max_items_invalid(self, monkeypatch):
+        """Test environment variable override with invalid max items"""
+        monkeypatch.setenv("{{ project_name | upper }}_MAX_ITEMS", "invalid")
+        config = AppConfig()
+        assert config.max_items == 100  # Should keep default
+    
+    def test_from_env_classmethod(self, monkeypatch):
+        """Test creating config from environment"""
+        monkeypatch.setenv("{{ project_name | upper }}_DEBUG", "true")
+        monkeypatch.setenv("{{ project_name | upper }}_OUTPUT_FORMAT", "yaml")
+        
+        config = AppConfig.from_env()
+        assert config.debug is True
+        assert config.output_format == "yaml"

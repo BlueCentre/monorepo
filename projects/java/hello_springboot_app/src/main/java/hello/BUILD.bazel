@@ -1,4 +1,4 @@
-# See: 
+# See:
 # - https://bazel.build/reference/be/java
 # - https://github.com/bazelbuild/rules_java/blob/master/java/defs.bzl
 # - https://github.com/salesforce/rules_spring/tree/main/examples/helloworld
@@ -36,6 +36,6 @@ java_library(
 java_binary(
     name = "app",
     main_class = "hello.Application",
-    runtime_deps = [":lib"],
     visibility = ["//visibility:public"],
+    runtime_deps = [":lib"],
 )

@@ -1,5 +1,6 @@
 java_test(
     name = "HelloControllerTest",
+    timeout = "short",
     srcs = ["HelloControllerTest.java"],
     test_class = "hello.HelloControllerTest",
     deps = [
@@ -13,11 +14,11 @@ java_test(
         # "@maven_pojo//:junit_junit",
         "//projects/java/hello_springboot_app/src/main/java/hello:lib",
     ],
-    timeout = "short",
 )
 
 java_test(
     name = "HelloControllerIntegrationTest",
+    timeout = "short",
     srcs = ["HelloControllerIT.java"],
     test_class = "hello.HelloControllerIT",
     deps = [
@@ -40,5 +41,4 @@ java_test(
         # "@maven_springboot//:org_springframework_spring_test",
         # "@maven_springboot//:org_springframework_spring_web",
     ],
-    timeout = "short",
 )

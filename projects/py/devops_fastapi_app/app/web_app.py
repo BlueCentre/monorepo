@@ -1,12 +1,12 @@
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 import traceback
-from typing import Dict, Any
 
-from .routes import router
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 from .models import ErrorResponse
+from .routes import router
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -39,22 +39,22 @@ app.include_router(router)
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Global exception handler for unhandled exceptions.
-    
+
     Args:
         request: The request that caused the exception.
         exc: The exception that was raised.
-        
+
     Returns:
         JSONResponse: A JSON response with error details.
     """
     logger.error(f"Unhandled exception: {str(exc)}")
     logger.error(traceback.format_exc())
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=ErrorResponse(
             detail="Internal server error",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         ).model_dump(),
     )
 
@@ -73,4 +73,4 @@ async def shutdown_event() -> None:
     """
     Executes when the application is shutting down.
     """
-    logger.info("DevOps FastAPI application shutting down...") 
+    logger.info("DevOps FastAPI application shutting down...")

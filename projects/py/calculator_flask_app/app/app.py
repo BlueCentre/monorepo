@@ -4,10 +4,9 @@ Simple HTTP server for the Calculator app using Python's standard library.
 """
 
 import http.server
-import socketserver
-import json
 import random
-from urllib.parse import urlparse, parse_qs
+import socketserver
+from urllib.parse import parse_qs, urlparse
 
 # Import the Calculator class
 from libs.py.calculator.models.calculator import Calculator
@@ -15,45 +14,48 @@ from libs.py.calculator.models.calculator import Calculator
 # Create a calculator instance
 my_calculator = Calculator()
 
+
 class CalculatorHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP request handler for the Calculator app."""
-    
+
     def do_GET(self):
         """Handle GET requests."""
         parsed_url = urlparse(self.path)
         path = parsed_url.path
-        
-        if path == '/':
+
+        if path == "/":
             # Generate random numbers for the calculator
             num1 = random.randint(0, 100)
             num2 = random.randint(0, 100)
             result = my_calculator.add(num1, num2)
-            
+
             # Create a message
             message = f"Did you know {num1} + {num2} = {result}?"
             self.send_response_html(message)
-        elif path == '/calculate':
+        elif path == "/calculate":
             # Parse query parameters
             query_params = parse_qs(parsed_url.query)
-            
+
             try:
-                num1 = int(query_params.get('num1', ['0'])[0])
-                num2 = int(query_params.get('num2', ['0'])[0])
+                num1 = int(query_params.get("num1", ["0"])[0])
+                num2 = int(query_params.get("num2", ["0"])[0])
                 result = my_calculator.add(num1, num2)
-                
+
                 result_message = f"Result: {num1} + {num2} = {result}"
-                self.send_response_html(result_message, result=f"{num1} + {num2} = {result}")
+                self.send_response_html(
+                    result_message, result=f"{num1} + {num2} = {result}"
+                )
             except (ValueError, TypeError) as e:
                 self.send_error(400, f"Bad request: {str(e)}")
         else:
             self.send_error(404, "Not found")
-    
+
     def send_response_html(self, message, result=None):
         """Send an HTML response."""
         self.send_response(200)
-        self.send_header('Content-Type', 'text/html')
+        self.send_header("Content-Type", "text/html")
         self.end_headers()
-        
+
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -86,28 +88,30 @@ class CalculatorHandler(http.server.SimpleHTTPRequestHandler):
         </body>
         </html>
         """
-        
-        self.wfile.write(html.encode('utf-8'))
-    
+
+        self.wfile.write(html.encode("utf-8"))
+
     # Override the default directory listing behavior
     def list_directory(self, path):
         """Override to prevent directory listing."""
         self.send_error(403, "Directory listing forbidden")
-        return None
+        return
+
 
 def main():
     """Run the server."""
     port = 8080
     handler = CalculatorHandler
-    
+
     print(f"=== Starting Calculator server on port {port} ===")
     print(f"Visit http://localhost:{port}/ to use the calculator")
-    
+
     with socketserver.TCPServer(("", port), handler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             print("\n=== Server stopped ===")
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,43 @@
+package main
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+)
+
+func setupRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+	
+	// Health check endpoint
+	r.GET("/health", healthCheck)
+	
+	// API v1 routes
+	v1 := r.Group("/api/v1")
+	{
+		v1.GET("/status", getStatus)
+		v1.GET("/hello", getHello)
+	}
+	
+	return r
+}
+
+func TestHealthCheck(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/health", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), "healthy")
+	assert.Contains(t, w.Body.String(), "{{ project_name }}")
+}
+
+// NOTE: Endpoint-specific tests live under handlers/*. They are not duplicated here
+// to avoid redeclaration errors when Bazel aggregates *_test.go files via go_test.
+// This file intentionally keeps only a top-level health integration style test.

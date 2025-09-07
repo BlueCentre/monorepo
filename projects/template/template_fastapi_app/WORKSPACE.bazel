@@ -20,6 +20,7 @@ http_archive(
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
+
 py_repositories()
 
 load("@rules_python//python:pip.bzl", "pip_parse")
@@ -39,10 +40,12 @@ install_deps()
 
 # Set up rules_oci
 load("@rules_oci//oci:dependencies.bzl", "rules_oci_dependencies")
+
 rules_oci_dependencies()
 
 load("@rules_oci//oci:repositories.bzl", "LATEST_CRANE_VERSION", "oci_register_toolchains")
+
 oci_register_toolchains(
     name = "oci",
     crane_version = LATEST_CRANE_VERSION,
-) 
+)

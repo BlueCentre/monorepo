@@ -1,17 +1,19 @@
 # load("@pip_deps//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_library")
+load("@pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 # load("@io_bazel_rules_docker//python3:image.bzl", py_image = "py3_image")
 # load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 
 py_library(
     name = "app_lib",
-    srcs = ["app/app.py"],
+    srcs = [
+        "app/__init__.py",
+        "app/app.py",
+    ],
     deps = [
         "//libs/py/calculator:calculator_lib",
         # requirement("click"),
         # requirement("colorama"),
-        # requirement("pytest"),
-        # requirement("pytest-cov"),
     ],
 )
 
@@ -20,6 +22,21 @@ py_binary(
     srcs = ["app/app.py"],
     main = "app.py",
     deps = [":app_lib"],
+)
+
+py_test(
+    name = "app_test",
+    srcs = [
+        "tests/__init__.py",
+        "tests/test_app.py",
+    ],
+    main = "tests/test_app.py",
+    deps = [
+        ":app_lib",
+        "//libs/py/calculator:calculator_lib",
+        requirement("pytest"),
+        # requirement("pytest-cov"),
+    ],
 )
 
 # py_image(

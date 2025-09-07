@@ -5,7 +5,7 @@
 # - https://github.com/Netflix/dispatch/blob/master/tests/factories.py
 
 import random
-from typing import Type
+
 
 # Parent Class
 class DevOps:
@@ -30,12 +30,14 @@ class InfrastructureEngineer(DevOps):
     def speak(self) -> None:
         print("How would you like your cloud today?")
 
+
 class DeveloperExperienceEngineer(DevOps):
     def __str__(self) -> str:
         return f"DeveloperExperienceEngineer<{self.name}>"
 
     def speak(self) -> None:
         print("How is your CI/CD today?")
+
 
 class DataEngineer(DevOps):
     def __str__(self) -> str:
@@ -44,12 +46,14 @@ class DataEngineer(DevOps):
     def speak(self) -> None:
         print("How do you like your data today?")
 
+
 class MachineLearningEngineer(DevOps):
     def __str__(self) -> str:
         return f"MachineLearningEngineer<{self.name}>"
 
     def speak(self) -> None:
         print("How do you like them unicorn?")
+
 
 class WebEngineer(DevOps):
     def __str__(self) -> str:
@@ -58,12 +62,14 @@ class WebEngineer(DevOps):
     def speak(self) -> None:
         print("What feature should be build today?")
 
+
 class ReliabilityEngineer(DevOps):
     def __str__(self) -> str:
         return f"ReliabilityEngineer<{self.name}>"
 
     def speak(self) -> None:
         print("scale")
+
 
 class PlatformEngineer(DevOps):
     """Fullstack Platform Engineer"""
@@ -80,7 +86,7 @@ class PlatformEngineer(DevOps):
 class PlatformOrganization:
     """Platform Organization"""
 
-    def __init__(self, platform_factory: Type[DevOps]) -> None:
+    def __init__(self, platform_factory: type[DevOps]) -> None:
         """devops_factory is our abstract factory.  We can set it at will."""
 
         self.devops_factory = platform_factory
@@ -95,17 +101,21 @@ class PlatformOrganization:
 
 # Additional factories:
 
+
 # Create a random platform
 def random_platform(name: str) -> DevOps:
     """Let's be dynamic!"""
-    return random.choice([
-        InfrastructureEngineer, 
-        DeveloperExperienceEngineer, 
-        DataEngineer, 
-        MachineLearningEngineer, 
-        WebEngineer, 
-        ReliabilityEngineer, 
-        PlatformEngineer])(name)
+    return random.choice(
+        [
+            InfrastructureEngineer,
+            DeveloperExperienceEngineer,
+            DataEngineer,
+            MachineLearningEngineer,
+            WebEngineer,
+            ReliabilityEngineer,
+            PlatformEngineer,
+        ]
+    )(name)
 
 
 # Show devops with various factories
