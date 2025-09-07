@@ -1,0 +1,48 @@
+name: Python Dependency Drift
+
+on:
+  pull_request:
+    paths:
+      - 'third_party/python/**'
+      - '.github/workflows/python-deps-drift.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'third_party/python/**'
+      - '.github/workflows/python-deps-drift.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Run Bazel drift test (fast)
+        run: |
+          bazelisk version || (curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-amd64 -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel)
+          bazel test //third_party/python:requirements_drift_test --config=dev || bazel test //third_party/python:requirements_drift_test
+
+      - name: Upload drift diff if failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: requirements-drift-diff
+          path: /tmp/requirements_drift.diff
+          if-no-files-found: ignore

@@ -1,0 +1,23 @@
+# Tools for development and build automation
+
+load("@rules_python//python:defs.bzl", "py_binary")
+
+# New project generator using Copier for advanced templating
+py_binary(
+    name = "new_project",
+    srcs = ["new_project_copier.py"],
+    visibility = ["//visibility:public"],
+    main = "new_project_copier.py",
+    deps = [
+        "@pip//copier",
+    ],
+)
+
+# Legacy new project generator (custom implementation)
+py_binary(
+    name = "new_project_legacy",
+    srcs = ["new_project.py"],
+    visibility = ["//visibility:public"],
+    main = "new_project.py",
+    deps = [],
+)

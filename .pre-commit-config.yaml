@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: python-deps-drift
+        name: Python dependency drift (uv export vs committed lock)
+        entry: bash third_party/python/drift_check.sh
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        files: ^third_party/python/(pyproject.toml|uv.lock|requirements_lock_3_11.txt)$
+  # Check formatting and lint for starlark code
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 6.3.3
+    hooks:
+        - id: buildifier
+        - id: buildifier-lint

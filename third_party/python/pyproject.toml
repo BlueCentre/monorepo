@@ -1,0 +1,130 @@
+## Source of truth for Python dependencies (Pattern B / uv migration)
+## All dependencies (runtime + tooling) are declared together initially for simplicity.
+## Future improvement: split dev/test-only packages into [project.optional-dependencies].
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monorepo-python-deps"
+version = "0.1.0"
+description = "Consolidated dependency specification for Bazel consumed Python tooling/apps (managed by uv)."
+requires-python = ">=3.11,<3.12"
+authors = [ { name = "BlueCentre" } ]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+dependencies = [
+  # Core runtime / frameworks (minimal base for deployed services & libs)
+  "fastapi",
+  "flask",
+  "sqlalchemy",
+  "asyncpg",
+  "pydantic>=2.3.0",
+  "pydantic-settings>=2.0.3",
+  "uvicorn",
+  "websockets",
+  "python-jose",
+  "passlib",
+  "bcrypt",
+  "python-multipart",
+  "tenacity",
+  "google-cloud-pubsub",
+
+  # OpenTelemetry (runtime instrumentation shipped with services)
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+  "opentelemetry-exporter-otlp",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-instrumentation-sqlalchemy",
+  "opentelemetry-instrumentation-logging",
+  "opentelemetry-instrumentation-requests",
+  "opentelemetry-instrumentation-httpx",
+]
+
+[dependency-groups]
+# Developer tooling (format, lint, static analysis)
+tooling = [
+  "ruff",
+  "pytest-mypy",
+]
+
+# Testing libraries & clients
+test = [
+  "pytest",
+  "requests",
+  "httpx",
+]
+
+# Project scaffolding (template generation). Split so production images need not include Copier.
+scaffolding = [
+  "copier==9.10.1",
+]
+
+[tool.uv]
+managed = true
+
+[tool.ruff]
+# Enable various rule sets
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "C4", "T20", "RET", "SIM"]
+ignore = ["ANN401"]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs", 
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "bazel-*",
+]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "ANN"]
+"**/test_*.py" = ["S101", "ANN"] 
+"tools/*" = ["T20"]  # Allow print statements in tools
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.pylint]
+max-args = 6
+
+[tool.ruff.isort]
+# Use isort profile compatible with black
+profile = "black"
+line-length = 88

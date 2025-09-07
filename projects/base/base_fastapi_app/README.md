@@ -59,7 +59,7 @@ give you details about each recommendation and perhaps new additions.
 1. Raise a ValueError in custom pydantic validators, if schema directly faces the client.
 1. Don't forget FastAPI converts Response Pydantic Object...
 1. If you must use sync SDK, then run it in a thread pool.
-1. Use linters (black, isort, autoflake).
+1. Use linters (ruff for formatting/linting, mypy for type checking).
 1. Bonus Section.
 
 List of additional references:

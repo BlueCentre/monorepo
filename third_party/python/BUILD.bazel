@@ -1,3 +1,5 @@
+#!/usr/bin/env bazel
+
 # TODO: https://blog.aspect.dev/many-python-versions-one-bazel-build
 
 # See https://github.com/bazelbuild/rules_python/tree/main/examples/multi_python_versions
@@ -5,8 +7,12 @@
 # Python requirements configuration for Bazel 8.x
 # See: https://github.com/bazelbuild/rules_python/blob/main/docs/pip.md
 
-# Simple test file for verifying requirements
-exports_files(["requirements.in"])
+# Export dependency specification files
+exports_files([
+    "pyproject.toml",
+    "uv.lock",
+    "drift_check.sh",
+])
 
 # Add a requirements target for pip dependencies
 filegroup(
@@ -15,18 +21,37 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-# For backward compatibility, create symlinks to the locked requirements files
-genrule(
-    name = "copy_requirements_locks",
-    srcs = ["requirements_lock_3_11.txt"],
-    outs = [
-        "requirements_lock_3_10.txt",
-        "requirements_lock_3_9.txt",
-        "requirements_lock_3_8.txt",
+# Provide an update target for regenerating the primary Python 3.11 lock file.
+# We implement this as a shell binary that calls pip-tools (pip-compile).
+sh_binary(
+    name = "requirements_3_11.update",
+    srcs = ["update_requirements.sh"],
+    data = [
+        "pyproject.toml",
     ],
-    cmd = """
-        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_10.txt)
-        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_9.txt)
-        cp $(location requirements_lock_3_11.txt) $(location requirements_lock_3_8.txt)
-    """,
+    visibility = ["//visibility:public"],
+)
+
+# Single-lock model: legacy multi-version aliases & copy genrule removed.
+# If re-introducing multi-version resolution, add distinct update targets and pip_parse invocations.
+
+sh_binary(
+    name = "requirements_drift",
+    srcs = ["drift_check.sh"],
+    data = [
+        "pyproject.toml",
+        "requirements_lock_3_11.txt",
+        "uv.lock",
+    ],
+)
+
+sh_test(
+    name = "requirements_drift_test",
+    srcs = ["drift_check.sh"],  # Executed directly; kept to minimize target name change
+    data = [
+        ":requirements_drift",
+        "pyproject.toml",
+        "requirements_lock_3_11.txt",
+        "uv.lock",
+    ],
 )

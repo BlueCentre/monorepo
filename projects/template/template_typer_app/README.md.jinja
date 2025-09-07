@@ -1,0 +1,44 @@
+# {{ project_title }}
+
+{{ project_description }}
+
+## Features
+
+- **Typer Framework**: Modern CLI framework for Python with type hints
+- **Type Safety**: Full type annotations throughout
+- **Easy Testing**: Built-in testing support
+- **Rich Output**: Beautiful terminal output with Rich
+- **Click Compatible**: Built on top of Click
+
+## Usage
+
+```bash
+# Build the CLI
+bazel build //projects/python/{{ project_name }}/...
+
+# Run the CLI  
+bazel run //projects/python/{{ project_name }}:main -- --help
+```
+
+## Development
+
+```bash
+# Run tests
+bazel test //projects/python/{{ project_name }}/...
+
+# Install in development mode
+pip install -e .
+```
+
+## Monorepo Integration
+
+This CLI is fully integrated with the monorepo build system using Bazel.
+
+## Author
+
+Created by {{ author_name }} <{{ author_email }}>
+
+## References
+
+- [Typer Documentation](https://typer.tiangolo.com/)
+- [Copier Templating](https://github.com/copier-org/copier)

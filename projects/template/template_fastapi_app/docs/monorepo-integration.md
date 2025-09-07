@@ -98,7 +98,7 @@ bazel test //projects/template/template_fastapi_app:<test_suite>
 
 If you encounter issues:
 
-1. **Dependency Mismatches**: Check if the required dependencies are in `third_party/python/requirements.in` with appropriate versions.
+1. **Dependency Mismatches**: Verify required dependencies are declared in `third_party/python/pyproject.toml` (base or the appropriate dependency-group) and re-export via `bazel run //third_party/python:requirements_3_11.update`.
 
 2. **Version Compatibility**: Use version-adaptive code patterns as shown in `app/core/config.py`.
 
