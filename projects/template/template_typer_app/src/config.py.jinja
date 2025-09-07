@@ -1,0 +1,43 @@
+"""
+Configuration management for {{ project_name }}
+"""
+
+import os
+from typing import Optional
+from dataclasses import dataclass
+
+@dataclass
+class AppConfig:
+    """Application configuration"""
+    
+    version: str = "0.1.0"
+    debug: bool = False
+    output_format: str = "text"
+    max_items: int = 100
+    
+    def __post_init__(self):
+        """Initialize config from environment variables"""
+        # Override with environment variables if present
+        self.debug = os.getenv("{{ project_name | upper }}_DEBUG", "false").lower() == "true"
+        self.output_format = os.getenv("{{ project_name | upper }}_OUTPUT_FORMAT", self.output_format)
+        
+        max_items_env = os.getenv("{{ project_name | upper }}_MAX_ITEMS")
+        if max_items_env:
+            try:
+                self.max_items = int(max_items_env)
+            except ValueError:
+                # Keep default if invalid
+                pass
+    
+    @classmethod
+    def from_env(cls) -> "AppConfig":
+        """Create config instance from environment variables"""
+        return cls()
+    
+    def is_debug_enabled(self) -> bool:
+        """Check if debug mode is enabled"""
+        return self.debug
+    
+    def get_output_format(self) -> str:
+        """Get configured output format"""
+        return self.output_format

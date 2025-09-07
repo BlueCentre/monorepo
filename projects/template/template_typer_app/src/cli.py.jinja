@@ -1,0 +1,77 @@
+"""
+Command-line interface for {{ project_name }}
+"""
+
+from typing import List, Optional
+import typer
+from rich.console import Console
+from .main import {{ _project_class }}App
+from .config import AppConfig
+
+# Initialize Typer app and console
+app = typer.Typer(name="{{ project_name }}", help="{{ project_description }}")
+console = Console()
+
+# Initialize main application
+main_app = {{ _project_class }}App()
+
+@app.command()
+def hello(
+    name: str = typer.Argument("World", help="Name to greet"),
+    uppercase: bool = typer.Option(False, "--uppercase", "-u", help="Convert output to uppercase"),
+) -> None:
+    """Say hello to someone."""
+    greeting = main_app.greet(name)
+    
+    if uppercase:
+        greeting = greeting.upper()
+    
+    console.print(f"[green]{greeting}[/green]")
+
+@app.command()
+def list_items(
+    items: List[str] = typer.Argument(..., help="Items to display"),
+    sort: bool = typer.Option(False, "--sort", "-s", help="Sort items alphabetically"),
+) -> None:
+    """Display a list of items in a table."""
+    if sort:
+        items = sorted(items)
+    
+    main_app.list_items(items)
+
+@app.command()
+def process(
+    text: str = typer.Argument(..., help="Text to process"),
+    uppercase: bool = typer.Option(False, "--uppercase", "-u", help="Convert to uppercase"),
+    output_file: Optional[str] = typer.Option(None, "--output", "-o", help="Save result to file"),
+) -> None:
+    """Process text data with various transformations."""
+    result = main_app.process_data(text, uppercase=uppercase)
+    
+    if output_file:
+        with open(output_file, "w") as f:
+            f.write(result)
+        console.print(f"[green]Result saved to {output_file}[/green]")
+    else:
+        console.print(f"[blue]Result:[/blue] {result}")
+
+@app.command()
+def info() -> None:
+    """Show application information."""
+    main_app.show_info()
+
+@app.command()
+def config() -> None:
+    """Show current configuration."""
+    config = AppConfig()
+    console.print(f"[bold]{{ project_title }} Configuration[/bold]")
+    console.print(f"Version: {config.version}")
+    console.print(f"Debug mode: {config.debug}")
+    console.print(f"Output format: {config.output_format}")
+
+def main() -> None:
+    """Main entry point for the CLI."""
+    app()
+
+if __name__ == "__main__":
+    main()

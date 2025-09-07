@@ -1,0 +1,92 @@
+"""
+Test suite for CLI functionality
+"""
+
+import tempfile
+import os
+from typer.testing import CliRunner
+from src.cli import app
+
+runner = CliRunner()
+
+class TestCLI:
+    """Test cases for CLI commands"""
+    
+    def test_hello_default(self):
+        """Test hello command with default parameters"""
+        result = runner.invoke(app, ["hello"])
+        assert result.exit_code == 0
+        assert "Hello, World! Welcome to {{ project_title }}." in result.stdout
+    
+    def test_hello_custom_name(self):
+        """Test hello command with custom name"""
+        result = runner.invoke(app, ["hello", "Alice"])
+        assert result.exit_code == 0
+        assert "Hello, Alice! Welcome to {{ project_title }}." in result.stdout
+    
+    def test_hello_uppercase(self):
+        """Test hello command with uppercase option"""
+        result = runner.invoke(app, ["hello", "alice", "--uppercase"])
+        assert result.exit_code == 0
+        assert "HELLO, ALICE!" in result.stdout.upper()
+    
+    def test_list_items(self):
+        """Test list-items command"""
+        result = runner.invoke(app, ["list-items", "apple", "banana", "cherry"])
+        assert result.exit_code == 0
+        assert "apple" in result.stdout
+        assert "banana" in result.stdout
+        assert "cherry" in result.stdout
+    
+    def test_list_items_sorted(self):
+        """Test list-items command with sort option"""
+        result = runner.invoke(app, ["list-items", "cherry", "apple", "banana", "--sort"])
+        assert result.exit_code == 0
+        # Check that items appear in sorted order in output
+        assert "apple" in result.stdout
+        assert "banana" in result.stdout
+        assert "cherry" in result.stdout
+    
+    def test_process_text(self):
+        """Test process command"""
+        result = runner.invoke(app, ["process", "hello world"])
+        assert result.exit_code == 0
+        assert "hello world" in result.stdout
+    
+    def test_process_text_uppercase(self):
+        """Test process command with uppercase"""
+        result = runner.invoke(app, ["process", "hello world", "--uppercase"])
+        assert result.exit_code == 0
+        assert "HELLO WORLD" in result.stdout
+    
+    def test_process_text_to_file(self):
+        """Test process command with file output"""
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+            tmp_path = tmp.name
+        
+        try:
+            result = runner.invoke(app, ["process", "hello world", "--output", tmp_path])
+            assert result.exit_code == 0
+            assert f"Result saved to {tmp_path}" in result.stdout
+            
+            # Check file contents
+            with open(tmp_path, 'r') as f:
+                content = f.read()
+                assert content == "hello world"
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+    
+    def test_info_command(self):
+        """Test info command"""
+        result = runner.invoke(app, ["info"])
+        assert result.exit_code == 0
+        assert "{{ project_title }}" in result.stdout
+        assert "{{ author_name }}" in result.stdout
+    
+    def test_config_command(self):
+        """Test config command"""
+        result = runner.invoke(app, ["config"])
+        assert result.exit_code == 0
+        assert "Configuration" in result.stdout
+        assert "Version:" in result.stdout

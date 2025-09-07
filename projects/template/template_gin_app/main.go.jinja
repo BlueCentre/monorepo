@@ -1,0 +1,49 @@
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	
+	// Health check endpoint
+	r.GET("/health", healthCheck)
+	
+	// API v1 routes
+	v1 := r.Group("/api/v1")
+	{
+		v1.GET("/status", getStatus)
+		v1.GET("/hello", getHello)
+	}
+
+	log.Println("Starting {{ project_title }} on :8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+func healthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "healthy",
+		"service": "{{ project_name }}",
+		"version": "1.0.0",
+	})
+}
+
+func getStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":      "running",
+		"service":     "{{ project_name }}",
+		"description": "{{ project_description }}",
+	})
+}
+
+func getHello(c *gin.Context) {
+	name := c.DefaultQuery("name", "World")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hello, " + name + "!",
+		"from":    "{{ project_title }}",
+	})
+}

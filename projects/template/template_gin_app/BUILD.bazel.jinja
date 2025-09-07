@@ -1,0 +1,51 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "{{ _project_package }}_lib",
+    srcs = [
+        "main.go",
+        "handlers/health.go",
+        "handlers/api.go",
+    ],
+    importpath = "github.com/bluecentre/monorepo/projects/go/{{ _project_package }}",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_gin_gonic_gin//:gin",
+    ],
+)
+
+go_binary(
+    name = "{{ _project_package }}",
+    embed = [":{{ _project_package }}_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "{{ _project_package }}_test",
+    srcs = [
+        "main_test.go",
+        "handlers/health_test.go",
+        "handlers/api_test.go",
+    ],
+    embed = [":{{ _project_package }}_lib"],
+    deps = [
+        "@com_github_stretchr_testify//assert",
+        "@com_github_gin_gonic_gin//:gin",
+    ],
+)
+
+# Container configuration
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+
+oci_image(
+    name = "{{ _project_package }}_image",
+    base = "@distroless_base",
+    entrypoint = ["/{{ _project_package }}"],
+    tars = [":{{ _project_package }}_layer"],
+)
+
+oci_tarball(
+    name = "{{ _project_package }}_tarball",
+    image = ":{{ _project_package }}_image",
+    repo_tags = ["{{ _project_package }}:latest"],
+)

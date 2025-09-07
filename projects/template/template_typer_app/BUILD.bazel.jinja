@@ -1,0 +1,61 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_library(
+    name = "{{ _project_package }}_lib",
+    srcs = [
+        "src/__init__.py",
+        "src/main.py",
+        "src/cli.py",
+        "src/config.py",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "@pypi//typer",
+        "@pypi//rich",
+    ],
+)
+
+py_binary(
+    name = "{{ _project_package }}",
+    srcs = ["src/__main__.py"],
+    main = "src/__main__.py",
+    visibility = ["//visibility:public"],
+    deps = [":{{ _project_package }}_lib"],
+)
+
+py_test(
+    name = "{{ _project_package }}_test",
+    srcs = [
+        "tests/test_main.py",
+        "tests/test_cli.py",
+        "tests/test_config.py",
+    ],
+    deps = [
+        ":{{ _project_package }}_lib",
+        "@pypi//pytest",
+        "@pypi//typer",
+    ],
+)
+
+# Optional: Container image
+# load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+# load("//bazel/fixes:py_image_layer.bzl", "py_image_layer")
+
+# py_image_layer(
+#     name = "{{ _project_package }}_layer",
+#     binary = ":{{ _project_package }}",
+#     root = "/opt",
+# )
+
+# oci_image(
+#     name = "{{ _project_package }}_image",
+#     base = "@distroless_python",
+#     entrypoint = ["/opt/{{ _project_package }}"],
+#     tars = [":{{ _project_package }}_layer"],
+# )
+
+# oci_tarball(
+#     name = "{{ _project_package }}_tarball",
+#     image = ":{{ _project_package }}_image",
+#     repo_tags = ["{{ _project_package }}:latest"],
+# )

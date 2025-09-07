@@ -1,0 +1,23 @@
+package main
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func getStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":      "running",
+		"service":     "{{ project_name }}",
+		"description": "{{ project_description }}",
+	})
+}
+
+func getHello(c *gin.Context) {
+	name := c.DefaultQuery("name", "World")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hello, " + name + "!",
+		"from":    "{{ project_title }}",
+	})
+}

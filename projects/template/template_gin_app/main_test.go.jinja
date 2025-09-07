@@ -1,0 +1,74 @@
+package main
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+)
+
+func setupRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+	
+	// Health check endpoint
+	r.GET("/health", healthCheck)
+	
+	// API v1 routes
+	v1 := r.Group("/api/v1")
+	{
+		v1.GET("/status", getStatus)
+		v1.GET("/hello", getHello)
+	}
+	
+	return r
+}
+
+func TestHealthCheck(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/health", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), "healthy")
+	assert.Contains(t, w.Body.String(), "{{ project_name }}")
+}
+
+func TestGetStatus(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/status", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), "running")
+	assert.Contains(t, w.Body.String(), "{{ project_name }}")
+}
+
+func TestGetHello(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/hello", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), "Hello, World!")
+	assert.Contains(t, w.Body.String(), "{{ project_title }}")
+}
+
+func TestGetHelloWithName(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/hello?name=Gopher", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), "Hello, Gopher!")
+}

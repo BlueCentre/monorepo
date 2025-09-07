@@ -1,0 +1,51 @@
+"""
+Main application logic for {{ project_name }}
+"""
+
+from typing import List, Optional
+from rich.console import Console
+from rich.table import Table
+from .config import AppConfig
+
+console = Console()
+
+class {{ _project_class }}App:
+    """Main application class for {{ project_title }}"""
+    
+    def __init__(self, config: Optional[AppConfig] = None):
+        self.config = config or AppConfig()
+    
+    def greet(self, name: str = "World") -> str:
+        """Generate a greeting message"""
+        return f"Hello, {name}! Welcome to {{ project_title }}."
+    
+    def list_items(self, items: List[str]) -> None:
+        """Display a list of items in a nice table"""
+        if not items:
+            console.print("No items to display.", style="yellow")
+            return
+        
+        table = Table(title="{{ project_title }} Items")
+        table.add_column("Index", justify="right", style="cyan")
+        table.add_column("Item", style="magenta")
+        
+        for idx, item in enumerate(items, 1):
+            table.add_row(str(idx), item)
+        
+        console.print(table)
+    
+    def process_data(self, data: str, uppercase: bool = False) -> str:
+        """Process input data with optional transformations"""
+        result = data.strip()
+        
+        if uppercase:
+            result = result.upper()
+        
+        return result
+    
+    def show_info(self) -> None:
+        """Display application information"""
+        console.print(f"[bold blue]{{ project_title }}[/bold blue]")
+        console.print(f"[dim]{{ project_description }}[/dim]")
+        console.print(f"Version: {self.config.version}")
+        console.print(f"Author: {{ author_name }}")

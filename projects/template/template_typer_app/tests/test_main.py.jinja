@@ -1,0 +1,51 @@
+"""
+Test suite for the main application logic
+"""
+
+import pytest
+from src.main import {{ _project_class }}App
+from src.config import AppConfig
+
+class Test{{ _project_class }}App:
+    """Test cases for {{ _project_class }}App"""
+    
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.config = AppConfig()
+        self.app = {{ _project_class }}App(self.config)
+    
+    def test_greet_default(self):
+        """Test greeting with default name"""
+        result = self.app.greet()
+        assert result == "Hello, World! Welcome to {{ project_title }}."
+    
+    def test_greet_custom_name(self):
+        """Test greeting with custom name"""
+        result = self.app.greet("Alice")
+        assert result == "Hello, Alice! Welcome to {{ project_title }}."
+    
+    def test_process_data_basic(self):
+        """Test basic data processing"""
+        result = self.app.process_data("  hello world  ")
+        assert result == "hello world"
+    
+    def test_process_data_uppercase(self):
+        """Test data processing with uppercase option"""
+        result = self.app.process_data("hello world", uppercase=True)
+        assert result == "HELLO WORLD"
+    
+    def test_list_items_empty(self, capsys):
+        """Test listing empty items"""
+        self.app.list_items([])
+        captured = capsys.readouterr()
+        assert "No items to display" in captured.out
+    
+    def test_list_items_with_data(self, capsys):
+        """Test listing items with data"""
+        items = ["apple", "banana", "cherry"]
+        self.app.list_items(items)
+        captured = capsys.readouterr()
+        # Should contain table output
+        assert "apple" in captured.out
+        assert "banana" in captured.out
+        assert "cherry" in captured.out
