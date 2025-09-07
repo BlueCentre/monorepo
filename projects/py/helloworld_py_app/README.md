@@ -1,4 +1,6 @@
-# Overview
+# Python Hello World App
+
+A simple Python "Hello World" application demonstrating basic Python packaging and containerization with Bazel.
 
 The motivation for this project is to learn and explore how to build, run and test containers with a very basic Python example. The example reference we use comes from Aspect development who works closely with the Bazel community. Credits go to their example which can be found [here](https://github.com/aspect-build/bazel-examples/tree/main/oci_python_image).
 
