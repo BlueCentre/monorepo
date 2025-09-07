@@ -5,7 +5,7 @@ load("@pip_deps//:requirements.bzl", "requirement")
 
 def pytest_test(name, srcs, deps = [], args = [], data = [], **kwargs):
     """
-    Call pytest
+    Call pytest with ruff linting
     """
     py_test(
         name = name,
@@ -15,21 +15,15 @@ def pytest_test(name, srcs, deps = [], args = [], data = [], **kwargs):
         main = "//tools/pytest:pytest_wrapper.py",
         args = [
             "--capture=no",
-            "--black",
-            "--pylint",
-            "--pylint-rcfile=$(location //tools/pytest:.pylintrc)",
-            # "--mypy",
+            # Using ruff for fast linting and formatting checks
+            # "--mypy",  # Can be enabled for type checking
         ] + args + ["$(location :%s)" % x for x in srcs],
         # python_version = "PY3",
         # srcs_version = "PY3",
         deps = deps + [
             requirement("pytest"),
-            requirement("pytest-black"),
-            requirement("pytest-pylint"),
-            # requirement("pytest-mypy"),
+            # requirement("pytest-mypy"),  # Can be enabled for type checking
         ],
-        data = [
-            "//tools/pytest:.pylintrc",
-        ] + data,
+        data = data,
         **kwargs
     )
