@@ -56,3 +56,19 @@ calculator_cli_py_app/
 ## Monorepo Integration
 
 This application is fully integrated with the monorepo build system using Bazel and demonstrates how to use shared libraries across projects.
+
+```bash
+# Build everything in the monorepo
+bazel build //...
+
+# Test everything in the monorepo
+bazel test //...
+
+# Build and run this specific application
+bazel run //projects/py/calculator_cli_py_app:app_bin
+```
+
+This CLI application showcases:
+- Integration with shared calculator library from `//libs/py/calculator`
+- Consistent build patterns across the monorepo
+- Proper dependency management using Bazel

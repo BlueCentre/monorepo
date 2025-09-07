@@ -43,6 +43,14 @@ py_test(
     ],
 )
 
+# Test suite for CI/CD pipeline consistency
+test_suite(
+    name = "all_tests",
+    tests = [
+        ":main_test",
+    ],
+)
+
 platform(
     name = "aarch64_linux",
     constraint_values = [

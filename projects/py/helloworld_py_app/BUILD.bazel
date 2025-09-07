@@ -20,6 +20,16 @@ py_binary(
     deps = [":hello_world_lib"],
 )
 
+# Standard alias for consistency with other projects
+py_binary(
+    name = "app_bin",
+    srcs = ["app/__main__.py"],
+    imports = [".."],
+    main = "__main__.py",
+    visibility = ["//:__subpackages__"],
+    deps = [":hello_world_lib"],
+)
+
 py_test(
     name = "hello_world_test",
     srcs = [
@@ -30,6 +40,14 @@ py_test(
     deps = [
         ":hello_world_lib",
         requirement("pytest"),
+    ],
+)
+
+# Test suite for CI/CD pipeline consistency
+test_suite(
+    name = "all_tests",
+    tests = [
+        ":hello_world_test",
     ],
 )
 

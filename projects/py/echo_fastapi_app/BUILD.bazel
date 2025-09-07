@@ -46,3 +46,11 @@ py_test(
         ":web_lib",
     ],
 )
+
+# Test suite for CI/CD pipeline consistency
+test_suite(
+    name = "all_tests",
+    tests = [
+        ":test",
+    ],
+)

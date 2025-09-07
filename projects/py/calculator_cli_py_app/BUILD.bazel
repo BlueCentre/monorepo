@@ -39,6 +39,14 @@ py_test(
     ],
 )
 
+# Test suite for CI/CD pipeline consistency
+test_suite(
+    name = "all_tests",
+    tests = [
+        ":app_test",
+    ],
+)
+
 # py_image(
 #     name = "python_web_image",
 #     srcs = ["python_web.py"],
