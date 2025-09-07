@@ -2,17 +2,28 @@
 Test suite for the main application logic
 """
 
+import os
+import sys
+
+# Ensure project root (containing src/) is on sys.path so `import src.*` works under Bazel
+_TEST_DIR = os.path.dirname(__file__)
+_PROJECT_ROOT = os.path.abspath(os.path.join(_TEST_DIR, ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 import pytest
-from src.main import {{ _project_class }}App
+{# Derive class name similarly to cli and main #}
+{% set project_class = project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') %}
+from src.main import {{ project_class }}App
 from src.config import AppConfig
 
-class Test{{ _project_class }}App:
-    """Test cases for {{ _project_class }}App"""
+class Test{{ project_class }}App:
+    """Test cases for {{ project_class }}App"""
     
     def setup_method(self):
         """Set up test fixtures"""
         self.config = AppConfig()
-        self.app = {{ _project_class }}App(self.config)
+        self.app = {{ project_class }}App(self.config)
     
     def test_greet_default(self):
         """Test greeting with default name"""

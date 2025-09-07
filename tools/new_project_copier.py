@@ -34,12 +34,14 @@ class CopierProjectGenerator:
         self.supported_templates = {
             ("python", "fastapi"): {
                 "template_dir": "template_fastapi_app",
-                "target_subdir": "python",
+                # Use existing 'py' directory naming convention in repo
+                "target_subdir": "py",
                 "description": "Production-ready FastAPI web service"
             },
             ("python", "cli"): {
                 "template_dir": "template_typer_app", 
-                "target_subdir": "python",
+                # Align with other Python apps under 'projects/py'
+                "target_subdir": "py",
                 "description": "Command-line interface using Typer"
             },
             ("go", "gin"): {

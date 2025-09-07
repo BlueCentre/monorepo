@@ -40,6 +40,10 @@ dependencies = [
   "opentelemetry-instrumentation-logging",
   "opentelemetry-instrumentation-requests",
   "opentelemetry-instrumentation-httpx",
+  
+  # CLI frameworks & UX libs (needed for template_typer_app)
+  "typer[all]>=0.9.0",
+  "rich>=13.0.0",
 ]
 
 [dependency-groups]

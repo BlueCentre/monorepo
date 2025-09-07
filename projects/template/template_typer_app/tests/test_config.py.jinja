@@ -3,6 +3,14 @@ Test suite for configuration management
 """
 
 import os
+import sys
+
+_TEST_DIR = os.path.dirname(__file__)
+_PROJECT_ROOT = os.path.abspath(os.path.join(_TEST_DIR, ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+import os
 import pytest
 from src.config import AppConfig
 

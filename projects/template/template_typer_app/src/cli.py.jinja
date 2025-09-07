@@ -5,7 +5,9 @@ Command-line interface for {{ project_name }}
 from typing import List, Optional
 import typer
 from rich.console import Console
-from .main import {{ _project_class }}App
+{# Derive class name (mirrors _project_class) #}
+{% set project_class = project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') %}
+from .main import {{ project_class }}App
 from .config import AppConfig
 
 # Initialize Typer app and console
@@ -13,7 +15,7 @@ app = typer.Typer(name="{{ project_name }}", help="{{ project_description }}")
 console = Console()
 
 # Initialize main application
-main_app = {{ _project_class }}App()
+main_app = {{ project_class }}App()
 
 @app.command()
 def hello(

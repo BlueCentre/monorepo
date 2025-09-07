@@ -9,7 +9,10 @@ from .config import AppConfig
 
 console = Console()
 
-class {{ _project_class }}App:
+{# Derive class name inline to avoid dependency on internal _project_class var #}
+{% set project_class = project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') %}
+
+class {{ project_class }}App:
     """Main application class for {{ project_title }}"""
     
     def __init__(self, config: Optional[AppConfig] = None):
