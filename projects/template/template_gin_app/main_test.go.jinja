@@ -38,37 +38,6 @@ func TestHealthCheck(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "{{ project_name }}")
 }
 
-func TestGetStatus(t *testing.T) {
-	router := setupRouter()
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/status", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Contains(t, w.Body.String(), "running")
-	assert.Contains(t, w.Body.String(), "{{ project_name }}")
-}
-
-func TestGetHello(t *testing.T) {
-	router := setupRouter()
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/hello", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Contains(t, w.Body.String(), "Hello, World!")
-	assert.Contains(t, w.Body.String(), "{{ project_title }}")
-}
-
-func TestGetHelloWithName(t *testing.T) {
-	router := setupRouter()
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/hello?name=Gopher", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Contains(t, w.Body.String(), "Hello, Gopher!")
-}
+// NOTE: Endpoint-specific tests live under handlers/*. They are not duplicated here
+// to avoid redeclaration errors when Bazel aggregates *_test.go files via go_test.
+// This file intentionally keeps only a top-level health integration style test.

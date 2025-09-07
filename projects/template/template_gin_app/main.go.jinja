@@ -1,49 +1,21 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+    "log"
+    "github.com/gin-gonic/gin"
 )
 
+// Main entry point wires routes; handler functions live in handlers/*.go
 func main() {
-	r := gin.Default()
-	
-	// Health check endpoint
-	r.GET("/health", healthCheck)
-	
-	// API v1 routes
-	v1 := r.Group("/api/v1")
-	{
-		v1.GET("/status", getStatus)
-		v1.GET("/hello", getHello)
-	}
-
-	log.Println("Starting {{ project_title }} on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
-}
-
-func healthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "healthy",
-		"service": "{{ project_name }}",
-		"version": "1.0.0",
-	})
-}
-
-func getStatus(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status":      "running",
-		"service":     "{{ project_name }}",
-		"description": "{{ project_description }}",
-	})
-}
-
-func getHello(c *gin.Context) {
-	name := c.DefaultQuery("name", "World")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Hello, " + name + "!",
-		"from":    "{{ project_title }}",
-	})
+    r := gin.Default()
+    r.GET("/health", healthCheck)
+    v1 := r.Group("/api/v1")
+    {
+        v1.GET("/status", getStatus)
+        v1.GET("/hello", getHello)
+    }
+    log.Println("Starting {{ project_title }} on :8080")
+    if err := r.Run(":8080"); err != nil { // nolint:revive
+        log.Fatalf("server failed: %v", err)
+    }
 }

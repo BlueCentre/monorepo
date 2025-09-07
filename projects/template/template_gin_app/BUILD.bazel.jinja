@@ -1,13 +1,19 @@
 load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
+# NOTE: We intentionally avoid relying on internal copier variables that begin with
+# underscores (e.g. _project_package) because some copier/Jinja versions can strip
+# them from the templating context, producing empty label names. We instead use
+# the user supplied {{ project_name }} directly and keep Bazel target names
+# stable and generic (lib, main, image, etc.) for a predictable DX.
+
 go_library(
-    name = "{{ _project_package }}_lib",
+    name = "lib",
     srcs = [
         "main.go",
         "handlers/health.go",
         "handlers/api.go",
     ],
-    importpath = "github.com/bluecentre/monorepo/projects/go/{{ _project_package }}",
+    importpath = "github.com/bluecentre/monorepo/projects/go/{{ project_name }}",
     visibility = ["//visibility:private"],
     deps = [
         "@com_github_gin_gonic_gin//:gin",
@@ -15,37 +21,27 @@ go_library(
 )
 
 go_binary(
-    name = "{{ _project_package }}",
-    embed = [":{{ _project_package }}_lib"],
+    name = "main",
+    embed = [":lib"],
     visibility = ["//visibility:public"],
 )
 
 go_test(
-    name = "{{ _project_package }}_test",
+    name = "lib_test",
     srcs = [
         "main_test.go",
         "handlers/health_test.go",
         "handlers/api_test.go",
     ],
-    embed = [":{{ _project_package }}_lib"],
+    embed = [":lib"],
     deps = [
         "@com_github_stretchr_testify//assert",
         "@com_github_gin_gonic_gin//:gin",
     ],
 )
 
-# Container configuration
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
-
-oci_image(
-    name = "{{ _project_package }}_image",
-    base = "@distroless_base",
-    entrypoint = ["/{{ _project_package }}"],
-    tars = [":{{ _project_package }}_layer"],
-)
-
-oci_tarball(
-    name = "{{ _project_package }}_tarball",
-    image = ":{{ _project_package }}_image",
-    repo_tags = ["{{ _project_package }}:latest"],
-)
+# Optional container targets (disabled by default because rules_oci is not enabled in MODULE.bazel).
+# To enable container builds:
+#   1. Uncomment rules_oci bazel_dep in MODULE.bazel
+#   2. Add load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball") at top
+#   3. Reintroduce the oci_image / oci_tarball targets below.

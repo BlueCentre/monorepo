@@ -130,3 +130,30 @@ Placeholders indicate pipeline support for future templates. Upgrading or adding
 
 - See `docs/dependency-management.md` for Python dependency and drift enforcement details
 - Template-specific docs under each template's `docs/` subdirectory
+
+## Go Gin Template Notes
+
+The Go Gin template generates a minimal working service with consistent Bazel targets:
+
+| Target | Purpose |
+|--------|---------|
+| `:lib` | Core library (handlers + wiring) |
+| `:main` | Binary embedding the library |
+| `:lib_test` | Unit / handler tests |
+| `:image` | OCI image (if `rules_oci` enabled) |
+| `:tarball` | Exported image tarball |
+
+Example usage:
+
+```bash
+bazel build //projects/go/my_service:main
+bazel test //projects/go/my_service:lib_test
+bazel run //projects/go/my_service:main
+curl -f http://localhost:8080/health
+```
+
+Design considerations:
+
+* Avoids underscore-prefixed Copier variables in Bazel labels (prevented blank target names previously)
+* Separates routing (in `main.go`) from handler implementations (`handlers/*.go`)
+* Provides immediate green build + test for better first-time developer experience
