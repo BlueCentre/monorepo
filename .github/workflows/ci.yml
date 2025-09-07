@@ -27,7 +27,7 @@ on:
 jobs:
   build:
     # virtual environments: https://github.com/actions/virtual-environments
-    runs-on: ubuntu-20.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       # https://github.com/bazel-contrib/setup-bazel
       # Install & configure Bazel
@@ -73,7 +73,7 @@ jobs:
           //...
   sonarqube:
     name: SonarQube
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v5
         with:
