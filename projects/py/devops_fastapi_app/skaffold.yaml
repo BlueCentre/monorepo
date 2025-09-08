@@ -63,7 +63,20 @@ portForward:
   port: 5000
   localPort: 5000
 
-
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
 
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml

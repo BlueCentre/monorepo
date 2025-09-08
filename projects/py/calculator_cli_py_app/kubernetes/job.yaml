@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: calculator-cli-py-app
+  labels:
+    app: calculator-cli-py-app
+spec:
+  template:
+    metadata:
+      labels:
+        app: calculator-cli-py-app
+    spec:
+      containers:
+      - name: calculator-cli-py-app
+        image: calculator-cli-py-app
+        command: ["python", "-m", "app.calculator"]
+      restartPolicy: Never
+  backoffLimit: 4

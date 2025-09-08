@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculator-flask-app
+  labels:
+    app: calculator-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calculator-flask-app
+  template:
+    metadata:
+      labels:
+        app: calculator-flask-app
+    spec:
+      containers:
+      - name: calculator-flask-app
+        image: calculator-flask-app
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_ENV
+          value: "development"
+        - name: PORT
+          value: "5000"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10

@@ -1,0 +1,84 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: calculator-flask-app
+
+build:
+  artifacts:
+    - image: calculator-flask-app
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd $MONOREPO_ROOT
+
+          # Run code tests before building artifacts
+          bazel test //projects/py/calculator_flask_app/...
+
+          # Then build the binary
+          bazel build //projects/py/calculator_flask_app:run_bin
+
+          # Create a simple Dockerfile for the Flask app
+          TEMP_DIR=$(mktemp -d)
+          cat > $TEMP_DIR/Dockerfile << EOF
+FROM python:3.11-slim
+
+# Install dependencies
+RUN pip install flask
+
+# Copy the application
+COPY . /app
+WORKDIR /app
+
+# Expose the port the app runs on
+EXPOSE 5000
+
+# Command to run the application
+CMD ["python", "-m", "flask", "--app", "app.main", "run", "--host", "0.0.0.0", "--port", "5000"]
+EOF
+
+          # Copy application files
+          cp -r projects/py/calculator_flask_app/app $TEMP_DIR/
+          
+          # Build the Docker image
+          docker build -t $IMAGE $TEMP_DIR
+
+          # Clean up
+          rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "app/**/*"
+            - "tests/**/*"
+            - "BUILD.bazel"
+  local:
+    push: false
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: calculator-flask-app
+    port: 80
+    localPort: 5000
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
