@@ -3,14 +3,28 @@ kind: Config
 
 requires:
   - path: ./pulumi_dev_local
+  # Python Applications
+  - path: ./projects/py/devops_fastapi_app
+  - path: ./projects/py/echo_fastapi_app
+  - path: ./projects/py/calculator_flask_app
+  - path: ./projects/py/helloworld_py_app
+  - path: ./projects/py/calculator_cli_py_app
+  # Java Applications
+  - path: ./projects/java/hello_springboot_app
+  - path: ./projects/java/simple_java_app
+  - path: ./projects/java/example1_java_app
+  - path: ./projects/java/example2_java_app
+  - path: ./projects/java/rs_springboot_app
+  # Template Applications
   - path: ./projects/template/template_fastapi_app
+  - path: ./projects/template/template_gin_app
+  - path: ./projects/template/template_typer_app
+  # Complex Applications
+  - path: ./projects/microservices-demo
+  # Base applications are templates only - no Skaffold configs needed
   # - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
   # - path: ./projects/base_gin_app        # Nothing to skaffold here!
   # - path: ./projects/base_springboot_app # Nothing to skaffold here!
-  # - path: ./projects/py/devops_fastapi_app
-  # - path: ./projects/go/devops_go_app
-  # - path: ./projects/java/hello_springboot_app
-  # - path: ./projects/microservices-demo
 
 # See:
 # - https://skaffold.dev/docs/references/yaml/

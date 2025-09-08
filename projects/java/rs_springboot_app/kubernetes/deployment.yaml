@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rs-springboot-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rs-springboot-app
+  template:
+    metadata:
+      labels:
+        app: rs-springboot-app
+    spec:
+      containers:
+        - name: rs-springboot-app
+          image: rs-springboot-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"

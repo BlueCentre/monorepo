@@ -1,0 +1,83 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: rs-springboot-app
+
+build:
+  artifacts:
+    - image: rs-springboot-app
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd $MONOREPO_ROOT
+
+          # Run code tests before building artifacts
+          bazel test //projects/java/rs_springboot_app/...
+
+          # Then build the library
+          bazel build //projects/java/rs_springboot_app:demoapp_lib
+
+          # Create a simple Dockerfile for the Spring Boot app
+          TEMP_DIR=$(mktemp -d)
+          cat > $TEMP_DIR/Dockerfile << 'EOF'
+          FROM openjdk:11-jre-slim
+          
+          # Copy the application
+          COPY . /app
+          WORKDIR /app
+          
+          # Create entrypoint script
+          RUN echo '#!/bin/bash\njava com.sample.SampleMain' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+          
+          # Command to run the application
+          ENTRYPOINT ["/app/entrypoint.sh"]
+          EXPOSE 8080
+          EOF
+
+          # Copy application files
+          cp -r projects/java/rs_springboot_app/src $TEMP_DIR/
+          cp -r projects/java/rs_springboot_app/libs $TEMP_DIR/
+          
+          # Build the Docker image
+          docker build -t $IMAGE $TEMP_DIR
+
+          # Clean up
+          rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "src/**/*"
+            - "libs/**/*"
+            - "BUILD.bazel"
+  local:
+    push: false
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: rs-springboot-app
+    port: 8080
+    localPort: 8080
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
