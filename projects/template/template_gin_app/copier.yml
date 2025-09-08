@@ -44,6 +44,13 @@ author_email:
     Please enter a valid email address
     {% endif %}
 
+# Deployment configuration
+project_language:
+  type: str
+  help: Programming language (auto-detected for Go)
+  default: go
+  when: false  # Hidden from user, automatically set
+
 # Internal variables (computed)
 _project_slug: "{{ project_name | lower | replace('-', '_') }}"
 _project_class: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
