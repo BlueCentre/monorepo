@@ -6,6 +6,10 @@ _envops:
   variable_start_string: "{{"
   variable_end_string: "}}"
 
+# Skip copying the static skaffold.yaml - only use the templated .jinja version
+_skip:
+  - skaffold.yaml
+
 # Questions for the user
 project_name:
   type: str
