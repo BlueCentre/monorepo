@@ -48,6 +48,15 @@ author_email:
     Please enter a valid email address
     {% endif %}
 
+# Application secret (only for FastAPI template)
+app_secret_plaintext:
+  type: str
+  help: Plaintext value for the application SECRET_KEY (leave blank to auto-generate)
+  placeholder: leave blank to auto-generate
+  default: ""
+  secret: true
+
+
 # Deployment configuration
 project_language:
   type: str
@@ -59,3 +68,6 @@ project_language:
 _project_slug: "{{ project_name | lower | replace('-', '_') }}"
 _project_class: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
 _project_package: "{{ project_name | lower | replace('-', '_') }}"
+_app_secret_fallback: "{{ (range(0,32) | map('random') | list | join) if app_secret_plaintext == '' else app_secret_plaintext }}"
+# Compute base64 without newlines (portable). If user left blank we used generated fallback above.
+_app_secret_b64: "{{ _app_secret_fallback | b64encode }}"

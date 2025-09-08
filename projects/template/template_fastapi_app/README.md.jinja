@@ -72,6 +72,33 @@ This README provides an overview of the application. For more detailed informati
 
 ## Development
 
+### Application Secret (SECRET_KEY)
+
+During template generation you are prompted for a plaintext application secret (`app_secret_plaintext`). If left blank a random value is generated. The generated Kubernetes Secret manifests include both:
+
+- `stringData.secret-key` (plaintext for local clarity / rotation)
+- `data.secret-key` (base64 encoded; what Kubernetes persists)
+
+Rotate the secret later:
+
+```bash
+# Generate new 32-byte secret and patch existing Secret
+NEW_SECRET="$(openssl rand -base64 32)"
+kubectl patch secret app-secret -n {{ project_name }} --type merge \
+   -p "{\"stringData\":{\"secret-key\":\"$NEW_SECRET\"}}"
+
+# Restart deployment so new JWTs use fresh signing key
+kubectl rollout restart deployment/{{ project_name }} -n {{ project_name }}
+```
+
+Regenerate via template (prompts again):
+
+```bash
+copier update .
+```
+
+If you prefer not to commit plaintext secrets, remove the `stringData` block; the `data` entry remains valid. Keeping both improves DX and transparency.
+
 ### Local Containerized Development
 
 Using Skaffold for Kubernetes:
