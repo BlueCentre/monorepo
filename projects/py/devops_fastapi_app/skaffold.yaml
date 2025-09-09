@@ -71,12 +71,6 @@ profiles:
       - op: add
         path: /build/local/push
         value: false
-      - op: add
-        path: /deploy/kubectl/flags
-        value:
-          apply:
-            - --validate=false
-            - --force=true
 
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml

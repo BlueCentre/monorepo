@@ -696,7 +696,7 @@
     "@@gazelle+//:extensions.bzl%go_deps": {
       "general": {
         "bzlTransitiveDigest": "jcbYQSrSBowVbn+JqSeB1QFY6Dmh2u10Wf8z0l2WHK8=",
-        "usagesDigest": "uFnbUIaoWfuXWQhsOyAMNZZ0S4LsCmywftNGOXBWArg=",
+        "usagesDigest": "ynO/7LhxCvTG+yDuZMAXSz4zzSyyt6MmZniO9PF/O6Q=",
         "recordedFileInputs": {
           "@@gazelle+//go.mod": "48dc6e771c3028ee1c18b9ffc81e596fd5f6d7e0016c5ef280e30f2821f60473",
           "@@gazelle+//go.sum": "7c4460e8ecb5dd8691a51d4fa2e9e4751108b933636497ce46db499fc2e7a88d",

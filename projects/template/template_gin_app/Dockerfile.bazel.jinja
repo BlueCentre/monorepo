@@ -1,0 +1,8 @@
+# Minimal Dockerfile for {{ project_name }} Gin app
+FROM alpine:3.19
+RUN adduser -D appuser
+WORKDIR /app
+COPY main /app/main
+EXPOSE 8080
+USER appuser
+ENTRYPOINT ["/app/main"]

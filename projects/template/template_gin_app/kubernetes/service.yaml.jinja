@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ project_name }}
+  name: {{ project_name.replace('_','-') }}
 spec:
   selector:
-    app: {{ project_name }}
+    app: {{ project_name.replace('_','-') }}
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 8080
   type: ClusterIP
