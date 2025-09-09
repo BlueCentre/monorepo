@@ -20,22 +20,22 @@ build:
 
           # Create a simple Dockerfile for the FastAPI app
           TEMP_DIR=$(mktemp -d)
-          cat > $TEMP_DIR/Dockerfile << EOF
-FROM python:3.11-slim
+          cat > $TEMP_DIR/Dockerfile << 'EOF'
+          FROM python:3.11-slim
 
-# Install dependencies
-RUN pip install fastapi uvicorn pydantic
+          # Install dependencies
+          RUN pip install fastapi uvicorn pydantic
 
-# Copy the Bazel-built binary
-COPY . /app
-WORKDIR /app
+          # Copy the Bazel-built binary
+          COPY . /app
+          WORKDIR /app
 
-# Expose the port the app runs on
-EXPOSE 8000
+          # Expose the port the app runs on
+          EXPOSE 8000
 
-# Command to run the application
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-EOF
+          # Command to run the application
+          CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+          EOF
 
           # Copy application files
           cp -r projects/py/echo_fastapi_app/app $TEMP_DIR/

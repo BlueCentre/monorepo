@@ -46,13 +46,8 @@ manifests:
   #     overrides:
   #       image: bazel/devops-fastapi-app
 
-# deploy:
-#   helm:
-#     releases:
-#     - name: devops-fastapi-app-chart
-#       chartPath: ./helm-charts
-#       overrides:
-#         image: bazel/devops-fastapi-app
+deploy:
+  kubectl: {}
 
 # TODO: Should we use this approach instead of forwarding? (https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
 portForward:
@@ -71,6 +66,12 @@ profiles:
       - op: add
         path: /build/local/push
         value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
 
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml

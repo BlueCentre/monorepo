@@ -20,19 +20,19 @@ build:
 
           # Create a simple Dockerfile for the Java app
           TEMP_DIR=$(mktemp -d)
-          cat > $TEMP_DIR/Dockerfile << EOF
-FROM openjdk:11-jre-slim
+          cat > $TEMP_DIR/Dockerfile << 'EOF'
+          FROM openjdk:11-jre-slim
 
-# Copy the application
-COPY . /app
-WORKDIR /app
+          # Copy the application
+          COPY . /app
+          WORKDIR /app
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\njava com.example.HelloWorld' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+          # Create entrypoint script
+          RUN echo '#!/bin/bash\njava com.example.HelloWorld' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
-# Command to run the application
-ENTRYPOINT ["/app/entrypoint.sh"]
-EOF
+          # Command to run the application
+          ENTRYPOINT ["/app/entrypoint.sh"]
+          EOF
 
           # Copy application files
           cp -r projects/java/simple_java_app/src $TEMP_DIR/

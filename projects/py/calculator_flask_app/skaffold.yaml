@@ -20,22 +20,22 @@ build:
 
           # Create a simple Dockerfile for the Flask app
           TEMP_DIR=$(mktemp -d)
-          cat > $TEMP_DIR/Dockerfile << EOF
-FROM python:3.11-slim
+          cat > $TEMP_DIR/Dockerfile << 'EOF'
+          FROM python:3.11-slim
 
-# Install dependencies
-RUN pip install flask
+          # Install dependencies
+          RUN pip install flask
 
-# Copy the application
-COPY . /app
-WORKDIR /app
+          # Copy the application
+          COPY . /app
+          WORKDIR /app
 
-# Expose the port the app runs on
-EXPOSE 5000
+          # Expose the port the app runs on
+          EXPOSE 5000
 
-# Command to run the application
-CMD ["python", "-m", "flask", "--app", "app.main", "run", "--host", "0.0.0.0", "--port", "5000"]
-EOF
+          # Command to run the application
+          CMD ["python", "-m", "flask", "--app", "app.main", "run", "--host", "0.0.0.0", "--port", "5000"]
+          EOF
 
           # Copy application files
           cp -r projects/py/calculator_flask_app/app $TEMP_DIR/
