@@ -21,3 +21,28 @@ spec:
           env:
             - name: PORT
               value: "8080"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            # Adjusted for observed worst-case ~120s cold start (slow JIT/classpath init)
+            initialDelaySeconds: 90
+            periodSeconds: 5
+            timeoutSeconds: 4
+            failureThreshold: 12  # 90s + (12*5)=150s window
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            # Start liveness only after likely startup completion
+            initialDelaySeconds: 150
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
