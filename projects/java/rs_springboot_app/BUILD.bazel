@@ -82,7 +82,16 @@ java_test(
     srcs = ["src/test/java/com/sample/SampleRestFuncTest.java"],
     resources = glob(["src/test/resources/**"]),
     test_class = "com.sample.SampleRestFuncTest",
-    deps = [":demoapp_lib"] + test_deps + springboottest_deps,
+    deps = [
+        ":demoapp_lib",
+        # Spring Boot / Spring Test dependencies required by annotations in SampleRestFuncTest
+        "@springboot//:org_springframework_boot_spring_boot_starter_test",
+        "@springboot//:org_springframework_boot_spring_boot_test",  # @SpringBootTest
+        "@springboot//:org_springframework_boot_spring_boot_test_autoconfigure",
+        "@springboot//:org_springframework_spring_test",  # TestContext framework
+        "@springboot//:org_springframework_spring_beans",  # @Autowired resolution
+        "@springboot//:org_springframework_spring_context",
+    ] + test_deps + springboottest_deps,
 )
 
 # WebMvc slice test for HealthController endpoints
@@ -236,12 +245,21 @@ oci_image_index(
 oci_push(
     name = "demoapp_push",
     image = ":demoapp_image",
-    # Provide a repository (without tag); tags are applied below. This avoids the
-    # previous analysis failure which lacked repository/repository_file.
+    # Static repository plus a dev tag (can add SHA tag later with a dedicated macro).
     repository = "example.registry/namespace/rs-springboot-app",
-    remote_tags = ["dev"],  # Replace / extend (e.g. add git SHA) or use a tag file for stamping.
+    remote_tags = ["dev"],
     tags = ["manual"],  # Prevent accidental execution under //... builds unless explicitly requested
 )
+
+# TODO(arm64): When an arm64 Java17 distroless base becomes available in the workspace
+# (e.g. @distroless_java17_linux_arm64), define a second oci_image:
+#   oci_image(
+#       name = "demoapp_image_linux_arm64",
+#       base = "@distroless_java17_linux_arm64//:distroless_java17_linux_arm64",
+#       tars = [":metadata_layer_tar", ":jvm_args_tar", ":demoapp_jar_tar"],
+#       ... (same entrypoint/env/labels)
+#   )
+# Then extend the image index images list to include it for true multi-arch manifest.
 
 # Localized build info generation (non-hermetic) bundled as a resource for InfoContributor
 stamped_build_info(
