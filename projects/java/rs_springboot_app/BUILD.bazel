@@ -232,6 +232,7 @@ oci_load(
 )
 
 
+
 # Placeholder multi-arch index (currently single arch) – can be extended by adding platform-specific images
 oci_image_index(
     name = "demoapp_image_index",
@@ -270,7 +271,7 @@ stamped_build_info(
 sh_test(
     name = "demoapp_image_structure_test",
     srcs = ["tests/image_structure_test.sh"],
-    data = [":demoapp_image"],
+    data = [":metadata_layer_tar", ":jvm_args_tar", ":demoapp_jar_tar"],
     timeout = "short",
     tags = ["structure"],
 )

@@ -20,7 +20,7 @@ requires:
   - path: ./projects/template/template_gin_app
   - path: ./projects/template/template_typer_app
   # Complex Applications
-  - path: ./projects/microservices-demo
+  # - path: ./projects/microservices-demo
   # Base applications are templates only - no Skaffold configs needed
   # - path: ./projects/base_fastapi_app    # Nothing to skaffold here!
   # - path: ./projects/base_gin_app        # Nothing to skaffold here!
