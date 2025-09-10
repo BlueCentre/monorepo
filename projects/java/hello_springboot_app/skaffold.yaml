@@ -2,16 +2,15 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  # skaffold build -m devops-fastapi-app-config
-  name: hello-springboot-app-config
+  name: hello-springboot-app
 
 build:
-  local:
-    push: false
+  tagPolicy:
+    sha256: {}
   artifacts:
   - image: bazel/hello-springboot-app
     # bazel:
-    #   target: //projects/hello_springboot_app:app_tar
+    #   target: //projects/java/hello_springboot_app:app_tar
     custom:
       buildCommand: ./scripts/build.sh
       dependencies:
@@ -22,11 +21,18 @@ build:
           - kustomize/overlays/dev**
           # - ../../scripts/build_tag_docker.sh
           - scripts/**
-          - ./BUILD.bazel
-          - ./skaffold.yaml   # TODO: Likely not needed since skaffold does not apply changes on reload
+          - BUILD.bazel
+          - skaffold.yaml   # TODO: Likely not needed since skaffold does not apply changes on reload
         ignore:
           - ./**.md
           - tmp/**
+  local:
+    push: false
+
+test:
+  - image: bazel/hello-springboot-app
+    custom:
+    - command: bazel test //projects/java/hello_springboot_app/... --test_output=errors
 
 manifests:
   # rawYaml:

@@ -34,8 +34,9 @@ build:
 test:
   - image: rs-springboot-app
     custom:
-    - command: bazel test //projects/java/rs_springboot_app:SmokeNonWebIntegrationTest //projects/java/rs_springboot_app:HealthReadinessMetricsIntegrationTest //projects/java/rs_springboot_app:BuildInfoIntegrationTest --test_output=errors
-        # Hermetic runtime + consolidated health/readiness/metrics + build info validation
+    - command: bazel test //projects/java/rs_springboot_app/... --test_output=errors
+    # Hermetic runtime + consolidated health/readiness/metrics + build info validation
+    # - command: bazel test //projects/java/rs_springboot_app:SmokeNonWebIntegrationTest //projects/java/rs_springboot_app:HealthReadinessMetricsIntegrationTest //projects/java/rs_springboot_app:BuildInfoIntegrationTest --test_output=errors
 
 manifests:
   rawYaml:
