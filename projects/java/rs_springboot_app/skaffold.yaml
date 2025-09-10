@@ -31,6 +31,12 @@ build:
     push: false
     useBuildkit: true
 
+test:
+  - image: rs-springboot-app
+    custom:
+    - command: bazel test //projects/java/rs_springboot_app:SmokeNonWebIntegrationTest //projects/java/rs_springboot_app:HealthReadinessMetricsIntegrationTest //projects/java/rs_springboot_app:BuildInfoIntegrationTest --test_output=errors
+        # Hermetic runtime + consolidated health/readiness/metrics + build info validation
+
 manifests:
   rawYaml:
     - kubernetes/deployment.yaml

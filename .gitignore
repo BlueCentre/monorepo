@@ -188,6 +188,10 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
+# Skaffold
+artifacts.json
+
+# Terraform
 terraform_dev_local/terraform.tfstate.backup
 
 # --- Exceptions ------------------------------------------------------------

@@ -113,19 +113,19 @@ java_test(
 # Full integration test starting real embedded server on random port hitting /actuator/health
 # and custom metrics endpoint /actuator/metrics/app.startup.invocations
 java_test(
-    name = "HealthMetricsIntegrationTest",
+    name = "HealthReadinessMetricsIntegrationTest",
     timeout = "short",
-    srcs = ["src/test/java/com/sample/HealthMetricsIntegrationTest.java"],
-    test_class = "com.sample.HealthMetricsIntegrationTest",
+    srcs = ["src/test/java/com/sample/HealthReadinessMetricsIntegrationTest.java"],
+    test_class = "com.sample.HealthReadinessMetricsIntegrationTest",
     deps = [
         ":demoapp_lib",
         "@springboot//:org_springframework_boot_spring_boot_starter_test",
         "@springboot//:org_springframework_boot_spring_boot_test_autoconfigure",
-        "@springboot//:org_springframework_spring_web",
-        "@springboot//:org_springframework_spring_context",
         "@springboot//:org_springframework_boot_spring_boot_test",
-        "@springboot//:org_springframework_spring_beans",
         "@springboot//:org_springframework_spring_test",
+        "@springboot//:org_springframework_spring_context",
+        "@springboot//:org_springframework_spring_web",
+        "@springboot//:org_springframework_spring_beans",
         "@springboot//:org_assertj_assertj_core",
     ] + test_deps,
 )
@@ -236,11 +236,8 @@ oci_load(
 # Placeholder multi-arch index (currently single arch) – can be extended by adding platform-specific images
 oci_image_index(
     name = "demoapp_image_index",
-    # rules_oci expects a label_list, not a dict. We list platform-specific
-    # images here (currently only amd64). Add future arm64 variant
-    #   :demoapp_image_linux_arm64
-    # when created.
-    images = [":demoapp_image_linux_amd64"],
+    # rules_oci expects a label_list. Multi-arch list (amd64 plus optional arm64 placeholder if available)
+    images = [":demoapp_image_linux_amd64"],  # Extend with :demoapp_image_linux_arm64 when base exists
 )
 
 oci_push(
@@ -250,6 +247,15 @@ oci_push(
     repository = "example.registry/namespace/rs-springboot-app",
     remote_tags = ["dev"],
     tags = ["manual"],  # Prevent accidental execution under //... builds unless explicitly requested
+)
+
+# Multi-arch push (currently single arch; will automatically expand once arm64 image target is added)
+oci_push(
+    name = "demoapp_index_push",
+    image = ":demoapp_image_index",
+    repository = "example.registry/namespace/rs-springboot-app",
+    remote_tags = ["dev-multi"],
+    tags = ["manual"],
 )
 
 # TODO(arm64): When an arm64 Java17 distroless base becomes available in the workspace
@@ -276,18 +282,40 @@ sh_test(
     tags = ["structure"],
 )
 
-sh_test(
-    name = "demoapp_smoke_test",
-    srcs = ["smoke_test.sh"],
-    data = [":demoapp"],
+# Hermetic Java integration tests replacing legacy shell-based smoke and readiness tests
+java_test(
+    name = "SmokeNonWebIntegrationTest",
     timeout = "short",
-    tags = ["smoke"],
+    srcs = ["src/test/java/com/sample/SmokeNonWebIntegrationTest.java"],
+    test_class = "com.sample.SmokeNonWebIntegrationTest",
+    deps = [
+        ":demoapp_lib",
+        "@springboot//:org_springframework_boot_spring_boot_starter_test",
+        "@springboot//:org_springframework_boot_spring_boot_test_autoconfigure",
+        "@springboot//:org_springframework_boot_spring_boot_test",
+        "@springboot//:org_springframework_spring_test",
+        "@springboot//:org_springframework_spring_context",
+        "@springboot//:org_springframework_boot_spring_boot",
+        "@springboot//:org_springframework_boot_spring_boot_autoconfigure",
+        "@springboot//:org_assertj_assertj_core",
+    ] + test_deps,
 )
 
-sh_test(
-    name = "demoapp_readyz_functional_test",
-    srcs = ["tests/readyz_functional_test.sh"],
-    data = [":demoapp"],
+java_test(
+    name = "JUnit5SampleTest",
     timeout = "short",
-    tags = ["readyz", "functional"],
+    srcs = ["src/test/java/com/sample/JUnit5SampleTest.java"],
+    test_class = "com.sample.JUnit5SampleTest",
+    tags = ["manual", "junit5", "needs-fix"],
+    deps = [
+        ":demoapp_lib",
+        "@springboot//:org_junit_platform_junit_platform_runner",
+        "@springboot//:org_junit_jupiter_junit_jupiter_api",
+        "@springboot//:org_junit_jupiter_junit_jupiter",
+        "@springboot//:org_junit_jupiter_junit_jupiter_params",
+        "@springboot//:org_junit_platform_junit_platform_suite_api",
+        "@springboot//:org_junit_jupiter_junit_jupiter_engine",
+        "@springboot//:org_junit_platform_junit_platform_launcher",
+        "@springboot//:org_assertj_assertj_core",
+    ] + test_deps,
 )
