@@ -125,6 +125,19 @@ manifests:
 deploy:
   kubectl: {}
 profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
   - name: gcb
     build:
       googleCloudBuild:

@@ -330,7 +330,7 @@ profiles:
                     if [ "$req_num" = "1" ] || [ "$req_num" = "6" ]; then
                       echo "Full response for request #$req_num:"
                       echo "$result"
-                      echo "----------------------------"
+                      echo "=============================="
                     fi
                     
                     # Extract status code
@@ -502,7 +502,7 @@ profiles:
                 jobManifestPath: projects/template/template_fastapi_app/kubernetes/verify/rate-limit-verify-job.yaml
 
 
-# ---
+# ===
 # apiVersion: skaffold/v4beta6
 # kind: Config
 # metadata:
@@ -512,7 +512,7 @@ profiles:
 #     - kubernetes/bootstrap/rbac.yaml
 # deploy:
 #   kubectl: {}
-# ---
+# ===
 # apiVersion: skaffold/v4beta6
 # kind: Config
 # metadata:
@@ -522,7 +522,7 @@ profiles:
 #     - kubernetes/debug/debug-job.yaml
 # deploy:
 #   kubectl: {}
-# ---
+# ===
 # apiVersion: skaffold/v4beta6
 # kind: Config
 # metadata:
