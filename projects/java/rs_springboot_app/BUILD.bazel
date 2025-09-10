@@ -192,25 +192,27 @@ pkg_tar(
     package_dir = "app",
 )
 
+## Base single-arch image (linux/amd64). We keep original logical name `demoapp_image`
+## for compatibility and create an explicit platform-suffixed alias target
+## (`demoapp_image_linux_amd64`) used by the multi-arch index. This allows future
+## addition of an arm64 variant without breaking existing users of :demoapp_image.
 oci_image(
     name = "demoapp_image",
     base = "@distroless_java17_linux_amd64//:distroless_java17_linux_amd64",
     tars = [":metadata_layer_tar", ":jvm_args_tar", ":demoapp_jar_tar"],
-    # ENTRYPOINT STRATEGY:
-    # The fat jar produced by rules_spring uses the Spring Boot layout where application
-    # classes live under BOOT-INF/classes and dependencies under BOOT-INF/lib. Those are
-    # not visible to the JVM when invoking 'java -cp app/demoapp.jar <Start-Class>' directly
-    # because the Boot launcher is responsible for adding BOOT-INF/classes + nested jars
-    # to the effective classpath. The previous attempt to invoke the Start-Class directly
-    # resulted in 'ClassNotFoundException: com.sample.SampleMain'. We therefore invoke the
-    # relocated Spring Boot 3 launcher explicitly. This bypasses the outdated legacy
-    # Main-Class value in the manifest (org.springframework.boot.loader.JarLauncher) while
-    # still allowing the launcher to read the Start-Class attribute (com.sample.SampleMain)
-    # and construct the proper classpath from BOOT-INF/**.
     entrypoint = ["java", "@jvm/jvm.args", "-cp", "app/demoapp.jar", "org.springframework.boot.loader.launch.JarLauncher"],
     env = {"JAVA_TOOL_OPTIONS": "-XX:+UseContainerSupport"},
     user = "nonroot",
     labels = {"org.opencontainers.image.source": "https://github.com/BlueCentre/monorepo"},
+)
+
+# Platform-qualified image alias (currently identical to demoapp_image). When adding
+# arm64 support, create another oci_image (demoapp_image_linux_arm64) with an arm64
+# base image and include it in the index below.
+alias(
+    name = "demoapp_image_linux_amd64",
+    actual = ":demoapp_image",
+    visibility = ["//visibility:public"],
 )
 
 oci_load(
@@ -224,14 +226,21 @@ oci_load(
 # Placeholder multi-arch index (currently single arch) – can be extended by adding platform-specific images
 oci_image_index(
     name = "demoapp_image_index",
-    images = {"linux/amd64": ":demoapp_image"},
+    # rules_oci expects a label_list, not a dict. We list platform-specific
+    # images here (currently only amd64). Add future arm64 variant
+    #   :demoapp_image_linux_arm64
+    # when created.
+    images = [":demoapp_image_linux_amd64"],
 )
 
 oci_push(
     name = "demoapp_push",
     image = ":demoapp_image",
-    remote_tags = ["example.registry/namespace/rs-springboot-app:dev"],  # Replace with real registry path
-    # To enable stamping, run with --stamp and produce tag file
+    # Provide a repository (without tag); tags are applied below. This avoids the
+    # previous analysis failure which lacked repository/repository_file.
+    repository = "example.registry/namespace/rs-springboot-app",
+    remote_tags = ["dev"],  # Replace / extend (e.g. add git SHA) or use a tag file for stamping.
+    tags = ["manual"],  # Prevent accidental execution under //... builds unless explicitly requested
 )
 
 # Localized build info generation (non-hermetic) bundled as a resource for InfoContributor
