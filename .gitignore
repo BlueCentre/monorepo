@@ -189,3 +189,10 @@ ehthumbs.db
 Thumbs.db
 
 terraform_dev_local/terraform.tfstate.backup
+
+# --- Exceptions ------------------------------------------------------------
+# The generic patterns above ignore any directory named 'build/'. We need to
+# keep the Bazel stamping macro sources under tools/build tracked.
+!tools/build/
+!tools/build/**
+
