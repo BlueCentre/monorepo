@@ -2,16 +2,15 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  # skaffold build -m devops-fastapi-app-config
-  name: hello-springboot-app-config
+  name: hello-springboot-app
 
 build:
-  local:
-    push: false
+  tagPolicy:
+    sha256: {}
   artifacts:
   - image: bazel/hello-springboot-app
     # bazel:
-    #   target: //projects/hello_springboot_app:app_tar
+    #   target: //projects/java/hello_springboot_app:app_tar
     custom:
       buildCommand: ./scripts/build.sh
       dependencies:
@@ -22,11 +21,18 @@ build:
           - kustomize/overlays/dev**
           # - ../../scripts/build_tag_docker.sh
           - scripts/**
-          - ./BUILD.bazel
-          - ./skaffold.yaml   # TODO: Likely not needed since skaffold does not apply changes on reload
+          - BUILD.bazel
+          - skaffold.yaml   # TODO: Likely not needed since skaffold does not apply changes on reload
         ignore:
           - ./**.md
           - tmp/**
+  local:
+    push: false
+
+test:
+  - image: bazel/hello-springboot-app
+    custom:
+    - command: bazel test //projects/java/hello_springboot_app/... --test_output=errors
 
 manifests:
   # rawYaml:
@@ -45,13 +51,8 @@ manifests:
   #     overrides:
   #       image: bazel/devops-fastapi-app
 
-# deploy:
-#   helm:
-#     releases:
-#     - name: devops-fastapi-app-chart
-#       chartPath: ./helm-charts
-#       overrides:
-#         image: bazel/devops-fastapi-app
+deploy:
+  kubectl: {}
 
 # TODO: Should we use this approach instead of forwarding? (https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
 portForward:
@@ -62,7 +63,20 @@ portForward:
   port: 8080
   localPort: 8080
 
-
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true
 
 # See:
 # - https://github.com/GoogleContainerTools/skaffold/blob/main/examples/multi-config-microservices/skaffold.yaml

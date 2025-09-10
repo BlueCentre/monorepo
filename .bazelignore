@@ -2,8 +2,6 @@
 .aspect/
 docs/
 
-# Problematic Java projects that require external Maven dependencies
+# Problematic Java projects that require external Maven dependencies (still excluded)
 projects/java/example1_java_app/
 projects/java/example2_java_app/
-projects/java/hello_springboot_app/
-projects/java/rs_springboot_app/

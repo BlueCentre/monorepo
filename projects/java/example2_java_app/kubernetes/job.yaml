@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example2-java-app
+spec:
+  template:
+    spec:
+      containers:
+        - name: example2-java-app
+          image: example2-java-app
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+  backoffLimit: 4

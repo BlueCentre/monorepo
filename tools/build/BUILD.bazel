@@ -1,0 +1,10 @@
+"""Build macro package for stamping related utils.
+
+Exports `build_info.bzl` so other packages can load the `stamped_build_info` rule via
+
+	load("//tools/build:build_info.bzl", "stamped_build_info")
+
+Without this, Bazel reports: target 'build_info.bzl' not declared in package 'tools/build'.
+"""
+
+exports_files(["build_info.bzl"])
