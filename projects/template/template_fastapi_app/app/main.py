@@ -49,7 +49,7 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    description="Template FastAPI application with PostgreSQL, PubSub, and more.",
+    description="FastAPI application with PostgreSQL, PubSub, and more.",
     version="0.1.0",
     docs_url="/swagger",
     redoc_url="/docs",

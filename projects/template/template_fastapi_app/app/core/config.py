@@ -38,9 +38,9 @@ class Settings(BaseSettings):
     """Application settings."""
 
     # Base settings
-    PROJECT_NAME: str = "Template FastAPI App"
-    APP_NAME: str = "Template FastAPI App"
-    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "Template FastAPI App")
+    APP_NAME: str = os.getenv("PROJECT_NAME", "Template FastAPI App")
+    API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
 
     # Secret key for JWT token generation - fallback value for backwards compatibility
     # The actual key will be managed by the secret_rotation module when available

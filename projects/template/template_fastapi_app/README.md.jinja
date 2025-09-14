@@ -24,7 +24,7 @@
 This application is fully integrated with the monorepo build system. You can run:
 
 ```bash
-bazel build //... && bazel test //... && skaffold run -m template-fastapi-app -p dev
+bazel build //... && bazel test //... && skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 This command works without any workarounds because:
@@ -44,16 +44,16 @@ For a complete development and deployment flow within the monorepo:
 bazel build //... && bazel test //...
 
 # Build and test everything in the application
-skaffold build -m template-fastapi-app && skaffold test -m template-fastapi-app
+skaffold build -m {{ (project_dash or project_name) | lower | replace('_', '-') }} && skaffold test -m {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
 # Deploy the application (standard mode)
-skaffold run -m template-fastapi-app -p dev
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 
 # Deploy the application with Istio rate limiting
-skaffold run -m template-fastapi-app -p istio-rate-limit
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p istio-rate-limit
 
 # Verify the deployment
-skaffold verify -m template-fastapi-app
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }}
 ```
 
 The verification steps are designed to work seamlessly in the monorepo context, automatically adapting to the Kubernetes environment created by Skaffold. This ensures consistent verification across all environments, from local development to CI/CD pipelines.
@@ -104,13 +104,13 @@ If you prefer not to commit plaintext secrets, remove the `stringData` block; th
 Using Skaffold for Kubernetes:
 
 ```bash
-skaffold dev -m template-fastapi-app
+skaffold dev -m {{ (project_dash or project_name) | lower | replace('_', '-') }}
 ```
 
 Using Skaffold for Kubernetes with profiles:
 
 ```bash
-skaffold dev -m template-fastapi-app -p dev
+skaffold dev -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 ### Development Workflow with Verification
@@ -120,24 +120,24 @@ Integrating verification into your development workflow helps ensure that your a
 1. **Development-Test-Verify Cycle**:
    ```bash
    # Build, test, deploy, and verify
-   skaffold build -m template-fastapi-app -p dev && \
-   skaffold test -m template-fastapi-app -p dev && \
-   skaffold run -m template-fastapi-app -p dev && \
-   skaffold verify -m template-fastapi-app -p dev
+   skaffold build -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev && \
+   skaffold test -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev && \
+   skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev && \
+   skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
    ```
 
 2. **Interactive Development with Verification**:
    ```bash
    # Start development mode
-   skaffold dev -m template-fastapi-app -p dev
+   skaffold dev -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
    
    # In another terminal, run verification after making changes
-   skaffold verify -m template-fastapi-app -p dev
+   skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
    ```
 
 3. **Targeted Verification During Development**:
-   - After changing database schema: `skaffold verify -m template-fastapi-app -p db-verify-only`
-   - After modifying API endpoints: `skaffold verify -m template-fastapi-app -p api-verify-only`
+   - After changing database schema: `skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p db-verify-only`
+   - After modifying API endpoints: `skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p api-verify-only`
 
 This approach helps catch integration issues early, especially those that might not be apparent from unit tests alone, such as authentication flows, database connectivity, and proper API response formatting.
 
@@ -170,8 +170,8 @@ The monorepo includes several testing configurations:
 
 When running the application, access the interactive API documentation at:
 
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+- Swagger UI: `http://localhost:8000/swagger`
+- ReDoc: `http://localhost:8000/docs`
 
 ## Project Structure
 
@@ -356,13 +356,13 @@ To deploy with Istio rate limiting enabled:
 
 ```bash
 # Enable Istio injection on the namespace
-skaffold exec enable-istio-injection -m template-fastapi-app
+skaffold exec enable-istio-injection -m {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
 # Deploy with Istio rate limiting configuration
-skaffold run -m template-fastapi-app -p istio-rate-limit
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p istio-rate-limit
 
 # Verify rate limiting is working
-skaffold verify -m template-fastapi-app -p istio-rate-limit
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p istio-rate-limit
 ```
 
 For detailed configuration options and customization, see [ISTIO-SETUP.md](./ISTIO-SETUP.md) and [README-rate-limiting.md](../../../README-rate-limiting.md).
@@ -373,7 +373,7 @@ You can test rate limiting functionality using the built-in verification job:
 
 ```bash
 # Run the rate limiting verification
-skaffold verify -m template-fastapi-app -p istio-rate-limit
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p istio-rate-limit
 ```
 
 Or manually test it with curl:
@@ -400,16 +400,16 @@ The application includes verification steps that can be used to ensure the deplo
 
 ```bash
 # Run the complete verification process
-skaffold verify -m template-fastapi-app -p dev
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 
 # Run only database verification 
-skaffold verify -m template-fastapi-app -p db-verify-only
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p db-verify-only
 
 # Run only API verification
-skaffold verify -m template-fastapi-app -p api-verify-only
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p api-verify-only
 
 # Skip verification during deployment
-skaffold run -m template-fastapi-app -p dev,skip-verify
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev,skip-verify
 ```
 
 The verification steps include:
@@ -424,9 +424,9 @@ These verification steps connect directly to the Kubernetes services using their
 The smoke test is implemented in the `skaffold.yaml` file and uses a robust approach to ensure reliable API verification:
 
 1. It first tries multiple different service addressing methods to find a working endpoint:
-   - Direct service name: `http://template-fastapi-app/health`
-   - Namespaced service name: `http://template-fastapi-app.template-fastapi-app/health`
-   - Fully qualified service names: `http://template-fastapi-app.template-fastapi-app.svc/health`
+   - Direct service name: `http://{{ (project_dash or project_name) | lower | replace('_', '-') }}/health`
+   - Namespaced service name: `http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}/health`
+   - Fully qualified service names: `http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc/health`
    - Direct service IP address
 
 2. Once a working endpoint is found, it performs comprehensive verification:
@@ -475,10 +475,10 @@ kubectl config current-context
 
 ```bash
 # Create namespace if it doesn't exist
-kubectl create namespace template-fastapi-app
+kubectl create namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
 # Build and deploy using the no-istio profile
-skaffold run -m template-fastapi-app -p no-istio
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio
 ```
 
 This default approach:
@@ -491,7 +491,7 @@ This default approach:
 
 ```bash
 # Start development mode with live reload
-skaffold dev -m template-fastapi-app -p no-istio
+skaffold dev -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio
 ```
 
 This command:
@@ -508,14 +508,14 @@ For environments where Istio is installed and rate limiting is needed:
 kubectl get namespace istio-system
 
 # If Istio is installed, deploy with rate limiting enabled
-skaffold run -m template-fastapi-app -p istio-rate-limit-actions
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p istio-rate-limit-actions
 ```
 
 ### Step 3: Run Post-Deployment Validation
 
 ```bash
 # Run the standard verification suite
-skaffold verify -m template-fastapi-app -p dev
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 This will run container-based verification tests to ensure:
@@ -530,16 +530,16 @@ For CI/CD environments, you can chain the commands:
 
 ```bash
 # Complete build-deploy-verify pipeline
-skaffold build -m template-fastapi-app -p no-istio && \
-skaffold deploy -m template-fastapi-app -p no-istio && \
-skaffold verify -m template-fastapi-app -p dev
+skaffold build -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio && \
+skaffold deploy -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio && \
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 ### Step 5: Cleaning Up Resources
 
 ```bash
 # Delete all deployed resources
-skaffold delete -m template-fastapi-app
+skaffold delete -m {{ (project_dash or project_name) | lower | replace('_', '-') }}
 ```
 
 ### Common Workflow Scenarios
@@ -548,27 +548,27 @@ skaffold delete -m template-fastapi-app
 
 ```bash
 # Create namespace if needed
-kubectl create namespace template-fastapi-app
+kubectl create namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
 # Start development mode with live reload
-skaffold dev -m template-fastapi-app -p no-istio
+skaffold dev -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio
 ```
 
 #### Feature Branch Testing
 
 ```bash
 # Complete build-test-deploy-verify cycle for a feature branch
-skaffold build -m template-fastapi-app -p no-istio && \
-skaffold deploy -m template-fastapi-app -p no-istio && \
-skaffold verify -m template-fastapi-app -p dev
+skaffold build -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio && \
+skaffold deploy -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio && \
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 #### Production Deployment
 
 ```bash
 # Deploy to production (using an appropriate profile)
-skaffold run -m template-fastapi-app -p no-istio && \
-skaffold verify -m template-fastapi-app -p dev
+skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio && \
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 ### Verification Process
@@ -581,7 +581,7 @@ The recommended way to validate deployments is through Skaffold's built-in verif
 
 ```bash
 # Run the complete verification process
-skaffold verify -m template-fastapi-app -p dev
+skaffold verify -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p dev
 ```
 
 These verification steps run in containers within the Kubernetes cluster and perform comprehensive checks:
@@ -611,43 +611,43 @@ If you encounter issues during any step, here are common problems and solutions:
 
 1. **Namespace already exists or not found**
    - If namespace exists: Continue with deployment
-   - If namespace not found: `kubectl create namespace template-fastapi-app`
+   - If namespace not found: `kubectl create namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}`
 
 2. **Skaffold deployment fails**
    - Check for proper Docker and Kubernetes configurations
    - Ensure Skaffold is properly installed
-   - Verify the image can be built: `skaffold build -m template-fastapi-app`
+   - Verify the image can be built: `skaffold build -m {{ (project_dash or project_name) | lower | replace('_', '-') }}`
 
 3. **Pods are not starting or are crashing**
-   - Check pod logs: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
-   - Check pod events: `kubectl describe pod -n template-fastapi-app <pod-name>`
-   - Check for resource constraints: `kubectl get pod -n template-fastapi-app <pod-name> -o yaml`
+   - Check pod logs: `kubectl logs -n {{ (project_dash or project_name) | lower | replace('_', '-') }} deploy/{{ (project_dash or project_name) | lower | replace('_', '-') }}`
+   - Check pod events: `kubectl describe pod -n {{ (project_dash or project_name) | lower | replace('_', '-') }} <pod-name>`
+   - Check for resource constraints: `kubectl get pod -n {{ (project_dash or project_name) | lower | replace('_', '-') }} <pod-name> -o yaml`
 
 4. **Database connectivity issues**
-   - Check if Postgres is running: `kubectl get pods -n template-fastapi-app -l app=postgres`
-   - Verify database connection settings in the configmap: `kubectl get configmap -n template-fastapi-app`
+   - Check if Postgres is running: `kubectl get pods -n {{ (project_dash or project_name) | lower | replace('_', '-') }} -l app=postgres`
+   - Verify database connection settings in the configmap: `kubectl get configmap -n {{ (project_dash or project_name) | lower | replace('_', '-') }}`
 
 5. **Istio-related deployment failures**
    - If using `istio-rate-limit-actions` profile when Istio is not installed:
-     - Switch to `no-istio` profile: `skaffold run -m template-fastapi-app -p no-istio`
+     - Switch to `no-istio` profile: `skaffold run -m {{ (project_dash or project_name) | lower | replace('_', '-') }} -p no-istio`
    - If Istio is needed: Install it with `istioctl install --set profile=demo --set hub=docker.io/istio --set tag=1.23.3`
 
 #### Verification Issues
 
 1. **Verification fails at health check**
-   - Check if the application is running: `kubectl get pods -n template-fastapi-app`
-   - Check application logs: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
-   - Verify service exists: `kubectl get svc -n template-fastapi-app`
+   - Check if the application is running: `kubectl get pods -n {{ (project_dash or project_name) | lower | replace('_', '-') }}`
+   - Check application logs: `kubectl logs -n {{ (project_dash or project_name) | lower | replace('_', '-') }} deploy/{{ (project_dash or project_name) | lower | replace('_', '-') }}`
+   - Verify service exists: `kubectl get svc -n {{ (project_dash or project_name) | lower | replace('_', '-') }}`
 
 2. **Authentication verification fails**
-   - Check database initialization: `kubectl logs -n template-fastapi-app -l app=postgres`
+   - Check database initialization: `kubectl logs -n {{ (project_dash or project_name) | lower | replace('_', '-') }} -l app=postgres`
    - Verify default credentials are set correctly
-   - Check application logs for JWT errors: `kubectl logs -n template-fastapi-app deploy/template-fastapi-app`
+   - Check application logs for JWT errors: `kubectl logs -n {{ (project_dash or project_name) | lower | replace('_', '-') }} deploy/{{ (project_dash or project_name) | lower | replace('_', '-') }}`
 
 3. **Database verification fails**
-   - Verify database initialization: `kubectl logs -n template-fastapi-app job/db-init`
+   - Verify database initialization: `kubectl logs -n {{ (project_dash or project_name) | lower | replace('_', '-') }} job/db-init`
    - Check for database connection errors in application logs
-   - Ensure PostgreSQL is running properly: `kubectl exec -n template-fastapi-app deploy/postgres -- pg_isready`
+   - Ensure PostgreSQL is running properly: `kubectl exec -n {{ (project_dash or project_name) | lower | replace('_', '-') }} deploy/postgres -- pg_isready`
 
 ## Admin User
 

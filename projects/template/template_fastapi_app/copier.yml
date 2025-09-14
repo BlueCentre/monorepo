@@ -64,10 +64,35 @@ project_language:
   default: py
   when: false  # Hidden from user, automatically set
 
-# Internal variables (computed)
-_project_slug: "{{ project_name | lower | replace('-', '_') }}"
-_project_class: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
-_project_package: "{{ project_name | lower | replace('-', '_') }}"
-_app_secret_fallback: "{{ (range(0,32) | map('random') | list | join) if app_secret_plaintext == '' else app_secret_plaintext }}"
+
+# example: "my-awesome_api" -> "my_awesome_api"
+project_slug: 
+  type: str
+  default: "{{ project_name | lower | replace('-', '_') }}"
+  when: false
+# example: "my-awesome_api" -> "MyAwesomeApi"
+project_class:
+  type: str
+  default: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
+  when: false
+# example: "my-awesome_api" -> "my_awesome_api"
+project_package:
+  type: str
+  default: "{{ project_name | lower | replace('-', '_') }}"
+  when: false
+# example: "my_awesome_api" -> "my-awesome-api" (derived from _project_slug so it won't be empty)
+project_dash:
+  type: str
+  default: "{{ project_name | replace('_', '-') }}"
+  when: false
+
+# example: "my-awesome_api" -> "my_awesome_api"
+app_secret_fallback:
+  type: str
+  default: "{{ (app_secret_plaintext + author_email) | tojson | b64encode }}"
+  when: false
 # Compute base64 without newlines (portable). If user left blank we used generated fallback above.
-_app_secret_b64: "{{ _app_secret_fallback | b64encode }}"
+app_secret_b64:
+  type: str
+  default: "{{ app_secret_fallback | b64encode }}"
+  when: false

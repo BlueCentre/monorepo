@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: rate-limit-verify-
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  ttlSecondsAfterFinished: 100
+  backoffLimit: 0
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: placeholder
+        image: placeholder
+        command: ["/bin/sh", "-c"]
+        args:
+          - "echo 'This will be replaced by Skaffold with the actual container spec'" 

@@ -1,11 +1,11 @@
 apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
-  name: {{ project_name }}
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
 build:
   artifacts:
-    - image: {{ project_name }}
+    - image: {{ (project_dash or project_name) | lower | replace('_', '-') }}
       custom:
         buildCommand: |
           # Navigate to monorepo root first
@@ -42,7 +42,12 @@ build:
             - "**/*"
   local:
     push: false
-    useBuildkit: false
+    useBuildkit: true
+
+test:
+  - image: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+    custom:
+    - command: bazel test //projects/py/{{ project_name }}/... --test_output=errors
 
 manifests:
   rawYaml:
@@ -72,11 +77,11 @@ customActions:
             echo "=== SETTING UP ISTIO INTEGRATION ==="
 
             # Create namespace if it doesn't exist
-            kubectl get namespace {{ project_name }} || kubectl create namespace {{ project_name }}
+            kubectl get namespace {{ (project_dash or project_name) | lower | replace('_', '-') }} || kubectl create namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}
 
             # Enable Istio injection on the namespace
-            echo "Enabling Istio injection on namespace {{ project_name }}..."
-            kubectl label namespace {{ project_name }} istio-injection=enabled --overwrite
+            echo "Enabling Istio injection on namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}..."
+            kubectl label namespace {{ (project_dash or project_name) | lower | replace('_', '-') }} istio-injection=enabled --overwrite
 
             # Check if Istio is installed
             if ! kubectl get namespace istio-system &>/dev/null; then
@@ -110,7 +115,7 @@ verify:
 
             # Test health endpoint
             echo "Testing health endpoint..."
-            HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://{{ project_name }}.{{ project_name }}.svc.cluster.local/health}")
+            HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local/health}")
             echo "Health response: $HEALTH_RESPONSE"
 
             if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
@@ -118,7 +123,7 @@ verify:
 
               # Test login endpoint
               echo "Testing login endpoint..."
-              LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://{{ project_name }}.{{ project_name }}.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
+              LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
               echo "Login response: $LOGIN_RESPONSE"
 
               if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
@@ -131,7 +136,7 @@ verify:
 
                 # Test users endpoint
                 echo "Testing users endpoint..."
-                USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://{{ project_name }}.{{ project_name }}.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                 echo "Users response: $USERS_RESPONSE"
 
                 if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
@@ -139,7 +144,7 @@ verify:
 
                   # Test key management endpoint
                   echo "Testing key management status endpoint..."
-                  KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://{{ project_name }}.{{ project_name }}.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                  KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                   echo "Key management status response: $KEY_MGMT_RESPONSE"
 
                   if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
@@ -183,13 +188,13 @@ verify:
 
 portForward:
   - resourceType: service
-    resourceName: {{ project_name }}
+    resourceName: {{ (project_dash or project_name) | lower | replace('_', '-') }}
     port: 80
     localPort: 8000
-  - resourceType: service
-    resourceName: postgres
-    port: 5432
-    localPort: 5432
+  # - resourceType: service
+  #   resourceName: cnpg-cluster-rw
+  #   port: 5432
+  #   localPort: 5432
   # - resourceType: service
   #   resourceName: opentelemetry-collector
   #   port: 4317
@@ -227,7 +232,7 @@ profiles:
           - kubernetes/namespace.yaml
           - kubernetes/db-migrations-job.yaml
           - kubernetes/*.yaml
-          # Istio resources for {{ project_name }} namespace
+          # Istio resources for {{ (project_dash or project_name) | lower | replace('_', '-') }} namespace
           - kubernetes/istio/rbac.yaml
           - kubernetes/istio/namespace.yaml
           - kubernetes/istio/gateway.yaml
@@ -249,7 +254,7 @@ profiles:
               args:
                 - |
                   # Configuration
-                  API_HOST="{{ project_name }}.{{ project_name }}.svc.cluster.local"
+                  API_HOST="{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"
                   ISTIO_HOST="istio-ingressgateway.istio-system.svc.cluster.local"
                   HEALTH_ENDPOINT="/health"
                   LOGIN_ENDPOINT="/api/v1/login/access-token"

@@ -4,8 +4,6 @@ metadata:
   name: rs-springboot-app
 
 build:
-  tagPolicy:
-    sha256: {}
   artifacts:
     - image: rs-springboot-app
       custom:
@@ -27,6 +25,8 @@ build:
             dest: /app/BOOT-INF/classes
           - src: src/main/resources/**
             dest: /app/BOOT-INF/classes
+  tagPolicy:
+    sha256: {}
   local:
     push: false
     useBuildkit: true
