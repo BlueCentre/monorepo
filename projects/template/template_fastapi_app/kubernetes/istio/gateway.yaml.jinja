@@ -5,7 +5,7 @@ metadata:
   name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-gateway
   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/hostname: "{{ (project_dash or project_name) | lower | replace('_', '-') }}.monorepo.ipv1337.dev"
     external-dns.alpha.kubernetes.io/sync-enabled: "true"
 spec:
   selector:
@@ -16,19 +16,19 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "api-james.ipv1337.dev"  # or specific hosts if desired
+    - "{{ (project_dash or project_name) | lower | replace('_', '-') }}.monorepo.ipv1337.dev"  # or specific hosts if desired
 
 # Updated VirtualService (needs 'gateways' field)
 # apiVersion: networking.istio.io/v1alpha3
 # kind: VirtualService
 # metadata:
-#   name: template-fastapi-app
-#   namespace: template-fastapi-app
+#   name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+#   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
 # spec:
 #   hosts:
-#   - "template-fastapi-app.template-fastapi-app.svc.cluster.local"
-#   - "template-fastapi-app"
+#   - "{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"
+#   - "{{ (project_dash or project_name) | lower | replace('_', '-') }}"
 #   gateways:
-#   - template-fastapi-gateway  # Reference to the Gateway
+#   - {{ (project_dash or project_name) | lower | replace('_', '-') }}-gateway  # Reference to the Gateway
 #   http:
 #   # rest of your http rules...
