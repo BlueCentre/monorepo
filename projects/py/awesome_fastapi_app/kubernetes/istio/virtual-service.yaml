@@ -1,0 +1,63 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: awesome-fastapi-app
+  namespace: awesome-fastapi-app
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "awesome-fastapi-app.monorepo.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
+spec:
+  hosts:
+  - "awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local"
+  - "awesome-fastapi-app"
+  gateways:
+  - awesome-fastapi-app-gateway  # Reference to the Gateway
+  http:
+  # Apply rate limiting headers for the API endpoints
+  - match:
+    - uri:
+        prefix: "/api/v1"
+    route:
+    - destination:
+        host: awesome-fastapi-app
+        port:
+          number: 80
+    # Add rate limiting metadata that Envoy will use
+    headers:
+      request:
+        add:
+          x-envoy-ratelimited: "true"
+    # This applies custom rate limits based on path
+    name: "api-routes"
+    metadata:
+      filter_metadata:
+        envoy.filters.http.ratelimit:
+          generic_key: "default"
+    
+  # Higher rate limits for health and static endpoints
+  - match:
+    - uri:
+        prefix: "/health"
+    - uri:
+        prefix: "/static"
+    - uri:
+        prefix: "/docs"
+    route:
+    - destination:
+        host: awesome-fastapi-app
+        port:
+          number: 80
+    name: "utility-routes"
+    # No rate limiting for these paths
+    
+  # Default case for any other endpoints
+  - route:
+    - destination:
+        host: awesome-fastapi-app
+        port:
+          number: 80
+    name: "default-route"
+    metadata:
+      filter_metadata:
+        envoy.filters.http.ratelimit:
+          generic_key: "default"
