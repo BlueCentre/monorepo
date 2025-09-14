@@ -49,7 +49,8 @@ build:
 test:
   - image: {{ (project_dash or project_name) | lower | replace('_', '-') }}
     custom:
-    - command: bazel test //projects/py/{{ project_name }}/... --test_output=errors
+    # - command: bazel test //projects/py/awesome_fastapi_app/... --test_output=errors
+    - command: cd ../../.. && bazel test //projects/py/awesome_fastapi_app/... --test_output=errors
 
 manifests:
   rawYaml:
