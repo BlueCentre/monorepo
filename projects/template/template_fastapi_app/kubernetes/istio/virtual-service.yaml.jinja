@@ -4,7 +4,7 @@ metadata:
   name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "api-james.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/hostname: "{{ (project_dash or project_name) | lower | replace('_', '-') }}.monorepo.ipv1337.dev"
     external-dns.alpha.kubernetes.io/sync-enabled: "true"
 spec:
   hosts:
