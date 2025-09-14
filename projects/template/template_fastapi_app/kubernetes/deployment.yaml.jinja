@@ -27,8 +27,13 @@ spec:
         - name: PROJECT_NAME
           valueFrom:
             configMapKeyRef:
-              name: awesome-fastapi-app-config
+              name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-config
               key: PROJECT_NAME
+        - name: API_V1_STR
+          valueFrom:
+            configMapKeyRef:
+              name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-config
+              key: API_V1_STR
         - name: POSTGRES_SERVER
           value: cnpg-cluster-rw.cnpg-cluster.svc.cluster.local
         - name: POSTGRES_USER

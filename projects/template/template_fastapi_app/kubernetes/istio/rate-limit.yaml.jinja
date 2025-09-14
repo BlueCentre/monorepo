@@ -50,7 +50,7 @@ spec:
     when:
     - key: request.headers[x-forwarded-for]
       notValues: ["internal-service"] # Exempt internal services
-  
+
 ---
 # Define a RequestAuthentication to identify users by JWT
 apiVersion: security.istio.io/v1beta1
@@ -220,4 +220,4 @@ data:
         value: unauthenticated
         rate_limit:
           unit: minute
-          requests_per_unit: 30 
+          requests_per_unit: 30

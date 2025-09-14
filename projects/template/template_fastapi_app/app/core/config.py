@@ -33,7 +33,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: Get config from configmap if environment does not exist
 class Settings(BaseSettings):
     """Application settings."""
 

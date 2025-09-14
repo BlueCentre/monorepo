@@ -34,6 +34,7 @@ data:
         rate_limit:
           unit: minute
           requests_per_unit: 15
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -91,6 +92,7 @@ spec:
       - name: config
         configMap:
           name: ratelimit-config
+
 ---
 apiVersion: v1
 kind: Service
@@ -105,6 +107,7 @@ spec:
     name: http
   - port: 8081
     name: grpc
+
 ---
 apiVersion: v1
 kind: Service
@@ -117,6 +120,7 @@ spec:
   ports:
   - port: 6379
     name: redis
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -137,4 +141,4 @@ spec:
       - name: redis
         image: redis:alpine
         ports:
-        - containerPort: 6379 
+        - containerPort: 6379

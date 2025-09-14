@@ -5,6 +5,7 @@ metadata:
   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
 data:
   PROJECT_NAME: "{{ project_title }}"
+  PROJECT_DESCRIPTION: "{{ project_description }}"
   PORT: "8000"
   RELOAD: "false"
   API_V1_STR: "/api/v1"
@@ -17,4 +18,4 @@ data:
   ENABLE_TELEMETRY: "true"
   OTLP_EXPORTER_ENDPOINT: "http://opentelemetry-collector.opentelemetry.svc.cluster.local:4317"
   OTLP_SERVICE_NAME: "{{ (project_dash or project_name) | lower | replace('_', '-') }}"
-  ENVIRONMENT: "production" 
+  ENVIRONMENT: "production"

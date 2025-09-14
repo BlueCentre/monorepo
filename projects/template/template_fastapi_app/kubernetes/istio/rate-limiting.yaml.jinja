@@ -30,6 +30,7 @@ spec:
                   cluster_name: rate_limit_service
                 timeout: 10s
               transport_api_version: V3
+
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
@@ -55,6 +56,7 @@ spec:
               - request_headers:
                   header_name: ":path"
                   descriptor_key: "path"
+
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
@@ -85,4 +87,4 @@ spec:
                   address:
                     socket_address:
                       address: ratelimit.istio-system.svc.cluster.local
-                      port_value: 8081 
+                      port_value: 8081

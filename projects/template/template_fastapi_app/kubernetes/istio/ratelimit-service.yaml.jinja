@@ -21,6 +21,7 @@ data:
         rate_limit:
           unit: minute
           requests_per_unit: 100
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,6 +73,7 @@ spec:
       - name: config-volume
         configMap:
           name: ratelimit-config
+
 ---
 apiVersion: v1
 kind: Service
@@ -89,4 +91,4 @@ spec:
   - name: grpc-port
     port: 8081
     targetPort: 8081
-    protocol: TCP 
+    protocol: TCP
