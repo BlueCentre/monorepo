@@ -1,0 +1,2 @@
+BlueCentre_monorepo_calculator_cli_py_app
+BlueCentre_monorepo_helloworld_py_app
