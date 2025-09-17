@@ -1,0 +1,100 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-test
+  namespace: awesome-fastapi-app
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      containers:
+      - name: smoke-test
+        # image: curlimages/curl:latest
+        image: alpine:latest
+        command:  ["/bin/sh", "-c"]
+        args:
+          - |
+            apk add --no-cache curl
+            echo "Waiting for application to be ready..."
+            sleep 10
+
+            MAX_RETRIES=2
+            RETRY_COUNT=0
+            SUCCESS=false
+
+            while [ $RETRY_COUNT -le $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
+              SLEEP_DURATION=$((RANDOM % 5 + 5)) # Sleep between 5 and 10 seconds
+              echo "Running smoke test (attempt $(($RETRY_COUNT+1))/$((MAX_RETRIES+1)))..."
+
+              
+              # Test health endpoint
+              echo "Testing health endpoint..."
+              HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local/health}")
+              echo "Health response: $HEALTH_RESPONSE"
+              
+              if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
+                echo "Health check passed!"
+                
+                # Test login endpoint
+                echo "Testing login endpoint..."
+                LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
+                echo "Login response: $LOGIN_RESPONSE"
+                
+                if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
+                  echo "==============================================" 
+                  echo "Login successful, authentication token received!"
+                  echo "=============================================="
+                  
+                  # Extract the token
+                  TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+                  
+                  # Test users endpoint
+                  echo "Testing users endpoint..."
+                  USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                  echo "Users response: $USERS_RESPONSE"
+                  
+                  if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
+                    echo "Users endpoint test passed!"
+                    
+                    # Test key management endpoint
+                    echo "Testing key management status endpoint..."
+                    KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                    echo "Key management status response: $KEY_MGMT_RESPONSE"
+                    
+                    if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then
+                      echo "Key management status test passed!"
+                      SUCCESS=true
+                    else
+                      echo "Key management status test failed!"
+                    fi
+                  else
+                    echo "Users endpoint test failed!"
+                  fi
+                else
+                  echo "Login test failed - could not get authentication token!"
+                fi
+              else
+                echo "Health check failed!"
+              fi
+              
+              if [ "$SUCCESS" = false ]; then
+                RETRY_COUNT=$((RETRY_COUNT+1))
+                if [ $RETRY_COUNT -le $MAX_RETRIES ]; then
+                  echo "Smoke test failed, retrying in 10 seconds..."
+                  sleep 10
+                else
+                  echo "Smoke test failed after $((MAX_RETRIES+1)) attempts! Last error: $?"
+                  exit 1
+                fi
+              fi
+            done
+
+            # Final success message
+            if [ "$SUCCESS" = true ]; then
+              echo "API verification successful! All tests passed."
+              exit 0
+            else
+              echo "API verification failed!"
+              exit 1
+            fi
+      restartPolicy: Never

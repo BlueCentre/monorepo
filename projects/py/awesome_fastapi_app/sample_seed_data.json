@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "title": "Project Management Tool",
+      "description": "A comprehensive project management tool designed for agile teams.",
+      "is_active": true
+    },
+    {
+      "title": "Authentication Service",
+      "description": "Secure authentication service with support for OAuth2 and JWT.",
+      "is_active": true
+    },
+    {
+      "title": "Data Analytics Dashboard",
+      "description": "Interactive dashboard for visualizing and analyzing business metrics.",
+      "is_active": true
+    }
+  ],
+  "notes": [
+    {
+      "title": "Release Planning",
+      "content": "We need to plan the next quarterly release. Key features to include: user management, reporting, and integration with third-party services."
+    },
+    {
+      "title": "Architecture Decision Record",
+      "content": "Decision: Use microservices architecture for the new platform. Rationale: Better scalability, loose coupling, and independent deployment of components."
+    },
+    {
+      "title": "API Documentation Guidelines",
+      "content": "All APIs should include OpenAPI documentation. Endpoints must be versioned and follow RESTful principles. Authentication requirements should be clearly specified."
+    }
+  ]
+} 

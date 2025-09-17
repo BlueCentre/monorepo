@@ -1,4 +1,31 @@
 # See https://bazel.build/concepts/build-files
+# Build info properties generated via stamping for Spring Boot /actuator/info exposure
+genrule(
+  name = "build_info_properties",
+  srcs = [],
+  outs = ["build-info.properties"],
+    cmd_bash = """
+set -euo pipefail
+git_commit=$$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)
+git_branch=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)
+git_dirty=clean
+if ! git diff --quiet --ignore-submodules HEAD 2>/dev/null; then git_dirty=dirty; fi
+build_ts=$$(date -u +%Y-%m-%dT%H:%M:%SZ)
+build_user=$${USER:-unknown}
+build_host=$$(hostname -s 2>/dev/null || echo unknown)
+{
+  echo '# Generated build info'
+  echo "build.timestamp=$${build_ts}"
+  echo "build.user=$${build_user}"
+  echo "build.host=$${build_host}"
+  echo "git.commit.id.abbrev=$${git_commit}"
+  echo "git.branch=$${git_branch}"
+  echo "git.dirty=$${git_dirty}"
+} > "$@"
+""",
+  stamp = False,
+  visibility = ["//visibility:public"],
+)
 
 # Does not work in sandbox mode due to the non-hermetic approach
 # genrule(

@@ -1,0 +1,28 @@
+# Sonar tooling BUILD file
+
+sh_binary(
+    name = "scan_all",
+    srcs = ["scan_all.sh"],
+    data = [
+        "//projects/py/helloworld_py_app:sonar-project.properties",
+        "//projects/py/calculator_cli_py_app:sonar-project.properties",
+    ],
+    tags = ["manual", "sonar"],
+    visibility = ["//visibility:public"],
+)
+
+# Wrapper that runs coverage then scan_all (manual target) - demonstration only.
+# Usage: bazel run //tools/sonar:coverage_and_scan -- // optional sonar args
+sh_binary(
+    name = "coverage_and_scan",
+    srcs = ["coverage_and_scan.sh"],
+    data = [
+        "//tools/coverage:collect_coverage.sh",
+        "//tools/coverage:sonar_coverage",
+        ":scan_all",
+        "quality_gate_wait.sh",
+    ],
+    tags = ["manual", "sonar"],
+)
+
+exports_files(["quality_gate_wait.sh"])

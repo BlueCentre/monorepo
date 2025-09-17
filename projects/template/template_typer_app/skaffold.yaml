@@ -1,0 +1,72 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: template-typer-app
+
+build:
+  artifacts:
+    - image: template-typer-app
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd $MONOREPO_ROOT
+
+          # This is a template project - create a basic Python app for demonstration
+          TEMP_DIR=$(mktemp -d)
+          cat > $TEMP_DIR/Dockerfile << 'EOF'
+          FROM python:3.11-slim
+          
+          # Copy the application
+          COPY . /app
+          WORKDIR /app
+          
+          # Create a simple demo script
+          RUN echo 'print("Template Typer App Demo")' > demo.py
+          
+          # Create entrypoint script
+          RUN echo '#!/bin/bash\npython demo.py' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+          
+          # Command to run the application
+          ENTRYPOINT ["/app/entrypoint.sh"]
+          EOF
+
+          # Copy template files for reference
+          cp -r projects/template/template_typer_app/* $TEMP_DIR/ || true
+          
+          # Build the Docker image
+          docker build -t $IMAGE $TEMP_DIR
+
+          # Clean up
+          rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "**/*.jinja"
+            - "src/**/*"
+            - "tests/**/*"
+            - "copier.yml"
+  local:
+    push: false
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/job.yaml
+
+deploy:
+  kubectl: {}
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true

@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+  namespace: istio-system
+data:
+  config.yaml: |
+    domain: awesome-fastapi-app-rate-limit
+    descriptors:
+      - key: path
+        value: "/api/v1/items"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 5
+      - key: path
+        value: "/docs"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10
+      - key: path
+        rate_limit:
+          unit: minute
+          requests_per_unit: 100
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratelimit
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratelimit
+  template:
+    metadata:
+      labels:
+        app: ratelimit
+    spec:
+      containers:
+      - name: ratelimit
+        image: envoyproxy/ratelimit:6f5de117
+        imagePullPolicy: Always
+        command: ["/bin/ratelimit"]
+        env:
+        - name: LOG_LEVEL
+          value: debug
+        - name: REDIS_SOCKET_TYPE
+          value: tcp
+        - name: REDIS_URL
+          value: redis-master.istio-system.svc.cluster.local:6379
+        - name: REDIS_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: redis
+              key: redis-password
+        - name: USE_STATSD
+          value: "false"
+        - name: RUNTIME_ROOT
+          value: /data
+        - name: RUNTIME_SUBDIRECTORY
+          value: ratelimit
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        - containerPort: 6070
+        volumeMounts:
+        - name: config-volume
+          mountPath: /data/ratelimit/config/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: ratelimit-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratelimit
+  namespace: istio-system
+spec:
+  selector:
+    app: ratelimit
+  ports:
+  - name: http-port
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: grpc-port
+    port: 8081
+    targetPort: 8081
+    protocol: TCP

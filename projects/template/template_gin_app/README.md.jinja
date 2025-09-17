@@ -29,13 +29,37 @@ curl -f http://localhost:8080/health
 
 ## Development
 
+### Local Development with Bazel
+
 ```bash
 # Run all tests
 bazel test //projects/go/{{ project_name }}:lib_test
 
-# Run with hot reload (if configured)
-go run main.go
+# Build and run locally
+bazel run //projects/go/{{ project_name }}:main
+
+# Quick health check after starting (in another shell)
+curl -f http://localhost:8080/health
 ```
+
+### Kubernetes Development with Skaffold
+
+For full development with Kubernetes deployment:
+
+```bash
+# Start development mode with hot reload and port forwarding
+skaffold dev
+
+# Access your service (automatically port-forwarded)
+curl -f http://localhost:8080/health
+```
+
+The `skaffold dev` command automatically:
+- Builds your service using Bazel
+- Creates a Docker image  
+- Deploys to Kubernetes
+- Sets up port forwarding to localhost:8080
+- Watches for file changes and rebuilds/redeploys
 
 ## API Endpoints
 

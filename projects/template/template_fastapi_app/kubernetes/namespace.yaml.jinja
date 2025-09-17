@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  labels:
+    app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  annotations:
+    description: "{{ project_description }}"

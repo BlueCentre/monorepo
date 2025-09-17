@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: awesome-fastapi-app
+  labels:
+    app: awesome-fastapi-app
+  annotations:
+    description: "A production-ready FastAPI application"

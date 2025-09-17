@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Navigate to monorepo root first
+MONOREPO_ROOT=$(cd ../../.. && pwd)
+cd $MONOREPO_ROOT
+
+# Run code tests before building artifacts
+bazel test //projects/py/awesome_fastapi_app/...
+
+# Then build the tarball
+bazel build //projects/py/awesome_fastapi_app:image_tarball
+
+# Extract the tarball
+TEMP_DIR=$(mktemp -d)
+tar -xf bazel-bin/projects/py/awesome_fastapi_app/image_tarball.tar -C $TEMP_DIR
+
+# Verify contents were extracted correctly
+echo "Extracted files:"
+ls -la $TEMP_DIR
+
+# If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
+if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+  echo "Renaming Dockerfile.bazel to Dockerfile"
+  cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
+fi
+
+# Build the Docker image
+docker build -t $IMAGE $TEMP_DIR
+
+# Clean up
+rm -rf $TEMP_DIR

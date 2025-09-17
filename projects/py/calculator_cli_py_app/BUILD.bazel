@@ -24,6 +24,9 @@ py_binary(
     deps = [":app_lib"],
 )
 
+# Expose sonar-project.properties for tooling targets
+exports_files(["sonar-project.properties"])
+
 py_test(
     name = "app_test",
     srcs = [

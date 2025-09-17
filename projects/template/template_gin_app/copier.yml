@@ -6,6 +6,10 @@ _envops:
   variable_start_string: "{{"
   variable_end_string: "}}"
 
+# Skip copying the static skaffold.yaml - only use the templated .jinja version
+_skip:
+  - skaffold.yaml
+
 # Questions for the user
 project_name:
   type: str
@@ -43,6 +47,13 @@ author_email:
     {% if author_email and not (author_email | regex_search("^[^@]+@[^@]+\.[^@]+$")) %}
     Please enter a valid email address
     {% endif %}
+
+# Deployment configuration
+project_language:
+  type: str
+  help: Programming language (auto-detected for Go)
+  default: go
+  when: false  # Hidden from user, automatically set
 
 # Internal variables (computed)
 _project_slug: "{{ project_name | lower | replace('-', '_') }}"
