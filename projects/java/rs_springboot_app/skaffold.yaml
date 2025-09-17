@@ -1,0 +1,68 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: rs-springboot-app
+
+build:
+  artifacts:
+    - image: rs-springboot-app
+      custom:
+        buildCommand: |
+          ./build_image.sh
+        dependencies:
+          paths:
+            - src/main/java
+            - src/main/resources
+            - jvm/jvm.args
+            - BUILD.bazel
+            - info.txt
+            - author.txt
+            - build_image.sh
+            # Omitted workspace_status.sh (stamping) from dependency paths to avoid path resolution issues.
+      sync:
+        manual:
+          - src: src/main/java/**/*.java
+            dest: /app/BOOT-INF/classes
+          - src: src/main/resources/**
+            dest: /app/BOOT-INF/classes
+  tagPolicy:
+    sha256: {}
+  local:
+    push: false
+    useBuildkit: true
+
+test:
+  - image: rs-springboot-app
+    custom:
+    - command: bazel test //projects/java/rs_springboot_app/... --test_output=errors
+    # Hermetic runtime + consolidated health/readiness/metrics + build info validation
+    # - command: bazel test //projects/java/rs_springboot_app:SmokeNonWebIntegrationTest //projects/java/rs_springboot_app:HealthReadinessMetricsIntegrationTest //projects/java/rs_springboot_app:BuildInfoIntegrationTest --test_output=errors
+
+manifests:
+  rawYaml:
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: rs-springboot-app
+    port: 8080
+    localPort: 8080
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true

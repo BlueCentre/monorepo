@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: awesome-fastapi-app
+  namespace: awesome-fastapi-app
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    external-dns.alpha.kubernetes.io/hostname: "awesome-fastapi-app.monorepo.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
+spec:
+  rules:
+    - host: awesome-fastapi-app.monorepo.ipv1337.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: awesome-fastapi-app
+                port:
+                  number: 80

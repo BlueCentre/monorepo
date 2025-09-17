@@ -330,7 +330,7 @@ profiles:
                     if [ "$req_num" = "1" ] || [ "$req_num" = "6" ]; then
                       echo "Full response for request #$req_num:"
                       echo "$result"
-                      echo "----------------------------"
+                      echo "=============================="
                     fi
                     
                     # Extract status code

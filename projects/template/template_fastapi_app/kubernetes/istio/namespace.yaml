@@ -5,4 +5,4 @@ metadata:
   labels:
     istio-injection: enabled
   annotations:
-    description: "Namespace for the template FastAPI application with Istio injection enabled" 
+    description: "Namespace for the template FastAPI application with Istio injection enabled"

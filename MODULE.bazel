@@ -13,7 +13,7 @@ module(
 
 # From https://registry.bazel.build/
 # Updated versions for Bazel 8.x compatibility
-bazel_dep(name = "aspect_bazel_lib", version = "2.5.1")
+bazel_dep(name = "aspect_bazel_lib", version = "2.7.2")
 bazel_dep(name = "aspect_rules_js", version = "1.38.0")
 bazel_dep(name = "aspect_rules_swc", version = "1.1.0")
 bazel_dep(name = "aspect_rules_ts", version = "2.1.1")
@@ -21,7 +21,29 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 
-# bazel_dep(name = "rules_oci", version = "1.7.1") # Commented out per requirements
+# OCI image rules (Bzlmod) - migrate from legacy WORKSPACE http_archive
+bazel_dep(name = "rules_oci", version = "2.0.0")
+
+# Pull required base images via rules_oci extension (v2 API)
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci.pull(
+    name = "distroless_java17",
+    image = "gcr.io/distroless/java17-debian12",
+    digest = "sha256:1b7eeb0477cd16ef8fbff34677e9ddee5b52ccd3a390549a0527196dc15850ee",
+    platforms = ["linux/amd64"],
+)
+use_repo(oci, "distroless_java17", "distroless_java17_linux_amd64")
+
+# OCI image rules (Bzlmod)
+bazel_dep(name = "rules_spring", version = "2.2.4")
+
+archive_override(
+    module_name = "rules_spring",
+    urls = ["https://github.com/salesforce/rules_spring/releases/download/2.2.4/rules-spring-2.2.4.zip"],
+    integrity = "sha256-AUJtCmfDK6DeCw87qisIEAh3icYmDAwGdBwXM5VhWKM=",
+)
+
+# Container + Spring support (re-enabled / added for rs_springboot_app modernization)
 bazel_dep(name = "container_structure_test", version = "1.15.0")
 bazel_dep(name = "rules_proto", version = "7.0.2")
 bazel_dep(name = "rules_python", version = "0.40.0")
@@ -210,14 +232,56 @@ maven_pojo.install(
     fetch_sources = True,
     lock_file = "//third_party/java:maven_pojo_install.json",
     repositories = [
-        "https://maven.google.com",
         "https://repo1.maven.org/maven2",
+        "https://maven.google.com",
         "https://jcenter.bintray.com/",
     ],
     strict_visibility = True,
     use_starlark_android_rules = True,
 )
 use_repo(maven_pojo, "maven_pojo", "unpinned_maven_pojo")
+
+# Spring Boot dependencies for hello_springboot_app
+# Keep the Spring Boot version centralized for easy upgrades.
+SPRING_BOOT_VERSION = "3.5.5"
+
+springboot = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+springboot.install(
+    name = "springboot",
+    artifacts = [
+        "org.springframework.boot:spring-boot-starter:" + SPRING_BOOT_VERSION,
+        "org.springframework.boot:spring-boot-starter-web:" + SPRING_BOOT_VERSION,
+        "org.springframework.boot:spring-boot-starter-actuator:" + SPRING_BOOT_VERSION,
+        # Optional devtools (excluded at runtime in container if not desired)
+        "org.springframework.boot:spring-boot-devtools:" + SPRING_BOOT_VERSION,
+        # Testing stack (JUnit + Spring)
+        "org.springframework.boot:spring-boot-starter-test:" + SPRING_BOOT_VERSION,
+        # Micrometer Prometheus registry
+        "io.micrometer:micrometer-registry-prometheus:1.13.3",
+        # Boot loader for JarLauncher classes
+        "org.springframework.boot:spring-boot-loader:" + SPRING_BOOT_VERSION,
+        # Explicit JUnit Platform runner to allow Bazel's JUnit4 test runner to execute JUnit5 tests via @RunWith(JUnitPlatform.class)
+        # Version aligned with Spring Boot 3.3.3 managed JUnit Platform (1.10.2)
+        "org.junit.platform:junit-platform-runner:1.10.2",
+        # JUnit Jupiter engine & platform launcher required for discovery (OutputDirectoryProvider)
+        "org.junit.jupiter:junit-jupiter-engine:5.10.2",
+        "org.junit.platform:junit-platform-launcher:1.10.2",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.junit.jupiter:junit-jupiter-params:5.10.2",
+        # Added for restored SampleAutoConfiguration
+        "jakarta.annotation:jakarta.annotation-api:2.1.1",
+        "org.springframework.boot:spring-boot-loader-tools:" + SPRING_BOOT_VERSION,
+    ],
+    fetch_javadoc = False,
+    fetch_sources = True,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://maven.google.com",
+    ],
+    strict_visibility = False,
+    use_starlark_android_rules = False,
+)
+use_repo(springboot, "springboot")
 
 ################################################################################
 # rules_python - Python pip dependencies

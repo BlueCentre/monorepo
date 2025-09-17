@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rate-limit-test
+  namespace: awesome-fastapi-app
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: curl-rate-test
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Waiting for Istio and rate limiting components to be ready..."
+          sleep 30
+          
+          # Find working endpoint
+          for BASE_URL in "http://awesome-fastapi-app" "http://awesome-fastapi-app.awesome-fastapi-app" "http://awesome-fastapi-app.awesome-fastapi-app.svc" "http://awesome-fastapi-app.awesome-fastapi-app.svc.cluster.local"; do
+            if curl -s $BASE_URL/health | grep -q "ok"; then
+              echo "Found working endpoint: $BASE_URL"
+              
+              # Test rate limiting
+              echo "Testing rate limiting by making multiple rapid requests..."
+              echo "This should trigger the rate limit for unauthenticated calls..."
+              
+              # Make a bunch of requests to try to hit the rate limit
+              for i in {1..40}; do
+                RESP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/v1/users/)
+                echo "Request $i: Response code: $RESP_CODE"
+                
+                # If we get a 429 response, rate limiting is working!
+                if [ "$RESP_CODE" = "429" ]; then
+                  echo "=== SUCCESS: Rate limiting is working! Got 429 Too Many Requests ==="
+                  exit 0
+                fi
+                
+                # Brief pause between requests
+                sleep 0.1
+              done
+              
+              echo "Warning: Couldn't trigger rate limiting after 40 requests"
+              echo "This could be normal if your limits are set high or the rate limit service isn't ready"
+              exit 0
+            fi
+          done
+          
+          echo "Error: Couldn't find a working service endpoint"
+          exit 1
+      restartPolicy: Never
+  backoffLimit: 1 

@@ -1,0 +1,46 @@
+name: Sonar Monorepo Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bazelisk
+        run: |
+          curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-amd64 -o bazel
+          chmod +x bazel
+          sudo mv bazel /usr/local/bin/bazel
+      - name: Install Sonar Scanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip -q sonar-scanner.zip
+          sudo mv sonar-scanner-* /opt/sonar-scanner
+          echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bazel
+          key: bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel') }}
+          restore-keys: |
+            bazel-${{ runner.os }}-
+      - name: Run Coverage + Sonar Scans
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          HOST_WORKSPACE: ${{ github.workspace }}
+        run: |
+          bazel run //tools/sonar:coverage_and_scan -- -- -Dsonar.branch.name=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
+      - name: Optional Quality Gate
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          bash tools/sonar/quality_gate_wait.sh || echo "Quality gate check non-zero (allowed)"

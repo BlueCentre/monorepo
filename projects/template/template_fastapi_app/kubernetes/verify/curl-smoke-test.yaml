@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: smoke-test
-  namespace: template-fastapi-app
+  namespace: {{ _project_dash }}
 spec:
   backoffLimit: 2
   template:
@@ -29,7 +29,7 @@ spec:
               
               # Test health endpoint
               echo "Testing health endpoint..."
-              HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/health}")
+              HEALTH_RESPONSE=$(curl -s "${HEALTH_ENDPOINT:-http://{{ _project_dash }}.{{ _project_dash }}.svc.cluster.local/health}")
               echo "Health response: $HEALTH_RESPONSE"
               
               if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
@@ -37,7 +37,7 @@ spec:
                 
                 # Test login endpoint
                 echo "Testing login endpoint..."
-                LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
+                LOGIN_RESPONSE=$(curl -s -X 'POST' "${LOGIN_ENDPOINT:-http://{{ _project_dash }}.{{ _project_dash }}.svc.cluster.local/api/v1/login/access-token}" -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=admin@example.com&password=admin')
                 echo "Login response: $LOGIN_RESPONSE"
                 
                 if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
@@ -50,7 +50,7 @@ spec:
                   
                   # Test users endpoint
                   echo "Testing users endpoint..."
-                  USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                  USERS_RESPONSE=$(curl -s -X 'GET' "${USERS_ENDPOINT:-http://{{ _project_dash }}.{{ _project_dash }}.svc.cluster.local/api/v1/users/}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                   echo "Users response: $USERS_RESPONSE"
                   
                   if echo "$USERS_RESPONSE" | grep -q "admin@example.com"; then
@@ -58,7 +58,7 @@ spec:
                     
                     # Test key management endpoint
                     echo "Testing key management status endpoint..."
-                    KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://template-fastapi-app.template-fastapi-app.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
+                    KEY_MGMT_RESPONSE=$(curl -s -X 'GET' "${KEY_MGMT_ENDPOINT:-http://{{ _project_dash }}.{{ _project_dash }}.svc.cluster.local/api/v1/key-management/status}" -H 'accept: application/json' -H "Authorization: Bearer $TOKEN")
                     echo "Key management status response: $KEY_MGMT_RESPONSE"
                     
                     if echo "$KEY_MGMT_RESPONSE" | grep -q "jwt_keys"; then

@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ project_name }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: {{ project_name }}
+          image: {{ project_name }}
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+  backoffLimit: 4

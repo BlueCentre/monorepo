@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "title": "Custom Item 1",
+      "description": "Description for Custom Item 1",
+      "is_active": true
+    },
+    {
+      "title": "Custom Item 2",
+      "description": "Description for Custom Item 2",
+      "is_active": true
+    }
+  ],
+  "notes": [
+    {
+      "title": "Custom Note 1",
+      "content": "Content for Custom Note 1"
+    },
+    {
+      "title": "Custom Note 2",
+      "content": "Content for Custom Note 2"
+    }
+  ]
+} 

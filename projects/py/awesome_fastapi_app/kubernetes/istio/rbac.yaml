@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: awesome-fastapi-app-admin
+  namespace: awesome-fastapi-app
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespace-admin
+  namespace: awesome-fastapi-app
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: awesome-fastapi-app-admin-binding
+  namespace: awesome-fastapi-app
+subjects:
+- kind: ServiceAccount
+  name: awesome-fastapi-app-admin
+  namespace: awesome-fastapi-app
+roleRef:
+  kind: Role
+  name: namespace-admin
+  apiGroup: rbac.authorization.k8s.io

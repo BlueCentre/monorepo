@@ -1,0 +1,98 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: template-gin-app
+
+build:
+  artifacts:
+    - image: template-gin-app
+      custom:
+        buildCommand: |
+          set -euo pipefail
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd "$MONOREPO_ROOT"
+
+          TEMP_DIR=$(mktemp -d)
+          cat > "$TEMP_DIR/Dockerfile" <<'EOF'
+          FROM golang:1.21-alpine AS builder
+          WORKDIR /src
+          RUN echo 'module template-gin-app' > go.mod
+          RUN echo 'package main\nimport "fmt"\nfunc main(){fmt.Println("Template Gin App Demo")}' > main.go
+          RUN go build -o main .
+
+          FROM alpine:3.19
+          RUN adduser -D appuser
+          USER appuser
+          WORKDIR /app
+          COPY --from=builder /src/main /app/main
+          EXPOSE 8080
+          ENTRYPOINT ["/app/main"]
+          EOF
+
+          # Detect docker daemon architecture robustly
+          DOCKER_ARCH=$(docker info 2>/dev/null | awk -F': *' '/Architecture/{print $2; exit}')
+          if [ -z "${DOCKER_ARCH:-}" ]; then DOCKER_ARCH=amd64; fi
+          case "$DOCKER_ARCH" in
+            arm64|aarch64) TARGET_PLATFORM=linux/arm64 ;;
+            amd64|x86_64) TARGET_PLATFORM=linux/amd64 ;;
+            *) TARGET_PLATFORM=linux/amd64 ;;
+          esac
+          echo "Docker daemon arch: $DOCKER_ARCH -> target platform: $TARGET_PLATFORM"
+
+          docker build --platform "$TARGET_PLATFORM" -t "$IMAGE" "$TEMP_DIR"
+
+          if [ "${SKAFFOLD_PUSH:-false}" = "false" ]; then
+            echo "Attempting local cluster image load"
+            if command -v kind >/dev/null 2>&1 && kind get clusters >/dev/null 2>&1; then
+              kind load docker-image "$IMAGE" || true
+            elif command -v minikube >/dev/null 2>&1; then
+              minikube image load "$IMAGE" || true
+            elif command -v colima >/dev/null 2>&1 && colima status | grep -qi 'kubernetes.*Running'; then
+              TMPIMG=$(mktemp /tmp/template-gin.XXXXXX.tar)
+              docker save -o "$TMPIMG" "$IMAGE"
+              if command -v nerdctl >/dev/null 2>&1; then
+                nerdctl -n k8s.io load -i "$TMPIMG" || true
+              fi
+              rm -f "$TMPIMG"
+            else
+              echo "No cluster image loader detected; assuming shared daemon"
+            fi
+          fi
+
+          rm -rf "$TEMP_DIR"
+        dependencies:
+          paths:
+            # Deterministic set (rendered project). Template (.jinja) files are handled before generation.
+            - "main.go"
+            - "handlers/*.go"
+            - "go.mod"
+            - "kubernetes/deployment.yaml"
+            - "kubernetes/service.yaml"
+            - "BUILD.bazel"
+  local:
+    push: false
+    tryImportMissing: true
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: template-gin-app
+    port: 8080
+    localPort: 8080
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false

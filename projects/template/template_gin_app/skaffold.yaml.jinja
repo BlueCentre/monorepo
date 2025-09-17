@@ -1,0 +1,124 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: {{ project_name.replace('_','-') }}
+
+build:
+  artifacts:
+  - image: {{ project_name.replace('_','-') }}
+    custom:
+        buildCommand: |
+          set -euo pipefail
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd "$MONOREPO_ROOT"
+
+          echo "==> Running tests"
+            bazel test //projects/go/{{ project_name }}:lib_test
+
+          # Determine docker daemon architecture (NOT host uname which may differ under Colima)
+          DOCKER_ARCH=$(docker info 2>/dev/null | awk -F': *' '/Architecture/{print $2; exit}')
+          if [ -z "${DOCKER_ARCH:-}" ]; then
+            DOCKER_ARCH=$(uname -m)
+          fi
+          case "$DOCKER_ARCH" in
+            arm64|aarch64) TARGET_PLATFORM=linux/arm64 ; GO_TARGET=linux_arm64 ;;
+            amd64|x86_64) TARGET_PLATFORM=linux/amd64 ; GO_TARGET=linux_amd64 ;;
+            *) TARGET_PLATFORM=linux/amd64 ; GO_TARGET=linux_amd64 ;;
+          esac
+          echo "Docker daemon arch: $DOCKER_ARCH -> target platform: $TARGET_PLATFORM"
+
+          GO_PLATFORM_FLAG="--platforms=@rules_go//go/toolchain:$GO_TARGET"
+          echo "==> Building image tarball with $GO_PLATFORM_FLAG"
+          if ! bazel build $GO_PLATFORM_FLAG //projects/go/{{ project_name }}:image_tarball; then
+            echo "WARN: Cross-compilation toolchain not found; falling back to native build"
+            bazel build //projects/go/{{ project_name }}:image_tarball
+          fi
+
+          TEMP_DIR=$(mktemp -d)
+          tar -xf bazel-bin/projects/go/{{ project_name }}/image_tarball.tar -C "$TEMP_DIR"
+          if command -v file >/dev/null 2>&1; then
+            echo "==> Built binary info:"
+            file "$TEMP_DIR/main" || true
+          fi
+
+          # Ensure Dockerfile present
+          if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+            cp "$TEMP_DIR/Dockerfile.bazel" "$TEMP_DIR/Dockerfile"
+          fi
+
+          if command -v file >/dev/null 2>&1 && ! file "$TEMP_DIR/main" | grep -qi 'ELF 64-bit'; then
+            echo "Binary not ELF for linux; rebuilding via native Go toolchain"
+            GOOS=linux GOARCH=${TARGET_PLATFORM#linux/} CGO_ENABLED=0 \
+              go build -C projects/go/{{ project_name }} -o "$TEMP_DIR/main" . || {
+                echo "ERROR: Direct Go rebuild failed" >&2; exit 1; }
+            file "$TEMP_DIR/main" || true
+          fi
+
+          echo "==> Building container image $IMAGE for $TARGET_PLATFORM"
+          docker build --platform "$TARGET_PLATFORM" -t "$IMAGE" "$TEMP_DIR"
+
+          if [ "${SKAFFOLD_PUSH:-false}" = "false" ]; then
+            echo "==> Attempting to load image into local cluster"
+            if command -v kind >/dev/null 2>&1 && kind get clusters >/dev/null 2>&1; then
+              kind load docker-image "$IMAGE" || true
+            elif command -v minikube >/dev/null 2>&1; then
+              minikube image load "$IMAGE" || true
+            elif command -v colima >/dev/null 2>&1 && colima status | grep -qi 'kubernetes.*Running'; then
+              TMPIMG=$(mktemp /tmp/{{ project_name }}.XXXXXX.tar)
+              docker save -o "$TMPIMG" "$IMAGE"
+              if command -v nerdctl >/dev/null 2>&1; then
+                nerdctl -n k8s.io load -i "$TMPIMG" || true
+              fi
+              rm -f "$TMPIMG"
+            else
+              echo "No local cluster image loader detected (kind/minikube/colima). Assuming shared daemon"
+            fi
+          fi
+
+          rm -rf "$TEMP_DIR"
+        dependencies:
+          paths:
+          - main.go
+          - handlers/*.go
+          - go.mod
+          - kubernetes/deployment.yaml
+          - kubernetes/service.yaml
+          - BUILD.bazel
+          - skaffold.yaml
+  local:
+    push: false
+    tryImportMissing: true
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/deployment.yaml
+    - kubernetes/service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: {{ project_name.replace('_','-') }}
+    port: 8080
+    localPort: 8080
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+  - name: remote
+    activation:
+      - kubeContext: gke_
+    patches:
+      - op: add
+        path: /build/local/push
+        value: true
+      - op: add
+        path: /build/local/tryImportMissing
+        value: false
+      - op: add
+        path: /build/tagPolicy
+        value:
+          sha256: {}

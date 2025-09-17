@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awesome-fastapi-app
+  namespace: awesome-fastapi-app
+  labels:
+    app: awesome-fastapi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: awesome-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: awesome-fastapi-app
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - name: awesome-fastapi-app
+        image: awesome-fastapi-app:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PROJECT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: awesome-fastapi-app-config
+              key: PROJECT_NAME
+        - name: API_V1_STR
+          valueFrom:
+            configMapKeyRef:
+              name: awesome-fastapi-app-config
+              key: API_V1_STR
+        - name: POSTGRES_SERVER
+          value: cnpg-cluster-rw.cnpg-cluster.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: awesome-fastapi-app-db-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: awesome-fastapi-app-db-credentials
+              key: password
+        - name: POSTGRES_DB
+          value: app
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: secret-key
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5 

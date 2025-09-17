@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Created-By: singlejar
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: com.sample.SampleMain
+

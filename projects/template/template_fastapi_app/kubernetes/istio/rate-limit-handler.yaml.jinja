@@ -1,0 +1,158 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  host: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  trafficPolicy:
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+
+---
+# EnvoyFilter to extract API path information for rate limiting
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-path-extractor
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ratelimit
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit"
+            domain: "{{ (project_dash or project_name) | lower | replace('_', '-') }}-domain"
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: "outbound|8081||ratelimit.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"
+            timeout: 0.25s
+            failure_mode_deny: false
+
+---
+# EnvoyFilter to extract authentication status for rate limiting
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-auth-extractor
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            name: "inbound|http|80"
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  # Extract path from the request URL
+                  - request_headers:
+                      header_name: ":path"
+                      descriptor_key: "path"
+                  # Check if user is authenticated by looking for Authorization header
+                  - request_headers:
+                      header_name: "authorization"
+                      descriptor_key: "auth"
+                      descriptor_value: "authenticated"
+                  # Add generic key for default rate limiting
+                  - generic_key:
+                      descriptor_value: "default"
+                disable_key: "x-disable-ratelimit"
+
+---
+# Additional security policy to reject requests once rate limit is reached
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  mtls:
+    mode: PERMISSIVE  # Can be set to STRICT once all services communicate via mTLS 
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-path-action
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            route:
+              name: "api-v1-limited"
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  - generic_key:
+                      descriptor_value: "path=/api/v1/limited"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-specific-endpoint
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            route:
+              path: "/api/v1/rate-limited/rate-limited"
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  - request_headers:
+                      header_name: ":path"
+                      descriptor_key: "path"
+                  - generic_key:
+                      descriptor_value: "/api/v1/rate-limited/rate-limited"
+                disable_key: "x-disable-ratelimit"

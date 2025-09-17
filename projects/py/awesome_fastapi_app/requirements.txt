@@ -1,0 +1,60 @@
+# FastAPI
+fastapi==0.103.1
+uvicorn==0.23.2
+pydantic==2.3.0
+pydantic-settings==2.0.3
+email-validator==2.0.0.post2
+
+# Database
+sqlalchemy==2.0.20
+alembic==1.12.0
+psycopg2-binary==2.9.7
+aiosqlite>=0.17.0,<0.18.0  # Added for async SQLite testing
+
+# Security
+python-jose==3.3.0
+passlib==1.7.4
+bcrypt==4.0.1
+python-multipart==0.0.6
+
+# Google Cloud
+google-cloud-pubsub==2.18.4
+
+# OpenTelemetry
+opentelemetry-api==1.20.0
+opentelemetry-sdk==1.20.0
+opentelemetry-exporter-otlp==1.20.0
+opentelemetry-instrumentation-fastapi==0.41b0
+opentelemetry-instrumentation-sqlalchemy==0.41b0
+opentelemetry-instrumentation-logging==0.41b0
+opentelemetry-instrumentation-requests==0.41b0
+opentelemetry-instrumentation-httpx==0.41b0
+
+# Testing
+pytest==7.4.2
+httpx==0.24.1
+pytest-cov==4.1.0
+pytest-mock>=3.10.0,<3.11.0
+hypothesis==6.82.6
+pytest-asyncio>=0.21.1,<0.22.0
+pactman==2.30.0
+pytest-benchmark==4.0.0
+locust==2.16.1
+# k6==0.0.2  # Removed as it's not available on PyPI
+mutmut==2.4.4
+
+# Code Quality
+mypy==1.5.1
+ruff==0.0.292
+black==23.9.1
+isort==5.12.0
+pre-commit==3.4.0
+safety>=2.4.0  # Updated from 2.3.5 to resolve packaging dependency conflict
+bandit==1.7.5
+radon>=4.0.0,<6.0.0  # Updated to be compatible with xenon's requirements
+xenon==0.9.0
+
+# Utilities
+python-dotenv==1.0.0
+tenacity==8.2.3
+slowapi==0.1.8  # Added for rate limiting 

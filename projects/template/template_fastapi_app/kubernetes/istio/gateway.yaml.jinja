@@ -1,0 +1,34 @@
+# Gateway definition (missing from your configuration)
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-gateway
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "{{ (project_dash or project_name) | lower | replace('_', '-') }}.monorepo.ipv1337.dev"
+    external-dns.alpha.kubernetes.io/sync-enabled: "true"
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "{{ (project_dash or project_name) | lower | replace('_', '-') }}.monorepo.ipv1337.dev"  # or specific hosts if desired
+
+# Updated VirtualService (needs 'gateways' field)
+# apiVersion: networking.istio.io/v1alpha3
+# kind: VirtualService
+# metadata:
+#   name: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+#   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+# spec:
+#   hosts:
+#   - "{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"
+#   - "{{ (project_dash or project_name) | lower | replace('_', '-') }}"
+#   gateways:
+#   - {{ (project_dash or project_name) | lower | replace('_', '-') }}-gateway  # Reference to the Gateway
+#   http:
+#   # rest of your http rules...
