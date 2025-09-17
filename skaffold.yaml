@@ -3,7 +3,7 @@ kind: Config
 
 requires:
   # Infrastructure as Code (IaC)
-  - path: ./pulumi_dev_local
+  # - path: ./infrastructure/pulumi_dev_local
   # Python Applications
   - path: ./projects/py/devops_fastapi_app
   - path: ./projects/py/echo_fastapi_app

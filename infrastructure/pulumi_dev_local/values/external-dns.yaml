@@ -1,0 +1,34 @@
+# External DNS Helm values
+sources:
+  - service
+  - ingress
+
+provider: cloudflare
+
+cloudflare:
+  proxied: false
+
+domainFilters:
+  - ipv1337.dev
+
+policy: sync
+
+interval: 1m
+
+triggerLoopOnEvent: true
+
+annotationFilter: "external-dns.alpha.kubernetes.io/sync-enabled in (true)"
+
+txtOwnerId: k8s
+
+resources:
+  requests:
+    cpu: 10m 
+    memory: 64Mi
+
+# Enable metrics for prometheus
+metrics:
+  enabled: true
+  
+# Cloudflare API credentials will be provided through ExternalSecrets or environment variables
+env: []

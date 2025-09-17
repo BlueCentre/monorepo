@@ -1,0 +1,52 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: iac-pulumi
+
+build:
+  artifacts:
+    # https://hub.docker.com/r/pulumi/pulumi
+    - image: gcr.io/k8s-skaffold/skaffold-custom
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          # MONOREPO_ROOT=$(cd ../../.. && pwd)
+          # cd $MONOREPO_ROOT
+
+          # Run pulumi commands
+          # pulumi up --refresh --yes
+          # pulumi preview --refresh --diff
+          pulumi preview
+
+          # Build the Docker image
+          # docker build -t $IMAGE .
+
+          # Clean up
+          # rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "**/*"
+  local:
+    push: false
+    useBuildkit: true
+
+manifests:
+  rawYaml:
+    - kubernetes/debug/debug-job.yaml
+
+deploy:
+  kubectl: {}
+
+customActions:
+  - name: provision-local-dev-infrastructure
+    containers:
+      - name: pulumi-up
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "=== PROVISIONING LOCAL DEV INFRASTRUCTURE ==="
+
+            pulumi up --refresh --yes
+    # executionMode:
+    #   kubernetesCluster: {}

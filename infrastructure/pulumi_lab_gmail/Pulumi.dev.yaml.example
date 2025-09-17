@@ -1,0 +1,7 @@
+environment:
+  - pulumi_lab_gmail/dev
+config:
+  gcp:project: your-gcp-project-id
+  cloudflare:zoneName: example.com
+  pulumi_lab_gmail:customDomain: app.example.com
+  # cloudflare:apiToken (set via: pulumi config set --secret cloudflare:apiToken <TOKEN>)
