@@ -1,0 +1,9 @@
+environment:
+  - pulumi_lab_gmail/dev
+config:
+  gcp:project: personal-llc
+  cloudflare:apiToken:
+    secure: AAABAIdluK4hdBRB05YsLfGJBqSc35zR60W7v+uRr4phVJ30U7tocr/qwP/yRW5E1lj/cVV2UtpUYlQkhz+sxXU/EPhmMyQo
+  cloudflare:zoneId: ipv1337.dev
+  cloudflare:zoneName: ipv1337.dev
+  pulumi_lab_gmail:customDomain: hello.run.ipv1337.dev

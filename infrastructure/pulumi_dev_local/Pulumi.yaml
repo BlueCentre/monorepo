@@ -1,0 +1,3 @@
+name: monorepo
+runtime: go
+description: Development platform infrastructure managed with Pulumi (Go runtime)

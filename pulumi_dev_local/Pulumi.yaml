@@ -1,3 +1,0 @@
-name: dev-local-infrastructure
-runtime: go
-description: Local development infrastructure managed with Pulumi (Go runtime)

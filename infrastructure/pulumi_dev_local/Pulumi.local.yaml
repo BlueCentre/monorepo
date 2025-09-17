@@ -1,0 +1,47 @@
+environment:
+  - monorepo/local
+encryptionsalt: v1:2q/j9oCTjH0=:v1:1kTegG+X9Ve/oI2C:/krGKWcHvieQjXhYbuEjybzZfh+sjQ==
+config:
+  monorepo:kubernetes_context: "colima"
+  monorepo:region: "us-central1"
+  monorepo:cert_manager_enabled: "true"
+  monorepo:cert_manager_version: "v1.17.0"
+  monorepo:external_secrets_enabled: "true"
+  monorepo:external_secrets_version: "0.14.4"
+  monorepo:external_dns_enabled: "true"
+  monorepo:external_dns_version: "1.15.0"
+  monorepo:monitoring_enabled: "false"
+  monorepo:opentelemetry_enabled: "true"
+  monorepo:opentelemetry_version: "0.79.0"
+  monorepo:datadog_enabled: "false"
+  monorepo:datadog_version: "3.74.1"
+  monorepo:datadog_api_key: "REPLACE_WITH_DATADOG_API_KEY"
+  monorepo:datadog_app_key: "REPLACE_WITH_DATADOG_APP_KEY"
+  monorepo:istio_enabled: "true"
+  monorepo:istio_version: "1.23.3"
+  monorepo:redis_enabled: "true"
+  monorepo:redis_version: "18.19.1"
+  monorepo:redis_password:
+    secure: v1:np9OUFLm0kq47maJ:QoLliuw7o0DpEgURRt/uXTGi6G0K2FSL4VY=
+  monorepo:cnpg_enabled: "true"
+  monorepo:cnpg_version: "0.23.2"
+  monorepo:cnpg_operator_version: "0.23.2"
+  monorepo:cnpg_cluster_version: "0.2.1"
+  monorepo:cnpg_app_db_name: app
+  monorepo:cnpg_app_db_user: app_user
+  monorepo:cnpg_app_db_password:
+    secure: v1:hJJAGV8u2i4enTDi:ME2sPRSiTvNzkaEXSVopIhwm/j6cc40kSQY=
+  monorepo:mongodb_enabled: "true"
+  monorepo:mongodb_operator_version: "0.12.0"
+  monorepo:mongodb_replicaset_version: "4.4.19"
+  monorepo:mongodb_password:
+    secure: v1:gLs72vWdM6fKUB6e:JD0eqsH3W4i8qZrg90G6ysMzK9jfKMCD+/4=
+  monorepo:argocd_enabled: "false"
+  monorepo:github_token:
+    secure: v1:rXNWKNizq21lvRG3:u/TuCGtb8JR5AQXePWWSP+ySQukBRxG0uYOShQBJTyyC5MgilUrAq3wDLzqyNN6/AvDSbb9Kw1E=
+  monorepo:telepresence_enabled: "false"
+  monorepo:cloudflare_api_token:
+    secure: v1:/U6YsQDDs/IZ4aya:64kX/RaEzLdCwmut5T4q3HtonXFxJp6xKAp+xaycE534HeMJaRg6uarr9TKRl2kIzy2fdHdafXs=
+  monitoring:namespace: monitoring
+  database:namespace: database
+  ingress:namespace: ingress-nginx
