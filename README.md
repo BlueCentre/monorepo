@@ -19,6 +19,7 @@ A monorepo built with Bazel that supports multiple languages and frameworks. Use
 - **CI/CD Integration**: GitHub Actions workflows for continuous integration
 - **Service Mesh Integration**: Istio-based rate limiting and traffic management
 - **Kubernetes Orchestration**: Skaffold-based development and deployment workflows
+- **Serverless Deployment**: Google Cloud Run support for all containerized applications
 - **Infrastructure as Code**: Terraform or Pulumi options to manage essential Kubernetes components
 
 ## Repository Structure
@@ -157,13 +158,20 @@ See the **[Quick Start Guide](./docs/quick-start-guide.md)** for end-to-end envi
 Common Skaffold workflow:
 
 ```bash
+# Local Kubernetes Development
 skaffold build     # Build images
-skaffold run       # Deploy once
-skaffold dev -m template-fastapi-app -p dev  # Iterative dev
+skaffold run       # Deploy once to local Kubernetes
+skaffold dev -m template-fastapi-app -p dev  # Iterative dev with hot reload
 skaffold test      # Run tests
 skaffold verify    # Smoke/verification
 skaffold delete    # Cleanup
+
+# Google Cloud Run Deployment (Serverless)
+skaffold deploy -m template-fastapi-app -p cloudrun  # Deploy to Cloud Run
+skaffold deploy -m template-gin-app -p cloudrun      # Deploy Go app to Cloud Run
 ```
+
+**Cloud Run Support**: All containerized applications now support serverless deployment to Google Cloud Run using the `cloudrun` profile. This provides automatic scaling, pay-per-use pricing, and managed infrastructure. See [Cloud Run Deployment Guide](./docs/cloud-run-deployment.md) for setup instructions.
 
 ## Quick Project Creation
 

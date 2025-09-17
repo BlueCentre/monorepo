@@ -1,6 +1,6 @@
 # Skaffold Usage Guide
 
-This document provides guidance on using Skaffold with the Template FastAPI Application, covering common development workflows and specific features like rate limiting testing.
+This document provides guidance on using Skaffold with the Template FastAPI Application, covering common development workflows including local Kubernetes deployment, Cloud Run serverless deployment, and specific features like rate limiting testing.
 
 ## Common Skaffold Commands
 
@@ -16,13 +16,52 @@ skaffold dev -m template-fastapi-app -p dev
 
 ### Deployment
 
+#### Local Kubernetes Deployment
+
 ```bash
-# Deploy the application
+# Deploy the application to local Kubernetes cluster
 skaffold run -m template-fastapi-app
 
 # Deploy with a specific profile
 skaffold run -m template-fastapi-app -p dev
 ```
+
+#### Google Cloud Run Deployment
+
+```bash
+# Deploy the application to Google Cloud Run
+skaffold deploy -m template-fastapi-app -p cloudrun
+```
+
+**Prerequisites for Cloud Run deployment:**
+
+1. Set up required environment variables in `skaffold.env`:
+   ```env
+   GCP_PROJECT_ID=your-project-id
+   GCP_REGION=us-central1
+   ARTIFACT_REGISTRY_LOCATION=us-central1-docker.pkg.dev
+   ARTIFACT_REGISTRY_REPO=your-project-id/your-repo
+   GITHUB_SHA=latest  # or specific commit SHA for tagging
+   ```
+
+2. Authenticate with Google Cloud:
+   ```bash
+   gcloud auth login
+   gcloud config set project your-project-id
+   ```
+
+3. Enable required APIs:
+   ```bash
+   gcloud services enable run.googleapis.com
+   gcloud services enable artifactregistry.googleapis.com
+   ```
+
+4. Create Artifact Registry repository (if not exists):
+   ```bash
+   gcloud artifacts repositories create your-repo \
+     --repository-format=docker \
+     --location=us-central1
+   ```
 
 ### Verification
 
