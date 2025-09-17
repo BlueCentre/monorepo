@@ -508,3 +508,20 @@ profiles:
             executionMode:
               kubernetesCluster:
                 jobManifestPath: kubernetes/verify/rate-limit-verify-job.yaml
+
+  - name: cloudrun
+    patches:
+      - op: replace
+        path: /deploy
+        value:
+          cloudrun:
+            projectid: "{{`{{.GCP_PROJECT_ID}}`}}"
+            region: "{{`{{.GCP_REGION}}`}}"
+      - op: add
+        path: /build/local/push
+        value: true
+      - op: add
+        path: /build/tagPolicy
+        value:
+          envTemplate:
+            template: "{{`{{.ARTIFACT_REGISTRY_LOCATION}}`}}/{{`{{.GCP_PROJECT_ID}}`}}/{{`{{.ARTIFACT_REGISTRY_REPO}}`}}/{{ (project_dash or project_name) | lower | replace('_', '-') }}:{{`{{.GITHUB_SHA}}`}}"
