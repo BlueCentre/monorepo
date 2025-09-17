@@ -1,0 +1,70 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: {{ project_name }}
+
+build:
+  artifacts:
+    - image: {{ project_name }}
+      custom:
+        buildCommand: |
+          # Navigate to monorepo root first
+          MONOREPO_ROOT=$(cd ../../.. && pwd)
+          cd $MONOREPO_ROOT
+
+          # Run code tests before building artifacts
+          bazel test //projects/py/{{ project_name }}/...
+
+          # Then build the tarball
+          bazel build //projects/py/{{ project_name }}:image_tarball
+
+          # Extract the tarball
+          TEMP_DIR=$(mktemp -d)
+          tar -xf bazel-bin/projects/py/{{ project_name }}/image_tarball.tar -C $TEMP_DIR
+
+          # Verify contents were extracted correctly
+          echo "Extracted files:"
+          ls -la $TEMP_DIR
+
+          # If Dockerfile doesn't exist, rename Dockerfile.bazel to Dockerfile
+          if [ ! -f "$TEMP_DIR/Dockerfile" ] && [ -f "$TEMP_DIR/Dockerfile.bazel" ]; then
+            echo "Renaming Dockerfile.bazel to Dockerfile"
+            cp $TEMP_DIR/Dockerfile.bazel $TEMP_DIR/Dockerfile
+          fi
+
+          # Build the Docker image
+          docker build -t $IMAGE $TEMP_DIR
+
+          # Clean up
+          rm -rf $TEMP_DIR
+        dependencies:
+          paths:
+            - "**/*.jinja"
+            - "src/**/*"
+            - "tests/**/*"
+            - "copier.yml"
+  local:
+    push: false
+    useBuildkit: false
+
+manifests:
+  rawYaml:
+    - kubernetes/job.yaml
+
+deploy:
+  kubectl: {}
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    patches:
+      - op: add
+        path: /build/local/push
+        value: false
+      - op: add
+        path: /deploy/kubectl/flags
+        value:
+          apply:
+            - --validate=false
+            - --force=true

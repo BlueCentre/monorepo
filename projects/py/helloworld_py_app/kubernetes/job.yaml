@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: helloworld-py-app
+  labels:
+    app: helloworld-py-app
+spec:
+  template:
+    metadata:
+      labels:
+        app: helloworld-py-app
+    spec:
+      containers:
+      - name: helloworld-py-app
+        image: helloworld-py-app
+        command: ["python", "-m", "app"]
+      restartPolicy: Never
+  backoffLimit: 4

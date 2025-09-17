@@ -1,0 +1,19 @@
+# This is a placeholder for Istio Telemetry configuration
+# It requires the Istio CRDs to be installed in the cluster
+# To use this, uncomment and ensure Istio is installed
+
+# Original content (commented out to prevent direct application):
+# apiVersion: telemetry.istio.io/v1alpha1
+# kind: Telemetry
+# metadata:
+#   name: template-fastapi-tracing
+#   namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+# spec:
+#   tracing:
+#     - customTags:
+#         app_name:
+#           literal:
+#             value: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+#       providers:
+#         - name: otel-tracing
+#       randomSamplingPercentage: 100

@@ -11,17 +11,26 @@ lib_deps = [
     # "//projects/java/hello_springboot/examples/helloworld/libs/lib1",
 ]
 
-# create our deps list for Spring Boot
-springboot_deps = [
-    # All springboot dependencies are commented out
-]
+# (Spring Boot dependencies directly referenced in java_library deps below)
 
 java_library(
     name = "lib",
     srcs = glob(["*.java"]),
     # visibility = ["//projects/java/hello_springboot_app/src/test:__subpackages__"],
     visibility = ["//visibility:public"],
-    deps = lib_deps,
+    deps = lib_deps + [
+        # Core Spring Boot + Web + Actuator
+        "@springboot//:org_springframework_boot_spring_boot_starter",
+        "@springboot//:org_springframework_boot_spring_boot_starter_web",
+        "@springboot//:org_springframework_boot_spring_boot_starter_actuator",
+        # Devtools (development only) - safe to include for now; can be filtered in production image build later
+        "@springboot//:org_springframework_boot_spring_boot_devtools",
+        # Direct jars required by strict deps
+        "@springboot//:org_springframework_boot_spring_boot",
+        "@springboot//:org_springframework_boot_spring_boot_autoconfigure",
+        "@springboot//:org_springframework_spring_context",
+        "@springboot//:org_springframework_spring_web",
+    ],
 )
 
 # Build the app as a Spring Boot executable jar

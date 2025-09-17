@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: standard-setup
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  labels:
+    app: standard-setup
+    component: setup
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+      - name: kubectl-standard-setup
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "=== SETTING UP STANDARD DEPLOYMENT ==="
+
+          # Create namespace if it doesn't exist
+          kubectl get namespace {{ (project_dash or project_name) | lower | replace('_', '-') }} || kubectl create namespace {{ (project_dash or project_name) | lower | replace('_', '-') }}
+
+          # Ensure Istio injection is disabled to avoid any sidecar issues
+          if kubectl get namespace {{ (project_dash or project_name) | lower | replace('_', '-') }} -o jsonpath='{.metadata.labels.istio-injection}' 2>/dev/null | grep -q "enabled"; then
+            echo "Removing Istio injection label from namespace for clean deployment..."
+            kubectl label namespace {{ (project_dash or project_name) | lower | replace('_', '-') }} istio-injection- --overwrite
+          fi
+
+          # Remove any leftover Istio resources from previous deployments
+          echo "Cleaning up any leftover Istio resources..."
+          kubectl delete virtualservice,destinationrule,envoyfilter -n {{ (project_dash or project_name) | lower | replace('_', '-') }} --all --ignore-not-found
+
+          echo "Standard deployment environment prepared successfully."
+      restartPolicy: Never
+  backoffLimit: 1

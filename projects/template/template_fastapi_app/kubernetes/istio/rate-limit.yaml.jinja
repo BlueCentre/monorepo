@@ -1,0 +1,223 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-filter
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  configPatches:
+    # Configure the HTTP filter chain to use the rate limit filter
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ratelimit
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit"
+            domain: "{{ (project_dash or project_name) | lower | replace('_', '-') }}-domain"
+            failure_mode_deny: false
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: "outbound|8081||ratelimit.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"
+
+---
+# Rate limit for the main API
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: api-rate-limit
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        paths: ["/api/v1/*"]
+    when:
+    - key: request.headers[x-forwarded-for]
+      notValues: ["internal-service"] # Exempt internal services
+
+---
+# Define a RequestAuthentication to identify users by JWT
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  jwtRules:
+  - issuer: "https://{{ (project_dash or project_name) | lower | replace('_', '-') }}.example.com"
+    jwksUri: "https://{{ (project_dash or project_name) | lower | replace('_', '-') }}.example.com/.well-known/jwks.json"
+
+---
+# Rate limit service deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratelimit
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratelimit
+  template:
+    metadata:
+      labels:
+        app: ratelimit
+    spec:
+      containers:
+      - name: ratelimit
+        image: envoyproxy/ratelimit:v1.4.0
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8081
+          name: grpc
+        env:
+        - name: REDIS_SOCKET_TYPE
+          value: tcp
+        - name: REDIS_URL
+          value: redis:6379
+        - name: RUNTIME_ROOT
+          value: /data
+        - name: RUNTIME_SUBDIRECTORY
+          value: config
+        - name: RUNTIME_WATCH_ROOT
+          value: "false"
+        - name: RUNTIME_IGNOREDOTFILES
+          value: "true"
+        - name: USE_STATSD
+          value: "false"
+        - name: LOG_LEVEL
+          value: info
+        - name: DOMAIN
+          value: {{ (project_dash or project_name) | lower | replace('_', '-') }}-domain
+        volumeMounts:
+        - name: config-volume
+          mountPath: /data/config/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: ratelimit-config
+
+---
+# Service for rate limit service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratelimit
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  - port: 8081
+    name: grpc
+  selector:
+    app: ratelimit
+
+---
+# Redis for rate limit storage
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.2-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: redis
+
+---
+# ConfigMap for rate limit configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+data:
+  config.yaml: |
+    domain: {{ (project_dash or project_name) | lower | replace('_', '-') }}-domain
+    descriptors:
+      # Global rate limit for all API endpoints
+      - key: generic_key
+        value: default
+        rate_limit:
+          unit: minute
+          requests_per_unit: 100
+      
+      # Lower rate limit for login endpoint (prevent brute force)
+      - key: path
+        value: /api/v1/login
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10
+      
+      # Special rate limit for key management endpoints (security-sensitive)
+      - key: path
+        value: /api/v1/key-management
+        rate_limit:
+          unit: minute
+          requests_per_unit: 5
+      
+      # Rate limit based on authenticated user (for better user experience)
+      - key: auth
+        value: authenticated
+        rate_limit:
+          unit: minute
+          requests_per_unit: 200
+      
+      # Unauthenticated users get lower limits
+      - key: auth
+        value: unauthenticated
+        rate_limit:
+          unit: minute
+          requests_per_unit: 30

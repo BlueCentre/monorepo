@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-fastapi-app
+  labels:
+    app: echo-fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: echo-fastapi-app
+    spec:
+      containers:
+      - name: echo-fastapi-app
+        image: echo-fastapi-app
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PORT
+          value: "8000"
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

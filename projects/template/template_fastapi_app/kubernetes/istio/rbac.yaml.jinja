@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-admin
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespace-admin
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-admin-binding
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+subjects:
+- kind: ServiceAccount
+  name: {{ (project_dash or project_name) | lower | replace('_', '-') }}-admin
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+roleRef:
+  kind: Role
+  name: namespace-admin
+  apiGroup: rbac.authorization.k8s.io

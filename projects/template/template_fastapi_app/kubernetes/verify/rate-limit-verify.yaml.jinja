@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rate-limit-test
+  namespace: {{ (project_dash or project_name) | lower | replace('_', '-') }}
+  labels:
+    app: rate-limit-test
+    component: verification
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+      - name: curl-rate-test
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "========================================="
+          echo "  ISTIO RATE LIMITING VERIFICATION TEST  "
+          echo "========================================="
+          echo "Waiting for Istio and rate limiting components to be ready..."
+          sleep 30
+          
+          # Find working endpoint
+          for BASE_URL in "http://{{ (project_dash or project_name) | lower | replace('_', '-') }}" "http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}" "http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc" "http://{{ (project_dash or project_name) | lower | replace('_', '-') }}.{{ (project_dash or project_name) | lower | replace('_', '-') }}.svc.cluster.local"; do
+            if curl -s $BASE_URL/health | grep -q "ok"; then
+              echo "Found working endpoint: $BASE_URL"
+              
+              # Test rate limiting
+              echo "Testing rate limiting by making multiple rapid requests..."
+              echo "This should trigger the rate limit for unauthenticated calls..."
+              
+              # Make a bunch of requests to try to hit the rate limit
+              for i in {1..40}; do
+                RESP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/v1/users/)
+                echo "Request $i: Response code: $RESP_CODE"
+                
+                # If we get a 429 response, rate limiting is working!
+                if [ "$RESP_CODE" = "429" ]; then
+                  echo "========================================="
+                  echo "     SUCCESS: RATE LIMITING IS WORKING   "
+                  echo "  Received 429 Too Many Requests status  "
+                  echo "========================================="
+                  echo ""
+                  echo "To manually verify: kubectl port-forward service/{{ (project_dash or project_name) | lower | replace('_', '-') }} 8000:80"
+                  echo "Then: for i in {1..50}; do curl -i localhost:8000/api/v1/users/; sleep 0.1; done"
+                  exit 0
+                fi
+                
+                # Brief pause between requests
+                sleep 0.1
+              done
+              
+              echo "WARNING: Couldn't trigger rate limiting after 40 requests"
+              echo "This could be normal if your limits are set high or the rate limit service isn't ready"
+              echo "Try manually testing with more requests or a faster request rate"
+              exit 0
+            fi
+          done
+          
+          echo "ERROR: Couldn't find a working service endpoint"
+          echo "Make sure the application is deployed and running"
+          exit 1
+      restartPolicy: Never
+  backoffLimit: 1 

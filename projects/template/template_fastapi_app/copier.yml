@@ -6,6 +6,10 @@ _envops:
   variable_start_string: "{{"
   variable_end_string: "}}"
 
+# Skip copying the static skaffold.yaml - only use the templated .jinja version
+_skip:
+  - skaffold.yaml
+
 # Questions for the user
 project_name:
   type: str
@@ -44,7 +48,51 @@ author_email:
     Please enter a valid email address
     {% endif %}
 
-# Internal variables (computed)
-_project_slug: "{{ project_name | lower | replace('-', '_') }}"
-_project_class: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
-_project_package: "{{ project_name | lower | replace('-', '_') }}"
+# Application secret (only for FastAPI template)
+app_secret_plaintext:
+  type: str
+  help: Plaintext value for the application SECRET_KEY (leave blank to auto-generate)
+  placeholder: leave blank to auto-generate
+  default: ""
+  secret: true
+
+
+# Deployment configuration
+project_language:
+  type: str
+  help: Programming language (auto-detected for FastAPI)
+  default: py
+  when: false  # Hidden from user, automatically set
+
+
+# example: "my-awesome_api" -> "my_awesome_api"
+project_slug: 
+  type: str
+  default: "{{ project_name | lower | replace('-', '_') }}"
+  when: false
+# example: "my-awesome_api" -> "MyAwesomeApi"
+project_class:
+  type: str
+  default: "{{ project_name | replace('-', '_') | replace('_', ' ') | title | replace(' ', '') }}"
+  when: false
+# example: "my-awesome_api" -> "my_awesome_api"
+project_package:
+  type: str
+  default: "{{ project_name | lower | replace('-', '_') }}"
+  when: false
+# example: "my_awesome_api" -> "my-awesome-api" (derived from _project_slug so it won't be empty)
+project_dash:
+  type: str
+  default: "{{ project_name | replace('_', '-') }}"
+  when: false
+
+# example: "my-awesome_api" -> "my_awesome_api"
+app_secret_fallback:
+  type: str
+  default: "{{ (app_secret_plaintext + author_email) | tojson | b64encode }}"
+  when: false
+# Compute base64 without newlines (portable). If user left blank we used generated fallback above.
+app_secret_b64:
+  type: str
+  default: "{{ app_secret_fallback | b64encode }}"
+  when: false

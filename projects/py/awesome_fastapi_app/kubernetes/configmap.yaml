@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awesome-fastapi-app-config
+  namespace: awesome-fastapi-app
+data:
+  PROJECT_NAME: "Awesome FastAPI App"
+  PROJECT_DESCRIPTION: "A production-ready FastAPI application"
+  PORT: "8000"
+  RELOAD: "false"
+  API_V1_STR: "/api/v1"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  BACKEND_CORS_ORIGINS: '["http://localhost:3000","http://localhost:8080"]'
+  GCP_PROJECT_ID: "your-gcp-project-id"
+  PUBSUB_TOPIC_EXAMPLE: "example"
+  PUBSUB_SUBSCRIPTION_EXAMPLE: "example-subscription"
+  ENABLE_TELEMETRY: "true"
+  OTLP_EXPORTER_ENDPOINT: "http://opentelemetry-collector.opentelemetry.svc.cluster.local:4317"
+  OTLP_SERVICE_NAME: "awesome-fastapi-app"
+  ENVIRONMENT: "production"

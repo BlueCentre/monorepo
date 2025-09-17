@@ -45,3 +45,17 @@ go_test(
 #   1. Uncomment rules_oci bazel_dep in MODULE.bazel
 #   2. Add load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball") at top
 #   3. Reintroduce the oci_image / oci_tarball targets below.
+
+# Produce a tarball that Skaffold's custom build step can unpack and build into a container image.
+genrule(
+    name = "image_tarball",
+    srcs = [":main", "Dockerfile.bazel"],
+    outs = ["image_tarball.tar"],
+    cmd = """
+      set -euo pipefail
+      mkdir -p image_ctx
+      cp $(location :main) image_ctx/main
+      cp $(location Dockerfile.bazel) image_ctx/Dockerfile
+      tar -cf $@ -C image_ctx .
+    """,
+)

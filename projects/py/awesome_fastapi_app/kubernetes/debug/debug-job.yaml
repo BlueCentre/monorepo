@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: debug
+  namespace: template-fastapi-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: debug
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "=== DEBUG JOB ==="
+
+          # Get cluster info
+          kubectl cluster-info
+          echo "---"
+
+          # Get nodes
+          kubectl get nodes
+          echo "---"
+
+          # Get pods
+          kubectl get pods
+          echo "---"
+
+          sleep 300
+      restartPolicy: Never
+  backoffLimit: 0 

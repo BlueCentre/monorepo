@@ -22,13 +22,34 @@ bazel run //projects/py/{{ project_name }}:{{ _project_package }} -- --help
 
 ## Development
 
+### Local Development with Bazel
+
 ```bash
 # Run tests
 bazel test //projects/py/{{ project_name }}/...
 
-# Install in development mode
-pip install -e .
+# Build and run the CLI
+bazel run //projects/py/{{ project_name }}:{{ _project_package }} -- --help
 ```
+
+### Kubernetes Development with Skaffold
+
+For testing CLI in a Kubernetes environment:
+
+```bash
+# Deploy as a Kubernetes Job and watch logs
+skaffold dev
+
+# The CLI runs as a one-time Kubernetes Job
+# Logs are automatically displayed in your terminal
+```
+
+The `skaffold dev` command automatically:
+- Builds your CLI using Bazel
+- Creates a Docker image
+- Runs as a Kubernetes Job
+- Displays job output in your terminal
+- Rebuilds and reruns when files change
 
 ## Monorepo Integration
 
